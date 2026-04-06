@@ -70,3 +70,24 @@ export const logout = (req, res) => {
   res.clearCookie("refreshToken");
   res.status(200).json({ message: "Logged out successfully" });
 };
+
+export const getUserProfile = async (req, res) => {
+  res.status(200).json(req.user);
+};
+
+export const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+
+    const user = await User.findById(req.user._id);
+    user.avatar = req.file.path;
+    await user.save();
+
+    res.status(200).json({
+      message: "Avatar uploaded successfully",
+      avatar: user.avatar,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error uploading avatar" });
+  }
+};

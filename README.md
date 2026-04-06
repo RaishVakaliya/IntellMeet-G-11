@@ -39,3 +39,13 @@ MERN stack platform for AI-Powered Enterprise Meeting & Collaboration Platform
 
 1. Go to the frontend folder: `cd frontend`
 2. Start the vite server: `npm run dev`
+
+## WebRTC Signaling
+
+Signaling is the process where browsers exchange setup information through a server to establish a direct Peer-to-Peer (P2P) connection. This project uses Socket.io to relay these signals.
+
+| Term              | Description                                                         |
+| ----------------- | ------------------------------------------------------------------- |
+| **Offer**         | User A proposes a session with their media capabilities.            |
+| **Answer**        | User B accepts and shares their media capabilities.                 |
+| **ICE Candidate** | A list of possible IP addresses/network paths to reach the browser. |

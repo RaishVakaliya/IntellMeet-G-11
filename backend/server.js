@@ -7,6 +7,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import connectDB from "./src/config/db.js";
 import userRoutes from "./src/routes/userRoutes.js";
+import meetingRoutes from "./src/routes/meetingRoutes.js";
 
 dotenv.config();
 
@@ -32,18 +33,40 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Auth Routes
+// Routes
 app.use("/api/auth", userRoutes);
+app.use("/api/meetings", meetingRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "IntellMeet API is running..." });
 });
 
+//Socket.io -> WebRTC Signaling
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
-  socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+  socket.on("join-room", (meetingId, userId) => {
+    socket.join(meetingId);
+    console.log(`User ${userId} joined room ${meetingId}`);
+    socket.to(meetingId).emit("user-connected", userId);
+
+    socket.on("disconnect", () => {
+      console.log("User disconnected:", socket.id);
+      socket.to(meetingId).emit("user-disconnected", userId);
+    });
+  });
+
+  //Signaling: Relaying offer, answer, and ICE candidates
+  socket.on("offer", (payload) => {
+    io.to(payload.target).emit("offer", payload);
+  });
+
+  socket.on("answer", (payload) => {
+    io.to(payload.target).emit("answer", payload);
+  });
+
+  socket.on("ice-candidate", (incoming) => {
+    io.to(incoming.target).emit("ice-candidate", incoming);
   });
 });
 

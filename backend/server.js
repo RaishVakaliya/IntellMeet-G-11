@@ -5,13 +5,17 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
 import connectDB from "./src/config/db.js";
+import { connectRedis, redisClient } from "./src/config/redis.js";
 import userRoutes from "./src/routes/userRoutes.js";
 import meetingRoutes from "./src/routes/meetingRoutes.js";
 
 dotenv.config();
 
+//Connect DB & Redis
 connectDB();
+connectRedis();
 
 const app = express();
 const httpServer = createServer(app);
@@ -22,6 +26,13 @@ const io = new Server(httpServer, {
     methods: ["GET", "POST"],
   },
 });
+
+// Redis Adapter for Socket.io (Day 5 feature)
+// This allow real-time events to work across multiple server instances
+const subClient = redisClient.duplicate();
+subClient.on("error", (err) => console.log("Redis Sub Client Error", err));
+await subClient.connect();
+io.adapter(createAdapter(redisClient, subClient));
 
 app.use(helmet());
 app.use(

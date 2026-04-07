@@ -17,6 +17,9 @@ MERN stack platform for AI-Powered Enterprise Meeting & Collaboration Platform
 - **multer**: Middleware for handling multipart/form-data for file uploads.
 - **multer-storage-cloudinary**: Custom storage engine for multer to upload directly to Cloudinary.
 - **express-rate-limit**: Basic rate-limiting middleware for Express.
+- **nanoid**: Generates short, unique meeting codes.
+- **redis**: In-memory data structures store used for ultra-fast caching.
+- **@socket.io/redis-adapter**: Allows real-time events to work across multiple server instances.
 
 ## Setup
 

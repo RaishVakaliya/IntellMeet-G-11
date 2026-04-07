@@ -15,9 +15,14 @@ export const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      const cachedUser = await redisClient.get(`user:${decoded.userId}`);
+      let cachedUser = null;
+      if (redisClient.isOpen) {
+        const data = await redisClient.get(`user:${decoded.userId}`);
+        if (data) cachedUser = JSON.parse(data);
+      }
+
       if (cachedUser) {
-        req.user = JSON.parse(cachedUser);
+        req.user = cachedUser;
         return next();
       }
 
@@ -29,11 +34,13 @@ export const protect = async (req, res, next) => {
         return res.status(401).json({ message: "User no longer exists" });
       }
 
-      await redisClient.setEx(
-        `user:${decoded.userId}`,
-        USER_CACHE_EXPIRATION,
-        JSON.stringify(user),
-      );
+      if (redisClient.isOpen) {
+        await redisClient.setEx(
+          `user:${decoded.userId}`,
+          USER_CACHE_EXPIRATION,
+          JSON.stringify(user),
+        );
+      }
 
       req.user = user;
       return next();

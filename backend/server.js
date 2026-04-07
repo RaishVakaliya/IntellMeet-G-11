@@ -4,35 +4,23 @@ import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
-import { Server } from "socket.io";
-import { createAdapter } from "@socket.io/redis-adapter";
 import connectDB from "./src/config/db.js";
-import { connectRedis, redisClient } from "./src/config/redis.js";
+import { connectRedis } from "./src/config/redis.js";
+import { initializeSocket } from "./src/sockets/socket.js";
 import userRoutes from "./src/routes/userRoutes.js";
 import meetingRoutes from "./src/routes/meetingRoutes.js";
+import chatRoutes from "./src/routes/chatRoutes.js";
 
 dotenv.config();
 
 //Connect DB & Redis
-connectDB();
-connectRedis();
+await connectDB();
+await connectRedis();
 
 const app = express();
 const httpServer = createServer(app);
 
-const io = new Server(httpServer, {
-  cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
-    methods: ["GET", "POST"],
-  },
-});
-
-// Redis Adapter for Socket.io (Day 5 feature)
-// This allow real-time events to work across multiple server instances
-const subClient = redisClient.duplicate();
-subClient.on("error", (err) => console.log("Redis Sub Client Error", err));
-await subClient.connect();
-io.adapter(createAdapter(redisClient, subClient));
+await initializeSocket(httpServer);
 
 app.use(helmet());
 app.use(
@@ -47,42 +35,13 @@ app.use(cookieParser());
 // Routes
 app.use("/api/auth", userRoutes);
 app.use("/api/meetings", meetingRoutes);
+app.use("/api/chats", chatRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "IntellMeet API is running..." });
 });
 
-//Socket.io -> WebRTC Signaling
-io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
-
-  socket.on("join-room", (meetingId, userId) => {
-    socket.join(meetingId);
-    console.log(`User ${userId} joined room ${meetingId}`);
-    socket.to(meetingId).emit("user-connected", userId);
-
-    socket.on("disconnect", () => {
-      console.log("User disconnected:", socket.id);
-      socket.to(meetingId).emit("user-disconnected", userId);
-    });
-  });
-
-  //Signaling: Relaying offer, answer, and ICE candidates
-  socket.on("offer", (payload) => {
-    io.to(payload.target).emit("offer", payload);
-  });
-
-  socket.on("answer", (payload) => {
-    io.to(payload.target).emit("answer", payload);
-  });
-
-  socket.on("ice-candidate", (incoming) => {
-    io.to(incoming.target).emit("ice-candidate", incoming);
-  });
-});
-
 const PORT = process.env.PORT || 5000;
-
 httpServer.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });

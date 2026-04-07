@@ -21,8 +21,9 @@ export const createMeeting = async (req, res) => {
     });
 
     // Invalidate user's meeting list cache
-    await redisClient.del(`user-meetings:${req.user._id}`);
-
+    if (redisClient.isOpen) {
+      await redisClient.del(`user-meetings:${req.user._id}`);
+    }
     res.status(201).json(meeting);
   } catch (error) {
     res.status(500).json({ message: "Error creating meeting" });
@@ -32,23 +33,26 @@ export const createMeeting = async (req, res) => {
 export const getMyMeetings = async (req, res) => {
   try {
     const cacheKey = `user-meetings:${req.user._id}`;
-
-    const cachedMeetings = await redisClient.get(cacheKey);
-    if (cachedMeetings) {
-      console.log(`Cache Hit for user-meetings: ${req.user._id}`);
-      return res.status(200).json(JSON.parse(cachedMeetings));
+    if (redisClient.isOpen) {
+      const data = await redisClient.get(cacheKey);
+      if (data) {
+        console.log(`Cache Hit for user-meetings: ${req.user._id}`);
+        return res.status(200).json(JSON.parse(data));
+      }
     }
 
     const meetings = await Meeting.find({
       $or: [{ createdBy: req.user._id }, { "participants.user": req.user._id }],
     }).populate("createdBy", "name email avatar");
 
-    await redisClient.setEx(
-      cacheKey,
-      CACHE_EXPIRATION,
-      JSON.stringify(meetings),
-    );
-    console.log(`Cache Miss - Stored user-meetings: ${req.user._id}`);
+    if (redisClient.isOpen) {
+      await redisClient.setEx(
+        cacheKey,
+        CACHE_EXPIRATION,
+        JSON.stringify(meetings),
+      );
+      console.log(`Cache Miss - Stored user-meetings: ${req.user._id}`);
+    }
 
     res.status(200).json(meetings);
   } catch (error) {
@@ -64,7 +68,6 @@ export const joinMeeting = async (req, res) => {
     }
 
     const meeting = await Meeting.findOne({ meetingCode });
-
     if (!meeting) return res.status(404).json({ message: "Meeting not found" });
     if (meeting.status === "ended")
       return res.status(400).json({ message: "Meeting already ended" });
@@ -82,8 +85,10 @@ export const joinMeeting = async (req, res) => {
       await meeting.save();
 
       // Invalidate relevant caches
-      await redisClient.del(`meeting:${meetingCode}`);
-      await redisClient.del(`user-meetings:${req.user._id}`);
+      if (redisClient.isOpen) {
+        await redisClient.del(`meeting:${meetingCode}`);
+        await redisClient.del(`user-meetings:${req.user._id}`);
+      }
     }
 
     res.status(200).json(meeting);
@@ -95,11 +100,12 @@ export const joinMeeting = async (req, res) => {
 export const getMeetingDetails = async (req, res) => {
   try {
     const { code } = req.params;
-
-    const cachedMeeting = await redisClient.get(`meeting:${code}`);
-    if (cachedMeeting) {
-      console.log(`Cache Hit for meeting: ${code}`);
-      return res.status(200).json(JSON.parse(cachedMeeting));
+    if (redisClient.isOpen) {
+      const data = await redisClient.get(`meeting:${code}`);
+      if (data) {
+        console.log(`Cache Hit for meeting: ${code}`);
+        return res.status(200).json(JSON.parse(data));
+      }
     }
 
     const meeting = await Meeting.findOne({ meetingCode: code })
@@ -108,12 +114,14 @@ export const getMeetingDetails = async (req, res) => {
 
     if (!meeting) return res.status(404).json({ message: "Meeting not found" });
 
-    await redisClient.setEx(
-      `meeting:${code}`,
-      CACHE_EXPIRATION,
-      JSON.stringify(meeting),
-    );
-    console.log(`Cache Miss - Stored meeting: ${code}`);
+    if (redisClient.isOpen) {
+      await redisClient.setEx(
+        `meeting:${code}`,
+        CACHE_EXPIRATION,
+        JSON.stringify(meeting),
+      );
+      console.log(`Cache Miss - Stored meeting: ${code}`);
+    }
 
     res.status(200).json(meeting);
   } catch (error) {

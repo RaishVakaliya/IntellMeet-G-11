@@ -47,14 +47,6 @@ const meetingSchema = new mongoose.Schema(
 
     recordingUrl: String,
 
-    //   transcript: {
-    //     type: String, // full text from AI transcription
-    //   },
-
-    //   summary: {
-    //     type: String, // AI-generated summary
-    //   },
-
     actionItems: [
       {
         text: String,
@@ -68,22 +60,8 @@ const meetingSchema = new mongoose.Schema(
         },
       },
     ],
-
-    chatMessages: [
-      {
-        sender: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-        message: String,
-        timestamp: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 export const Meeting = mongoose.model("Meeting", meetingSchema);

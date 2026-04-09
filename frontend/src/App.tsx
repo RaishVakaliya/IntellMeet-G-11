@@ -1,14 +1,42 @@
-import "./App.css";
-import { Button } from "./components/ui/button";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { LandingPage } from "./pages/LandingPage";
+import { AuthPage } from "./pages/AuthPage";
+import Homepage from "./pages/Homepage";
+import { Toaster } from "sonner";
+import { ProtectedRoute, PublicOnlyRoute } from "./components/ProtectedRoute";
 
 function App() {
   return (
-    <div className="bg-gray-900 flex justify-center items-center h-screen">
-      <h1 className="text-3xl font-bold underline text-slate-300">
-        Hello world!
-      </h1>
-      <Button variant="secondary">Button</Button>
-    </div>
+    <BrowserRouter>
+      <Toaster richColors position="top-right" />
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <PublicOnlyRoute>
+              <LandingPage />
+            </PublicOnlyRoute>
+          }
+        />
+        <Route path="/auth" element={<Navigate to="/auth/signin" replace />} />
+        <Route
+          path="/auth/:mode"
+          element={
+            <PublicOnlyRoute>
+              <AuthPage />
+            </PublicOnlyRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Homepage />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

@@ -10,6 +10,9 @@ import { initializeSocket } from "./src/sockets/socket.js";
 import userRoutes from "./src/routes/userRoutes.js";
 import meetingRoutes from "./src/routes/meetingRoutes.js";
 import chatRoutes from "./src/routes/chatRoutes.js";
+import passport from "passport";
+import session from "express-session";
+import "./src/config/passport.js";
 
 dotenv.config();
 
@@ -29,6 +32,15 @@ app.use(
     credentials: true,
   }),
 );
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "secret",
+    resave: false,
+    saveUninitialized: false,
+  }),
+);
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.json());
 app.use(cookieParser());
 

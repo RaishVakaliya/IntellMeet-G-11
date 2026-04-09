@@ -6,6 +6,17 @@ import {
 } from "../utils/generateToken.js";
 import jwt from "jsonwebtoken";
 
+export const googleCallback = (req, res) => {
+  const user = req.user;
+
+  const accessToken = generateAccessToken(user._id);
+  const refreshToken = generateRefreshToken(user._id);
+
+  setRefreshTokenCookie(res, refreshToken);
+
+  res.redirect(`${process.env.FRONTEND_URL}/auth/signin?token=${accessToken}`);
+};
+
 export const signup = async (req, res) => {
   const { name, email, password } = req.body;
   try {

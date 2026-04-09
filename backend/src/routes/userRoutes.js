@@ -1,4 +1,6 @@
 import express from "express";
+import passport from "../config/passport.js";
+import { googleCallback } from "../controllers/userController.js";
 import {
   signup,
   login,
@@ -12,6 +14,22 @@ import { upload } from "../config/cloudinary.js";
 import { authLimiter } from "../middleware/rateLimitMiddleware.js";
 
 const router = express.Router();
+
+//Redirect to google
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] }),
+);
+
+//callback
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: `${process.env.FRONTEND_URL}/auth/signin`,
+  }),
+  googleCallback,
+);
 
 router.post("/signup", authLimiter, signup);
 router.post("/login", authLimiter, login);

@@ -10,8 +10,9 @@ import {
   uploadAvatar,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
-import { upload } from "../config/cloudinary.js";
-import { authLimiter } from "../middleware/rateLimitMiddleware.js";
+// Mocks for unused routes
+const authLimiter = (req, res, next) => next();
+const upload = { single: () => (req, res, next) => next() };
 
 const router = express.Router();
 

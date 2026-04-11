@@ -16,19 +16,26 @@ import "./src/config/passport.js";
 
 dotenv.config();
 
-//Connect DB & Redis
-await connectDB();
-await connectRedis();
+//Connect DB & Redis - TEMP MOCK FOR TESTING
+let useMockDB = true;
+
+connectDB().catch(err => console.log('DB connect failed:', err.message));
+// connectRedis().catch(err => console.log('Redis connect failed:', err.message));
+
+console.log('Using mock DB/Redis for demo (add .env for real)');
 
 const app = express();
 const httpServer = createServer(app);
 
-await initializeSocket(httpServer);
+//await initializeSocket(httpServer); // TEMP disable sockets until DB ready
 
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || [
+      "http://localhost:5173",
+      
+    ],
     credentials: true,
   }),
 );

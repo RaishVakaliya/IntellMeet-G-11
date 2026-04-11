@@ -1,7 +1,4 @@
-// MOCK MODE - no Redis/DB needed
-const users = new Map();
-
-
+const users = new Map(); // shared with controller
 
 export const protect = async (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -11,7 +8,8 @@ export const protect = async (req, res, next) => {
 
   try {
     const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
-    const user = Array.from(users.values()).find(u => u._id === decoded.userId);
+    const allUsers = Array.from(users.values());
+    const user = allUsers.find(u => u._id === decoded.userId);
     if (user) {
       req.user = user;
       next();

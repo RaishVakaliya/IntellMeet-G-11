@@ -1,46 +1,47 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   createMeeting,
   getMyMeetings,
   joinMeeting,
   type MeetingData,
-} from "../services/meetingService";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Badge } from "../components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../components/ui/dialog";
-import { Separator } from "../components/ui/separator";
+} from "@/services/meetingService";
+import { useAuthStore } from "@/stores/authStore";
+import { useSocket } from "@/hooks/useSocket";
+import { useMeetingStore } from "@/stores/meetingStore";
+import { AppNavbar } from "@/layouts/AppNavbar";
 import {
   Video,
   Plus,
   Link2,
   Copy,
-  ChevronDown,
   Clock,
   Users,
   Calendar,
   ArrowRight,
   Loader2,
   VideoOff,
-  RefreshCw,
+  ChevronDown,
+  Sparkles,
 } from "lucide-react";
-import { useAuthStore } from "@/stores/authStore";
-import { useSocket } from "@/hooks/useSocket";
-import { AppNavbar } from "../layouts/AppNavbar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
@@ -54,44 +55,24 @@ const formatDate = (iso: string) => {
   return d.toLocaleDateString([], { month: "short", day: "numeric" });
 };
 
-const statusConfig = {
-  ongoing: {
-    label: "Live",
-    class: "border-emerald-200 text-emerald-700 bg-emerald-50",
-    dot: "bg-emerald-400",
-  },
-  scheduled: {
-    label: "Scheduled",
-    class: "border-amber-200 text-amber-700 bg-amber-50",
-    dot: "bg-amber-400",
-  },
-  ended: {
-    label: "Ended",
-    class: "border-slate-200 text-slate-500 bg-transparent",
-    dot: "bg-slate-400",
-  },
-} as const;
-
-const Homepage = () => {
+const MeetingLobby: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { setMeeting } = useMeetingStore();
   const qc = useQueryClient();
 
   const [joinCode, setJoinCode] = useState("");
   const [isJoining, setIsJoining] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [createdMeeting, setCreatedMeeting] = useState<MeetingData | null>(
     null,
   );
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const joinInputRef = useRef<HTMLInputElement>(null);
+  const [meetingTitle, setMeetingTitle] = useState("");
 
-  const {
-    data: meetings = [],
-    isLoading: meetingsLoading,
-    isFetching,
-    refetch,
-  } = useQuery<MeetingData[]>({
+  const { data: meetings = [], isLoading: meetingsLoading } = useQuery<
+    MeetingData[]
+  >({
     queryKey: ["my-meetings"],
     queryFn: () => getMyMeetings(),
     enabled: !!user,
@@ -100,14 +81,12 @@ const Homepage = () => {
 
   const socket = useSocket();
 
-  // Listen for real-time updates from the server
+  // Listen for real-time updates from server
   useEffect(() => {
     if (!socket) return;
     const handleUpdate = () => {
-      console.log("[Lobby] Meetings list updated, refetching...");
       qc.invalidateQueries({ queryKey: ["my-meetings"] });
     };
-
     socket.on("meetings-updated", handleUpdate);
     return () => {
       socket.off("meetings-updated", handleUpdate);
@@ -117,34 +96,52 @@ const Homepage = () => {
   const createMutation = useMutation({
     mutationFn: ({ title }: { title: string; instant: boolean }) =>
       createMeeting(title),
-    onSuccess: (meeting, { instant }) => {
+    onSuccess: (meeting, variables) => {
       qc.invalidateQueries({ queryKey: ["my-meetings"] });
-      if (instant) {
+      setMeeting(meeting.meetingCode);
+      if (variables.instant) {
         navigate(`/room/${meeting.meetingCode}`);
       } else {
         setCreatedMeeting(meeting);
         setDialogOpen(true);
       }
     },
-    onError: (e: Error) => toast.error(e.message || "Could not create meeting"),
+    onError: (e: any) => {
+      if (e.activeCode) {
+        toast.error(`You already have an active meeting: ${e.activeCode}`, {
+          duration: 5000,
+          action: {
+            label: "Copy Code",
+            onClick: () => {
+              navigator.clipboard.writeText(e.activeCode);
+              toast.success("Code copied!");
+            },
+          },
+        });
+      } else {
+        toast.error(e.message || "Could not create meeting");
+      }
+    },
   });
 
-  const handleCreateMeeting = (instant = false) => {
-    const title = user ? `${user.username}'s Meeting` : "Instant Meeting";
+  const handleCreate = (instant: boolean) => {
+    const title =
+      meetingTitle.trim() ||
+      (user ? `${user.username}'s Meeting` : "Instant Meeting");
     createMutation.mutate({ title, instant });
   };
 
-  const handleJoinMeeting = async (codeOverride?: string | React.MouseEvent) => {
-    const code = (typeof codeOverride === "string" ? codeOverride : joinCode).trim();
+  const handleJoin = async (codeOverride?: string | React.MouseEvent) => {
+    const code = (
+      typeof codeOverride === "string" ? codeOverride : joinCode
+    ).trim();
     if (!code) {
       toast.error("Enter a meeting code");
-      joinInputRef.current?.focus();
       return;
     }
     setIsJoining(true);
 
     try {
-      // Validate meeting and user state before navigating
       await joinMeeting(code);
       navigate(`/room/${code}`);
     } catch (e: any) {
@@ -174,29 +171,25 @@ const Homepage = () => {
 
   const isCreating = createMutation.isPending;
 
-  if (!user) return null;
-
   return (
     <div className="min-h-screen bg-white">
       <AppNavbar />
 
       <main className="max-w-5xl mx-auto px-6 py-12 space-y-10">
-        {/* Welcome */}
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
-            Welcome back, <span className="text-teal-600">{user.username}</span>{" "}
-            👋
+            Welcome back,{" "}
+            <span className="text-teal-600">{user?.username}</span> 👋
           </h1>
           <p className="text-slate-500 text-sm mt-1">
             Start or join a secure video meeting
           </p>
         </div>
 
-        {/* Action Bar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-5 bg-slate-50 rounded-2xl border border-slate-200">
           <div className="flex shrink-0">
             <Button
-              onClick={() => handleCreateMeeting(true)}
+              onClick={() => handleCreate(true)}
               disabled={isCreating}
               className="text-white rounded-r-none border-r h-10 px-4 gap-2 font-medium"
             >
@@ -219,14 +212,14 @@ const Homepage = () => {
               <DropdownMenuContent align="start" className="w-52">
                 <DropdownMenuItem
                   className="gap-2 cursor-pointer"
-                  onClick={() => handleCreateMeeting(false)}
+                  onClick={() => handleCreate(false)}
                 >
                   <Link2 className="w-4 h-4 text-slate-400" />
                   Get a meeting link
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="gap-2 cursor-pointer"
-                  onClick={() => handleCreateMeeting(true)}
+                  onClick={() => handleCreate(true)}
                 >
                   <Video className="w-4 h-4 text-slate-400" />
                   Start an instant meeting
@@ -237,17 +230,17 @@ const Homepage = () => {
 
           <Separator orientation="vertical" className="h-8 hidden sm:block" />
 
+          {/* Join */}
           <div className="flex flex-1 gap-2">
             <Input
-              ref={joinInputRef}
               placeholder="Enter a code or link"
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleJoinMeeting()}
+              onKeyDown={(e) => e.key === "Enter" && handleJoin()}
               className="h-10 bg-white border-slate-200 text-sm"
             />
             <Button
-              onClick={handleJoinMeeting}
+              onClick={handleJoin}
               disabled={!joinCode.trim() || isJoining}
               variant="outline"
               className="h-10 px-4 shrink-0 border-slate-300 text-slate-700 hover:bg-slate-100 gap-1"
@@ -258,33 +251,43 @@ const Homepage = () => {
           </div>
         </div>
 
+        {/* Create with custom title */}
+        <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-teal-50 to-violet-50 rounded-xl border border-teal-100">
+          <Sparkles className="w-4 h-4 text-teal-500 shrink-0" />
+          <Input
+            placeholder="Meeting title (optional)"
+            value={meetingTitle}
+            onChange={(e) => setMeetingTitle(e.target.value)}
+            className="h-9 bg-white border-teal-200 text-sm flex-1"
+          />
+          <Button
+            size="sm"
+            onClick={() => handleCreate(true)}
+            disabled={isCreating}
+            className="shrink-0 bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {isCreating ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              "Start"
+            )}
+          </Button>
+        </div>
+
         {/* Meetings list */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-slate-800 text-base">
               Your Meetings
             </h2>
-            <div className="flex items-center gap-3">
-              {meetings.length > 0 && (
-                <span className="text-xs text-slate-400">
-                  {meetings.length} total
-                </span>
-              )}
-              <button
-                onClick={() => refetch()}
-                disabled={isFetching}
-                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
-                title="Refresh meetings"
-              >
-                <RefreshCw
-                  className={`w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`}
-                />
-              </button>
-            </div>
+            {meetings.length > 0 && (
+              <span className="text-xs text-slate-400">
+                {meetings.length} total
+              </span>
+            )}
           </div>
 
           {meetingsLoading ? (
-            // Loading skeletons
             <div className="space-y-2">
               {[...Array(3)].map((_, i) => (
                 <div
@@ -308,9 +311,6 @@ const Homepage = () => {
           ) : (
             <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100">
               {meetings.slice(0, 8).map((m) => {
-                const cfg =
-                  statusConfig[m.status as keyof typeof statusConfig] ??
-                  statusConfig.ended;
                 const isHost = m.participants.some((p) => p.role === "host");
                 return (
                   <div
@@ -349,38 +349,30 @@ const Homepage = () => {
                             Host
                           </Badge>
                         )}
-                        {/* Status badge with live dot for ongoing */}
                         <Badge
                           variant="outline"
-                          className={`text-xs py-0 h-5 flex items-center gap-1 ${cfg.class}`}
+                          className={`text-xs py-0 h-5 ${
+                            m.status === "ongoing"
+                              ? "border-emerald-200 text-emerald-700 bg-emerald-50"
+                              : m.status === "ended"
+                                ? "border-slate-200 text-slate-500"
+                                : "border-amber-200 text-amber-700 bg-amber-50"
+                          }`}
                         >
-                          {m.status === "ongoing" && (
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${cfg.dot} animate-pulse inline-block`}
-                            />
-                          )}
-                          {cfg.label}
+                          {m.status}
                         </Badge>
                       </div>
 
                       <Button
                         size="sm"
-                        onClick={() => handleJoinMeeting(m.meetingCode)}
+                        onClick={() => handleJoin(m.meetingCode)}
                         disabled={m.status === "ended" || isJoining}
-                        className={`h-7 px-3 text-xs text-white ${
-                          m.status === "ended"
-                            ? "bg-slate-300 cursor-not-allowed"
-                            : m.status === "ongoing"
-                              ? "bg-emerald-600 hover:bg-emerald-700"
-                              : "bg-teal-600 hover:bg-teal-700"
-                        }`}
+                        className="h-7 px-3 text-xs bg-teal-600 hover:bg-teal-700 text-white"
                       >
                         {isJoining ? (
                           <Loader2 className="w-3 h-3 animate-spin" />
                         ) : m.status === "ended" ? (
-                          "Ended"
-                        ) : m.status === "ongoing" ? (
-                          "Join Live"
+                          "View"
                         ) : (
                           "Join"
                         )}
@@ -434,7 +426,7 @@ const Homepage = () => {
         </div>
       </main>
 
-      {/* Meeting Created dialog */}
+      {/* Meeting created dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
@@ -488,4 +480,4 @@ const Homepage = () => {
   );
 };
 
-export default Homepage;
+export default MeetingLobby;

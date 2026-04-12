@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import {
-  Video,
   Phone,
   Users,
   MessageSquare,
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 
 import heroBg from "../assets/landingImages/hero_abstract_bg.png";
+import AppLogoImg from "../assets/AppLogo.png";
 import mainAvatar from "../assets/landingImages/professional_avatar_main.png";
 import avatar1 from "../assets/landingImages/diverse_avatar_1.png";
 import avatar2 from "../assets/landingImages/diverse_avatar_2.png";
@@ -27,12 +27,7 @@ export const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-2">
-            <div className="bg-primary p-2 rounded-lg">
-              <Video className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-900 tracking-tight">
-              IntellMeet
-            </span>
+            <img src={AppLogoImg} alt="IntellMeet" className="h-20 w-auto" />
           </div>
           <div className="hidden md:flex items-center gap-8">
             <a

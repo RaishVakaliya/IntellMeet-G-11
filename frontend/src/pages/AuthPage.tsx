@@ -1,19 +1,23 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { Button } from "../components/ui/button";
-import { Video, ArrowRight, Mail } from "lucide-react";
+import { ArrowRight, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { useAuthStore } from "../stores/authStore";
+import AppLogoImg from "../assets/AppLogo.png";
 
 type AuthMode = "signin" | "signup";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-
-const saveAuth = (accessToken: string, username: string, email: string) => {
-  localStorage.setItem("accessToken", accessToken);
-  localStorage.setItem("user", JSON.stringify({ username, email }));
-};
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 export const AuthPage = () => {
+  const setAuth = useAuthStore((state) => state.setAuth);
   const [searchParams, setSearchParams] = useSearchParams();
   const { mode: modeParam } = useParams<{ mode: AuthMode }>();
   const navigate = useNavigate();
@@ -51,7 +55,14 @@ export const AuthPage = () => {
         }
 
         const user = await response.json();
-        saveAuth(oauthToken, user.name || user.username || "User", user.email || "");
+        setAuth(
+          {
+            _id: user._id,
+            username: user.name || user.username || "User",
+            email: user.email || "",
+          },
+          oauthToken,
+        );
         toast.success("Signed in with Google");
 
         const params = new URLSearchParams(searchParams);
@@ -108,8 +119,17 @@ export const AuthPage = () => {
         throw new Error(data.message || "Authentication failed");
       }
 
-      saveAuth(data.accessToken, data.name || fullName || "User", data.email || email);
-      toast.success(mode === "signin" ? "Welcome back!" : "Account created successfully");
+      setAuth(
+        {
+          _id: data._id,
+          username: data.name || fullName || "User",
+          email: data.email || email,
+        },
+        data.accessToken,
+      );
+      toast.success(
+        mode === "signin" ? "Welcome back!" : "Account created successfully",
+      );
       navigate("/dashboard", { replace: true });
     } catch (error) {
       const message =
@@ -129,10 +149,7 @@ export const AuthPage = () => {
           to="/"
           className="flex items-center gap-3 mb-16 hover:opacity-80 transition-opacity"
         >
-          <div className="bg-[#10b981] p-2.5 rounded-xl">
-            <Video className="w-6 h-6 text-white" />
-          </div>
-          <span className="text-2xl font-bold tracking-tight">IntellMeet</span>
+          <img src={AppLogoImg} alt="IntellMeet" className="h-20 w-auto" />
         </Link>
 
         <div className="max-w-md">
@@ -213,7 +230,11 @@ export const AuthPage = () => {
               <div className="relative">
                 <input
                   type="password"
-                  placeholder={mode === "signin" ? "Enter your password" : "Create a password"}
+                  placeholder={
+                    mode === "signin"
+                      ? "Enter your password"
+                      : "Create a password"
+                  }
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   className="w-full px-4 py-4 rounded-xl border border-gray-100 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-medium"

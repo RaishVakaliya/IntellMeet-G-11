@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createMeeting,
+  endMeeting,
   getMyMeetings,
   joinMeeting,
   getMeetingDetails,
@@ -14,6 +15,7 @@ router.use(protect);
 
 router.post("/create", createMeeting);
 router.post("/join", joinMeeting);
+router.patch("/:code/end", endMeeting);
 router.get("/my-meetings", getMyMeetings);
 router.get("/:code", getMeetingDetails);
 

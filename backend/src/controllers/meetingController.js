@@ -1,12 +1,26 @@
 import { Meeting } from "../models/meetingModel.js";
 import { nanoid } from "nanoid";
 import redisClient from "../config/redis.js";
+import { getIO } from "../sockets/socket.js";
 
 const CACHE_EXPIRATION = 3600;
 
 export const createMeeting = async (req, res) => {
   try {
     const { title, description, startTime } = req.body;
+
+    const existingMeeting = await Meeting.findOne({
+      createdBy: req.user._id,
+      status: { $ne: "ended" },
+    });
+
+    if (existingMeeting) {
+      return res.status(400).json({
+        message: "You already have an active meeting",
+        activeCode: existingMeeting.meetingCode,
+      });
+    }
+
     const meetingCode = nanoid(10);
 
     const meeting = await Meeting.create({
@@ -20,13 +34,87 @@ export const createMeeting = async (req, res) => {
       ],
     });
 
-    // Invalidate user's meeting list cache
     if (redisClient.isOpen) {
       await redisClient.del(`user-meetings:${req.user._id}`);
     }
+
+    try {
+      getIO().to(`user:${req.user._id}`).emit("meetings-updated");
+    } catch {}
+
     res.status(201).json(meeting);
   } catch (error) {
     res.status(500).json({ message: "Error creating meeting" });
+  }
+};
+
+export const endMeeting = async (req, res) => {
+  try {
+    const { code } = req.params;
+
+    const meeting = await Meeting.findOne({ meetingCode: code });
+    if (!meeting) {
+      return res.status(404).json({ message: "Meeting not found" });
+    }
+
+    const hostParticipant = meeting.participants.find((p) => p.role === "host");
+    const isHost =
+      hostParticipant?.user?.toString() === req.user._id.toString() ||
+      meeting.createdBy?.toString() === req.user._id.toString();
+
+    if (!isHost) {
+      return res
+        .status(403)
+        .json({ message: "Only the host can end this meeting" });
+    }
+
+    if (meeting.status !== "ended") {
+      meeting.status = "ended";
+      meeting.endTime = new Date();
+      meeting.participants.forEach((participant) => {
+        if (!participant.leftAt) participant.leftAt = new Date();
+      });
+      await meeting.save();
+    }
+
+    if (redisClient.isOpen) {
+      const userCacheKeys = new Set([
+        `user-meetings:${meeting.createdBy.toString()}`,
+        ...meeting.participants.map(
+          (p) => `user-meetings:${p.user.toString()}`,
+        ),
+      ]);
+      await redisClient.del(`meeting:${code}`);
+      await Promise.all(
+        [...userCacheKeys].map((cacheKey) => redisClient.del(cacheKey)),
+      );
+    }
+
+    try {
+      const io = getIO();
+      const userIds = new Set([
+        meeting.createdBy.toString(),
+        ...meeting.participants.map((p) => p.user.toString()),
+      ]);
+      userIds.forEach((uid) => io.to(`user:${uid}`).emit("meetings-updated"));
+    } catch {}
+
+    try {
+      const io = getIO();
+      io.to(code).emit("meeting-ended", {
+        meetingCode: code,
+        message: "Meeting has ended by host",
+      });
+    } catch {
+      // Socket server not initialized; safely ignore.
+    }
+
+    return res.status(200).json({
+      message: "Meeting ended",
+      meeting,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Error ending meeting" });
   }
 };
 
@@ -72,6 +160,22 @@ export const joinMeeting = async (req, res) => {
     if (meeting.status === "ended")
       return res.status(400).json({ message: "Meeting already ended" });
 
+    const joinerActiveMeeting = await Meeting.findOne({
+      createdBy: req.user._id,
+      status: { $ne: "ended" },
+    });
+
+    if (
+      joinerActiveMeeting &&
+      joinerActiveMeeting.meetingCode !== meetingCode
+    ) {
+      return res.status(403).json({
+        message:
+          "You cannot join other meetings while you have an active meeting of your own.",
+        activeCode: joinerActiveMeeting.meetingCode,
+      });
+    }
+
     const isAlreadyParticipant = meeting.participants.some(
       (p) => p.user.toString() === req.user._id.toString(),
     );
@@ -84,11 +188,16 @@ export const joinMeeting = async (req, res) => {
       });
       await meeting.save();
 
-      // Invalidate relevant caches
       if (redisClient.isOpen) {
         await redisClient.del(`meeting:${meetingCode}`);
         await redisClient.del(`user-meetings:${req.user._id}`);
       }
+
+      try {
+        const io = getIO();
+        io.to(`user:${req.user._id}`).emit("meetings-updated");
+        io.to(`user:${meeting.createdBy.toString()}`).emit("meetings-updated");
+      } catch {}
     }
 
     res.status(200).json(meeting);

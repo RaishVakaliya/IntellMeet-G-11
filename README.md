@@ -1,6 +1,6 @@
 # IntellMeet
 
-MERN stack platform for AI-Powered Enterprise Meeting & Collaboration Platform
+AI-Powered Enterprise Meeting & Collaboration Platform built with the MERN stack.
 
 ## Backend Dependencies
 
@@ -9,7 +9,7 @@ MERN stack platform for AI-Powered Enterprise Meeting & Collaboration Platform
 - **dotenv**: Loads environment variables from a .env file.
 - **cors**: Enables Cross-Origin Resource Sharing.
 - **helmet**: Secures Express apps by setting various HTTP headers.
-- **socket.io**: Enables real-time, bi-directional communication.
+- **socket.io**: Enables real-time, bi-directional communication, chat functionality, and notifications.
 - **bcryptjs**: Used for password hashing.
 - **jsonwebtoken**: For secure stateless authentication.
 - **cookie-parser**: Parses cookie headers to handle refresh tokens.
@@ -20,6 +20,23 @@ MERN stack platform for AI-Powered Enterprise Meeting & Collaboration Platform
 - **nanoid**: Generates short, unique meeting codes.
 - **redis**: In-memory data structures store used for ultra-fast caching.
 - **@socket.io/redis-adapter**: Allows real-time events to work across multiple server instances.
+
+## Frontend Dependencies
+
+- **React 19**: Modern UI library with hooks.
+- **Zustand**: Lightweight and scalable state management.
+- **TanStack Query (v5)**: Efficient server-state management and caching.
+- **Tailwind CSS**: Utility-first styling with modern aesthetics.
+- **shadcn/ui**: High-quality, accessible UI components.
+- **sonner**: Beautiful and customizable toast notifications.
+
+## Features
+
+- **Participants List**: Real-time list of all users in the meeting with host identification.
+- **Meeting History**: Track and view previous meeting data and codes from your dashboard.
+- **Persistent Chat**: In-meeting chat with history powered by Redis and MongoDB.
+- **Secure Auth**: JWT-based authentication with secure cookie-based refresh tokens.
+- **Responsive Grid**: Adaptive video gallery that adjusts to participant count.
 
 ## Setup
 

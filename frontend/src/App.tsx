@@ -1,14 +1,24 @@
+import { useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { LandingPage } from "./pages/LandingPage";
 import { AuthPage } from "./pages/AuthPage";
 import Homepage from "./pages/Homepage";
-import { Toaster } from "sonner";
+import MeetingRoom from "./pages/MeetingRoom";
+import MeetingLobby from "./pages/MeetingLobby";
 import { ProtectedRoute, PublicOnlyRoute } from "./components/ProtectedRoute";
+import { Toaster } from "sonner";
+import { useAuthStore } from "./stores/authStore";
 
 function App() {
+  const hydrateAuth = useAuthStore((state) => state.hydrateAuth);
+
+  useEffect(() => {
+    hydrateAuth();
+  }, [hydrateAuth]);
+
   return (
     <BrowserRouter>
-      <Toaster richColors position="top-right" />
+      <Toaster richColors position="top-center" />
       <Routes>
         <Route
           path="/"
@@ -19,6 +29,7 @@ function App() {
           }
         />
         <Route path="/auth" element={<Navigate to="/auth/signin" replace />} />
+
         <Route
           path="/auth/:mode"
           element={
@@ -27,11 +38,30 @@ function App() {
             </PublicOnlyRoute>
           }
         />
+
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
               <Homepage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/meeting/lobby"
+          element={
+            <ProtectedRoute>
+              <MeetingLobby />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/room/:roomId"
+          element={
+            <ProtectedRoute>
+              <MeetingRoom />
             </ProtectedRoute>
           }
         />

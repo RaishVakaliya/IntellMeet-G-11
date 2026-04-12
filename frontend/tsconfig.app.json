@@ -1,11 +1,8 @@
 {
   "compilerOptions": {
-    "composite": true,
-    "incremental": true,
-    "composite": true,
-    "incremental": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "target": "ES2022",
+    "ignoreDeprecations": "6.0",
+    "target": "es2023",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "esnext",
     "types": ["vite/client"],
@@ -22,6 +19,7 @@
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
 
     "baseUrl": ".",

@@ -31,7 +31,6 @@ import {
   Loader2,
   VideoOff,
 } from "lucide-react";
-import AppLogoImg from "@/assets/AppLogo.png";
 import { Separator } from "@/components/ui/separator";
 
 const MeetingRoom = () => {
@@ -74,7 +73,6 @@ const MeetingRoom = () => {
     },
   });
 
-  // Sync store toggles with WebRTC tracks
   const handleToggleMic = () => {
     const newMutedState = !isMuted;
     toggleMic();
@@ -100,7 +98,6 @@ const MeetingRoom = () => {
     }
   };
 
-  // ── TanStack Query: meeting details (poll every 5s) ───────────
   const { data: meetingDetails, isLoading: meetingLoading } =
     useQuery<MeetingDetails>({
       queryKey: ["meeting-details", roomId],
@@ -109,7 +106,6 @@ const MeetingRoom = () => {
       refetchInterval: 5000,
     });
 
-  // Watch for meeting ended status
   useEffect(() => {
     if (!meetingDetails) return;
     if (meetingDetails.status === "ended" && !hasHandledMeetingEnd.current) {
@@ -120,15 +116,11 @@ const MeetingRoom = () => {
     }
   }, [meetingDetails, leaveMeeting, navigate]);
 
-  // ── Rejoin meeting API on mount (handles page reload) ────────
   useEffect(() => {
     if (!roomId) return;
-    // Silently call joinMeeting to ensure the participant record exists in DB.
-    // Errors (e.g. already joined) are intentionally ignored.
     joinMeeting(roomId).catch(() => {});
   }, [roomId]);
 
-  // ── Socket: existing-users (received when we join a room) ─────
   useEffect(() => {
     const handleExistingUsers = (
       users: {
@@ -148,7 +140,6 @@ const MeetingRoom = () => {
         isScreenSharing: false,
         isActiveSpeaker: false,
       }));
-      // Replace the participant list with the authoritative server list
       setParticipants(mapped);
     };
 
@@ -158,7 +149,6 @@ const MeetingRoom = () => {
     };
   }, [socket, setParticipants]);
 
-  // ── Socket: participant events ───────────────────────────────
   useEffect(() => {
     const handleUserConnected = ({
       userId,
@@ -227,7 +217,6 @@ const MeetingRoom = () => {
     };
   }, [socket, addParticipant, removeParticipant, updateParticipantMedia]);
 
-  // Sync screen share state
   useEffect(() => {
     const handleScreenShareToggled = ({
       userId,
@@ -245,28 +234,25 @@ const MeetingRoom = () => {
     };
   }, [socket, updateParticipantMedia]);
 
-  // ── Leave – only call endMeeting if user is host ──────────────
+  const isHost =
+    meetingDetails?.createdBy?._id === user?._id ||
+    meetingDetails?.participants?.some((p) => {
+      if (p.role !== "host") return false;
+      const participantUserId =
+        typeof p.user === "string" ? p.user : p.user?._id;
+      return participantUserId === user?._id;
+    });
+
   const handleLeave = async () => {
     if (isLeaving) return;
     setIsLeaving(true);
 
-    // Determine if user is the host
-    const isHost =
-      meetingDetails?.createdBy?._id === user?._id ||
-      meetingDetails?.participants?.some(
-        (p) => p.role === "host" && p.user?._id === user?._id,
-      );
-
     if (isHost && roomId) {
-      // Host ends the meeting for everyone
       try {
         await endMeeting(roomId);
         toast.success("Meeting ended for everyone");
-      } catch {
-        // Silently ignore — might already be ended
-      }
+      } catch {}
     }
-    // Everyone: clean up local state and navigate away
     leaveMeeting();
     navigate("/dashboard");
   };
@@ -287,7 +273,6 @@ const MeetingRoom = () => {
     }
   };
 
-  // ── Loading ───────────────────────────────────────────────────
   if (meetingLoading) {
     return (
       <div className="h-screen dark bg-gray-950 flex items-center justify-center">
@@ -301,7 +286,6 @@ const MeetingRoom = () => {
     );
   }
 
-  // ── Meeting ended screen ──────────────────────────────────────
   if (meetingDetails?.status === "ended") {
     return (
       <div className="h-screen dark bg-gray-950 flex items-center justify-center">
@@ -326,20 +310,23 @@ const MeetingRoom = () => {
   return (
     <TooltipProvider>
       <div className="dark h-screen flex flex-col bg-gray-950 text-foreground overflow-hidden">
-        {/* ── Top Bar ───────────────────────────────────────── */}
         <header className="flex items-center justify-between px-5 py-3 bg-gray-900/80 border-b border-white/5 backdrop-blur-xl shrink-0">
-          {/* Logo + title */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <img src={AppLogoImg} alt="IntellMeet" className="h-8 w-auto" />
-            </div>
-
-            <Separator orientation="vertical" />
-
             <div className="hidden sm:flex flex-col">
-              <p className="text-white text-sm font-medium leading-tight">
-                {meetingDetails?.title ?? "Meeting"}
-              </p>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-white text-sm font-medium leading-tight cursor-help">
+                    {meetingDetails?.title ?? "Meeting"}
+                  </p>
+                </TooltipTrigger>
+                {meetingDetails?.description && (
+                  <TooltipContent side="bottom" align="start">
+                    <p className="text-xs max-w-xs">
+                      {meetingDetails.description}
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
               <div className="flex items-center gap-2 text-xs text-gray-400">
                 <span>
                   {participantCount} participant
@@ -371,7 +358,6 @@ const MeetingRoom = () => {
             )}
           </div>
 
-          {/* Sidebar controls */}
           <div className="flex items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -420,12 +406,12 @@ const MeetingRoom = () => {
               onStopScreenShare={handleStopScreenShare}
               onToggleMic={handleToggleMic}
               onToggleCamera={handleToggleCamera}
+              isHost={Boolean(isHost)}
             />
           </div>
 
           {isSidebarOpen && (
             <div className="w-80 flex flex-col border-l border-white/5 bg-gray-900/60 shrink-0">
-              {/* Tabs */}
               <div className="flex border-b border-white/5 shrink-0">
                 {[
                   { id: "chat", label: "chat" },

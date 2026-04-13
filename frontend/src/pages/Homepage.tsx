@@ -31,6 +31,7 @@ import {
   Loader2,
   VideoOff,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useSocket } from "@/hooks/useSocket";
@@ -84,6 +85,8 @@ const Homepage = () => {
   );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [meetingTitle, setMeetingTitle] = useState("");
+  const [meetingDescription, setMeetingDescription] = useState("");
   const joinInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -115,8 +118,14 @@ const Homepage = () => {
   }, [socket, qc]);
 
   const createMutation = useMutation({
-    mutationFn: ({ title }: { title: string; instant: boolean }) =>
-      createMeeting(title),
+    mutationFn: ({
+      title,
+      description,
+    }: {
+      title: string;
+      description?: string;
+      instant: boolean;
+    }) => createMeeting(title, description),
     onSuccess: (meeting, { instant }) => {
       qc.invalidateQueries({ queryKey: ["my-meetings"] });
       if (instant) {
@@ -130,12 +139,19 @@ const Homepage = () => {
   });
 
   const handleCreateMeeting = (instant = false) => {
-    const title = user ? `${user.username}'s Meeting` : "Instant Meeting";
-    createMutation.mutate({ title, instant });
+    const title =
+      meetingTitle.trim() ||
+      (user ? `${user.username}'s Meeting` : "Instant Meeting");
+    const description = meetingDescription.trim() || undefined;
+    createMutation.mutate({ title, description, instant });
   };
 
-  const handleJoinMeeting = async (codeOverride?: string | React.MouseEvent) => {
-    const code = (typeof codeOverride === "string" ? codeOverride : joinCode).trim();
+  const handleJoinMeeting = async (
+    codeOverride?: string | React.MouseEvent,
+  ) => {
+    const code = (
+      typeof codeOverride === "string" ? codeOverride : joinCode
+    ).trim();
     if (!code) {
       toast.error("Enter a meeting code");
       joinInputRef.current?.focus();
@@ -144,7 +160,6 @@ const Homepage = () => {
     setIsJoining(true);
 
     try {
-      // Validate meeting and user state before navigating
       await joinMeeting(code);
       navigate(`/room/${code}`);
     } catch (e: any) {
@@ -181,7 +196,6 @@ const Homepage = () => {
       <AppNavbar />
 
       <main className="max-w-5xl mx-auto px-6 py-12 space-y-10">
-        {/* Welcome */}
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
             Welcome back, <span className="text-teal-600">{user.username}</span>{" "}
@@ -192,73 +206,112 @@ const Homepage = () => {
           </p>
         </div>
 
-        {/* Action Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-5 bg-slate-50 rounded-2xl border border-slate-200">
-          <div className="flex shrink-0">
-            <Button
-              onClick={() => handleCreateMeeting(true)}
-              disabled={isCreating}
-              className="text-white rounded-r-none border-r h-10 px-4 gap-2 font-medium"
-            >
-              {isCreating ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Plus className="w-4 h-4" />
-              )}
-              New meeting
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+        <section className="bg-slate-50/80 backdrop-blur-sm rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div className="px-6 py-4 border-b border-slate-200/60 bg-white/40">
+            <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-teal-600" />
+              Prepare Meeting
+            </h2>
+          </div>
+
+          <div className="p-6 space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                  Meeting Title
+                </label>
+                <Input
+                  placeholder={`Enter title (Default: ${user.username}'s Meeting)`}
+                  value={meetingTitle}
+                  onChange={(e) => setMeetingTitle(e.target.value)}
+                  className="h-11 bg-white border-slate-200 text-sm focus:ring-teal-500/20 rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+                  Meeting Description
+                </label>
+                <Input
+                  placeholder="What is this meeting about? (Optional)"
+                  value={meetingDescription}
+                  onChange={(e) => setMeetingDescription(e.target.value)}
+                  className="h-11 bg-white border-slate-200 text-sm focus:ring-teal-500/20 rounded-xl"
+                />
+              </div>
+            </div>
+
+            <Separator className="bg-slate-200/60" />
+
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
+              <div className="flex shrink-0 shadow-sm rounded-xl overflow-hidden">
                 <Button
-                  disabled={isCreating}
-                  className="text-white rounded-l-none h-10 px-2.5"
-                >
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-52">
-                <DropdownMenuItem
-                  className="gap-2 cursor-pointer"
-                  onClick={() => handleCreateMeeting(false)}
-                >
-                  <Link2 className="w-4 h-4 text-slate-400" />
-                  Get a meeting link
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="gap-2 cursor-pointer"
                   onClick={() => handleCreateMeeting(true)}
+                  disabled={isCreating}
+                  className="text-white rounded-r-none border-r h-10 px-4 gap-2 font-medium"
                 >
-                  <Video className="w-4 h-4 text-slate-400" />
-                  Start an instant meeting
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  {isCreating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Plus className="w-5 h-5" />
+                  )}
+                  New Meeting
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      disabled={isCreating}
+                      className="text-white rounded-l-none h-10 px-2.5"
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-52">
+                    <DropdownMenuItem
+                      className="gap-2 cursor-pointer"
+                      onClick={() => handleCreateMeeting(false)}
+                    >
+                      <Link2 className="w-4 h-4 text-slate-400" />
+                      Get a meeting link
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="gap-2 cursor-pointer"
+                      onClick={() => handleCreateMeeting(true)}
+                    >
+                      <Video className="w-4 h-4 text-slate-400" />
+                      Start an instant meeting
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              <Separator
+                orientation="vertical"
+                className="h-8 hidden sm:block"
+              />
+
+              <div className="flex flex-1 gap-2">
+                <Input
+                  ref={joinInputRef}
+                  placeholder="Enter a code or link"
+                  value={joinCode}
+                  onChange={(e) => setJoinCode(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleJoinMeeting()}
+                  className="h-10 bg-white border-slate-200 text-sm"
+                />
+                <Button
+                  onClick={handleJoinMeeting}
+                  disabled={!joinCode.trim() || isJoining}
+                  variant="outline"
+                  className="h-10 px-4 shrink-0 border-slate-300 text-slate-700 hover:bg-slate-100 gap-1"
+                >
+                  Join
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </div>
           </div>
+        </section>
 
-          <Separator orientation="vertical" className="h-8 hidden sm:block" />
-
-          <div className="flex flex-1 gap-2">
-            <Input
-              ref={joinInputRef}
-              placeholder="Enter a code or link"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleJoinMeeting()}
-              className="h-10 bg-white border-slate-200 text-sm"
-            />
-            <Button
-              onClick={handleJoinMeeting}
-              disabled={!joinCode.trim() || isJoining}
-              variant="outline"
-              className="h-10 px-4 shrink-0 border-slate-300 text-slate-700 hover:bg-slate-100 gap-1"
-            >
-              Join
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Meetings list */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-slate-800 text-base">
@@ -284,7 +337,6 @@ const Homepage = () => {
           </div>
 
           {meetingsLoading ? (
-            // Loading skeletons
             <div className="space-y-2">
               {[...Array(3)].map((_, i) => (
                 <div
@@ -349,7 +401,6 @@ const Homepage = () => {
                             Host
                           </Badge>
                         )}
-                        {/* Status badge with live dot for ongoing */}
                         <Badge
                           variant="outline"
                           className={`text-xs py-0 h-5 flex items-center gap-1 ${cfg.class}`}
@@ -393,7 +444,6 @@ const Homepage = () => {
           )}
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-4">
           {[
             {
@@ -434,7 +484,6 @@ const Homepage = () => {
         </div>
       </main>
 
-      {/* Meeting Created dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>

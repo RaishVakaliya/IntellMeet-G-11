@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
+import { getMyMeetings } from "@/services/meetingService";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -10,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, LogOut } from "lucide-react";
+import { toast } from "sonner";
 import AppLogoImg from "@/assets/AppLogo.png";
 
 const getInitials = (name: string) =>
@@ -23,10 +26,49 @@ const getInitials = (name: string) =>
 export const AppNavbar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const [isCheckingLogout, setIsCheckingLogout] = useState(false);
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/auth/signin", { replace: true });
+    if (!user || isCheckingLogout) return;
+    setIsCheckingLogout(true);
+    try {
+      const meetings = await getMyMeetings();
+      const hostActiveMeeting = meetings.find((meeting) => {
+        const isActive = meeting.status !== "ended";
+        const createdByMatches =
+          meeting.createdBy?._id === user._id ||
+          (!!user.email && meeting.createdBy?.email === user.email);
+        const hostParticipantMatches = meeting.participants.some(
+          (participant) => {
+            if (participant.role !== "host") return false;
+            const participantUserId =
+              typeof participant.user === "string"
+                ? participant.user
+                : participant.user?._id;
+            return participantUserId === user._id;
+          },
+        );
+
+        return isActive && (createdByMatches || hostParticipantMatches);
+      });
+
+      if (hostActiveMeeting) {
+        toast.error("End your active hosted meeting before logging out.", {
+          action: {
+            label: "Go to meeting",
+            onClick: () => navigate(`/room/${hostActiveMeeting.meetingCode}`),
+          },
+        });
+        return;
+      }
+
+      await logout();
+      navigate("/auth/signin", { replace: true });
+    } catch {
+      toast.error("Could not verify ongoing meetings. Please try again.");
+    } finally {
+      setIsCheckingLogout(false);
+    }
   };
 
   if (!user) return null;
@@ -38,7 +80,11 @@ export const AppNavbar = () => {
           className="flex items-center gap-2.5 cursor-pointer select-none"
           onClick={() => navigate("/dashboard")}
         >
-          <img src={AppLogoImg} alt="IntellMeet" className="h-18 w-auto" />
+          <img
+            src={AppLogoImg}
+            alt="IntellMeet"
+            className="h-18 w-auto object-contain"
+          />
         </div>
 
         <DropdownMenu>
@@ -74,9 +120,11 @@ export const AppNavbar = () => {
             <DropdownMenuSeparator className="bg-slate-100" />
             <DropdownMenuItem
               onClick={handleLogout}
+              disabled={isCheckingLogout}
               className="mt-1 text-rose-600 focus:text-rose-600 focus:bg-rose-50 gap-2 cursor-pointer py-2.5 rounded-xl font-semibold text-xs"
             >
-              <LogOut className="w-4 h-4" /> Sign out
+              <LogOut className="w-4 h-4" />
+              {isCheckingLogout ? "Checking..." : "Sign out"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

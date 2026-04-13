@@ -3,7 +3,9 @@ import { apiFetch } from "@/lib/apiFetch";
 type ApiError = Error & { status?: number };
 
 export type MeetingParticipantRecord = {
-  user: { _id: string; name: string; email: string; avatar?: string };
+  user:
+    | string
+    | { _id: string; name: string; email: string; avatar?: string };
   role: string;
   leftAt?: string | null;
 };
@@ -11,6 +13,7 @@ export type MeetingParticipantRecord = {
 export interface MeetingData {
   _id: string;
   title: string;
+  description?: string;
   meetingCode: string;
   status: "scheduled" | "ongoing" | "ended";
   createdAt: string;
@@ -37,14 +40,19 @@ const createApiError = (status: number, message: string) => {
   return error;
 };
 
-export const createMeeting = async (title: string): Promise<MeetingData> => {
+export const createMeeting = async (
+  title: string,
+  description?: string,
+): Promise<MeetingData> => {
   const res = await apiFetch("/api/meetings/create", {
     method: "POST",
-    body: JSON.stringify({ title, startTime: new Date() }),
+    body: JSON.stringify({ title, description, startTime: new Date() }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    const error = new Error(err.message || "Failed to create meeting") as ApiError;
+    const error = new Error(
+      err.message || "Failed to create meeting",
+    ) as ApiError;
     error.status = res.status;
     if (err.activeCode) {
       (error as any).activeCode = err.activeCode;
@@ -54,7 +62,9 @@ export const createMeeting = async (title: string): Promise<MeetingData> => {
   return res.json();
 };
 
-export const joinMeeting = async (meetingCode: string): Promise<MeetingData> => {
+export const joinMeeting = async (
+  meetingCode: string,
+): Promise<MeetingData> => {
   const res = await apiFetch("/api/meetings/join", {
     method: "POST",
     body: JSON.stringify({ meetingCode }),
@@ -83,12 +93,17 @@ export const getMeetingDetails = async (
   const res = await apiFetch(`/api/meetings/${meetingCode}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw createApiError(res.status, err.message || "Failed to fetch meeting details");
+    throw createApiError(
+      res.status,
+      err.message || "Failed to fetch meeting details",
+    );
   }
   return res.json();
 };
 
-export const endMeeting = async (meetingCode: string): Promise<MeetingDetails> => {
+export const endMeeting = async (
+  meetingCode: string,
+): Promise<MeetingDetails> => {
   const res = await apiFetch(`/api/meetings/${meetingCode}/end`, {
     method: "PATCH",
   });

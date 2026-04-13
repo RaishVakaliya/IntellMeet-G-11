@@ -10,6 +10,7 @@ export const useMeetingStore = create<MeetingState>((set) => ({
   isChatOpen: true,
   participants: [],
   messages: [],
+  typingUsers: [],
   localStream: null,
 
   setMeeting: (id) => set({ meetingId: id, roomId: id }),
@@ -76,6 +77,16 @@ export const useMeetingStore = create<MeetingState>((set) => ({
     })),
 
   setLocalStream: (stream) => set({ localStream: stream }),
+  setTypingUser: (user) =>
+    set((s) => ({
+      typingUsers: s.typingUsers.some((u) => u.id === user.id)
+        ? s.typingUsers
+        : [...s.typingUsers, user],
+    })),
+  removeTypingUser: (id) =>
+    set((s) => ({
+      typingUsers: s.typingUsers.filter((u) => u.id !== id),
+    })),
 
   leaveMeeting: () =>
     set({
@@ -86,6 +97,7 @@ export const useMeetingStore = create<MeetingState>((set) => ({
       isScreenSharing: false,
       participants: [],
       messages: [],
+      typingUsers: [],
       localStream: null,
     }),
 
@@ -98,6 +110,7 @@ export const useMeetingStore = create<MeetingState>((set) => ({
       isScreenSharing: false,
       participants: [],
       messages: [],
+      typingUsers: [],
       localStream: null,
     }),
 }));

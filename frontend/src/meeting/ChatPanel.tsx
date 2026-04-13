@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useMeetingStore } from "@/stores/meetingStore";
 import { useAuthStore } from "@/stores/authStore";
@@ -25,9 +25,17 @@ const formatTime = (d: Date | string) => {
 
 const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
   const { user } = useAuthStore();
-  const { messages, sendMessage, isChatOpen } = useMeetingStore();
+  const {
+    messages,
+    sendMessage,
+    isChatOpen,
+    typingUsers,
+    setTypingUser,
+    removeTypingUser,
+  } = useMeetingStore();
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: history, isLoading } = useQuery<ApiChatMessage[]>({
     queryKey: ["chat-history", meetingCode],
@@ -36,6 +44,30 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
     staleTime: 60_000,
   });
 
+  const allMessages = useMemo(() => {
+    const historical = (history || []).map((h) => ({
+      id: h._id,
+      senderId: h.sender._id,
+      senderName: h.sender.name,
+      text: h.content,
+      timestamp: new Date(h.timestamp),
+    }));
+
+    const realtime = messages.filter((m) => {
+      return !historical.some(
+        (h) =>
+          h.text === m.text &&
+          h.senderId === m.senderId &&
+          Math.abs(h.timestamp.getTime() - new Date(m.timestamp).getTime()) <
+            5000,
+      );
+    });
+
+    return [...historical, ...realtime].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    );
+  }, [history, messages]);
+
   useEffect(() => {
     const handleNewMessage = (msg: {
       content: string;
@@ -43,13 +75,39 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
       timestamp: string;
     }) => {
       sendMessage(msg.content, msg.sender.name, msg.sender._id);
+      removeTypingUser(msg.sender._id); // Stop typing when message received
+    };
+
+    const handleUserTyping = ({
+      userId,
+      userName,
+    }: {
+      userId: string;
+      userName: string;
+    }) => {
+      setTypingUser({ id: userId, name: userName });
+    };
+
+    const handleUserStopTyping = ({ userId }: { userId: string }) => {
+      removeTypingUser(userId);
+    };
+
+    const handleUserDisconnected = (userId: string) => {
+      removeTypingUser(userId);
     };
 
     socket.on("new-message", handleNewMessage);
+    socket.on("user-typing", handleUserTyping);
+    socket.on("user-stop-typing", handleUserStopTyping);
+    socket.on("user-disconnected", handleUserDisconnected);
+
     return () => {
       socket.off("new-message", handleNewMessage);
+      socket.off("user-typing", handleUserTyping);
+      socket.off("user-stop-typing", handleUserStopTyping);
+      socket.off("user-disconnected", handleUserDisconnected);
     };
-  }, [socket, user, sendMessage]);
+  }, [socket, user, sendMessage, setTypingUser, removeTypingUser]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -67,7 +125,32 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
       senderAvatar: "",
     });
 
+    socket.emit("stop-typing", { meetingCode, userId: user._id });
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
     setInput("");
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInput(value);
+
+    if (!user) return;
+
+    if (value.trim()) {
+      socket.emit("typing", {
+        meetingCode,
+        userId: user._id,
+        userName: user.username,
+      });
+
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit("stop-typing", { meetingCode, userId: user._id });
+      }, 1000);
+    } else {
+      socket.emit("stop-typing", { meetingCode, userId: user._id });
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -95,20 +178,20 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
           </div>
         ) : (
           <>
-            {history?.map((msg) => {
-              const isMe = msg.sender._id === user?._id;
+            {allMessages.map((msg) => {
+              const isMe = msg.senderId === user?._id;
               return (
                 <MessageBubble
-                  key={msg._id}
-                  name={msg.sender.name}
-                  text={msg.content}
+                  key={msg.id}
+                  name={msg.senderName}
+                  text={msg.text}
                   time={msg.timestamp}
                   isMe={isMe}
                 />
               );
             })}
 
-            {(!history || history.length === 0) && messages.length === 0 && (
+            {allMessages.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
                 <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
                   <MessageSquare className="w-6 h-6 text-gray-500" />
@@ -121,29 +204,25 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
                 </p>
               </div>
             )}
-
-            {messages.map((msg) => {
-              const isMe = msg.senderId === user?._id;
-              return (
-                <MessageBubble
-                  key={msg.id}
-                  name={msg.senderName}
-                  text={msg.text}
-                  time={msg.timestamp}
-                  isMe={isMe}
-                />
-              );
-            })}
           </>
         )}
         <div ref={bottomRef} />
       </div>
 
       <div className="px-3 py-3 border-t border-white/5 bg-gray-900/40">
+        <div className="h-4 mb-1">
+          {typingUsers.length > 0 && (
+            <p className="text-[10px] text-emerald-400 font-medium animate-pulse italic">
+              {typingUsers.length === 1
+                ? `${typingUsers[0].name} is typing...`
+                : `${typingUsers.map((u) => u.name).join(", ")} are typing...`}
+            </p>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <Input
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder="Send a message..."
             className="flex-1 bg-white/5 border-white/10 text-sm h-9 rounded-xl focus-visible:ring-emerald-500/30"
@@ -191,7 +270,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     )}
     <div
       className={cn(
-        "max-w-[85%] rounded-2xl px-3 py-2 text-sm break-words break-all whitespace-pre-wrap",
+        "max-w-[85%] rounded-2xl px-3 py-2 text-sm wrap-break-words break-all whitespace-pre-wrap",
         isMe
           ? "bg-emerald-600/80 text-white rounded-br-sm"
           : "bg-white/8 text-gray-100 rounded-bl-sm border border-white/5",

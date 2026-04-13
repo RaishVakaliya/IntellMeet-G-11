@@ -27,6 +27,7 @@ export type MeetingState = {
   isChatOpen: boolean;
   participants: Participant[];
   messages: ChatMessage[];
+  typingUsers: { id: string; name: string }[];
   localStream: MediaStream | null;
 
   //Actions
@@ -51,6 +52,8 @@ export type MeetingState = {
     },
   ) => void;
   setLocalStream: (stream: MediaStream | null) => void;
+  setTypingUser: (user: { id: string; name: string }) => void;
+  removeTypingUser: (id: string) => void;
   leaveMeeting: () => void;
   leaveRoom: () => void;
 };

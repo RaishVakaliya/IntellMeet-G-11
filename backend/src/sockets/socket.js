@@ -146,6 +146,12 @@ export const initializeSocket = async (httpServer) => {
         }
       },
     );
+    socket.on("typing", ({ meetingCode, userId, userName }) => {
+      socket.to(meetingCode).emit("user-typing", { userId, userName });
+    });
+    socket.on("stop-typing", ({ meetingCode, userId }) => {
+      socket.to(meetingCode).emit("user-stop-typing", { userId });
+    });
 
     socket.on("offer", (payload) =>
       io.to(payload.target).emit("offer", payload),

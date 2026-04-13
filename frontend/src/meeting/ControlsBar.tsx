@@ -23,6 +23,7 @@ interface ControlsBarProps {
   onStopScreenShare?: () => void;
   onToggleMic?: () => void;
   onToggleCamera?: () => void;
+  isHost?: boolean;
   className?: string;
 }
 
@@ -32,6 +33,7 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
   onStopScreenShare,
   onToggleMic,
   onToggleCamera,
+  isHost,
   className,
 }) => {
   const {
@@ -149,14 +151,16 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
               className="rounded-xl bg-red-600 hover:bg-red-700 text-white px-4 h-11"
             >
               <PhoneOff className="w-4 h-4 mr-1.5" />
-              <span className="font-semibold">Leave</span>
+              <span className="font-semibold">
+                {isHost ? "End Meeting" : "Leave"}
+              </span>
             </Button>
           </TooltipTrigger>
           <TooltipContent
             side="top"
             className="bg-red-600 text-white border-none"
           >
-            Leave meeting
+            {isHost ? "End meeting for everyone" : "Leave meeting"}
           </TooltipContent>
         </Tooltip>
       </div>

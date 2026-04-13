@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { ArrowRight, Mail } from "lucide-react";
+import "./AuthPage.css";
 import { toast } from "sonner";
 import { useAuthStore } from "../stores/authStore";
 import AppLogoImg from "../assets/AppLogo.png";
@@ -142,28 +143,76 @@ export const AuthPage = () => {
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white">
-      <div className="flex flex-col justify-center px-12 lg:px-24 bg-[#0a192f] text-white relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,var(--color-primary)_0%,transparent_60%)] opacity-[0.05] pointer-events-none" />
+      <div className="flex flex-col justify-center px-12 lg:px-24 auth-left-column text-white relative overflow-hidden">
+        <div className="auth-orbits-container">
+          <div className="orbit-ring orbit-ring-1">
+            <div className="orbit-dot orbit-dot-1" />
+          </div>
+          <div className="orbit-ring orbit-ring-2">
+            <div className="orbit-dot orbit-dot-2-top" />
+            <div className="orbit-dot orbit-dot-2-bottom" />
+          </div>
+          <div className="orbit-ring orbit-ring-3">
+            <div className="orbit-dot orbit-dot-3-top" />
+            <div className="absolute top-[25%] right-[-4px] w-[6px] h-[6px] rounded-full bg-[#10b981]/40" />
+          </div>
+          <div className="center-glow-dot" />
+        </div>
+
+        <svg
+          className="auth-wave auth-wave-3"
+          viewBox="0 0 800 80"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0,40 C100,10 200,70 300,40 C400,10 500,70 600,40 C700,10 750,60 800,40 L800,80 L0,80 Z"
+            fill="#10b981"
+          />
+        </svg>
+        <svg
+          className="auth-wave auth-wave-2"
+          viewBox="0 0 800 80"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0,50 C120,20 240,70 360,45 C480,20 600,65 800,35 L800,80 L0,80 Z"
+            fill="#10b981"
+          />
+        </svg>
+
+        <svg
+          className="auth-wave auth-wave-1"
+          viewBox="0 0 800 80"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0,30 C80,60 200,10 320,40 C440,70 560,15 700,45 C740,55 770,50 800,40 L800,80 L0,80 Z"
+            fill="#10b981"
+          />
+        </svg>
 
         <Link
           to="/"
-          className="flex items-center gap-3 mb-16 hover:opacity-80 transition-opacity"
+          className="flex items-center select-none gap-3 mb-4 hover:opacity-80 transition-opacity auth-content-zIndex"
         >
-          <img src={AppLogoImg} alt="IntellMeet" className="h-20 w-auto" />
+          <img src={AppLogoImg} alt="IntellMeet" className="h-24 w-auto" />
         </Link>
 
-        <div className="max-w-md">
-          <div className="space-y-1 mb-8">
-            <h1 className="text-7xl font-bold leading-[1.1] tracking-tighter">
+        <div className="max-w-md auth-content-zIndex">
+          <div className="space-y-1 mb-8 slogan-font">
+            <h1 className="text-7xl font-extrabold leading-[1.1] tracking-tighter">
               Meet
             </h1>
-            <h1 className="text-7xl font-bold leading-[1.1] tracking-tighter">
+            <h1 className="text-7xl font-extrabold leading-[1.1] tracking-tighter">
               smarter.
             </h1>
-            <h1 className="text-7xl font-bold leading-[1.1] tracking-tighter text-[#10b981]">
+            <h1 className="text-7xl font-extrabold leading-[1.1] tracking-tighter text-[#10b981]">
               Think
             </h1>
-            <h1 className="text-7xl font-bold leading-[1.1] tracking-tighter text-[#10b981]">
+            <h1 className="text-7xl font-extrabold leading-[1.1] tracking-tighter text-[#10b981]">
               together.
             </h1>
           </div>

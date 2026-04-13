@@ -2,7 +2,6 @@ import React from "react";
 import { useMeetingStore } from "@/stores/meetingStore";
 import VideoTile from "./VideoTile";
 import { useAuthStore } from "@/stores/authStore";
-import { Users } from "lucide-react";
 
 interface VideoGridProps {
   localVideoRef: React.RefObject<HTMLVideoElement | null>;
@@ -42,9 +41,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({
         </div>
 
         <div className="flex flex-col items-center gap-3 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-            <Users className="w-7 h-7 text-gray-400" />
-          </div>
           <p className="text-gray-300 font-medium">
             Waiting for others to join
           </p>

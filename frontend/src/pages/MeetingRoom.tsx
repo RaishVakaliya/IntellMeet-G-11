@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMeetingStore } from "@/stores/meetingStore";
 import {
   endMeeting,
@@ -25,7 +25,6 @@ import {
 import {
   Copy,
   Check,
-  Users,
   ChevronRight,
   ChevronLeft,
   Loader2,
@@ -41,7 +40,6 @@ const MeetingRoom = () => {
     leaveMeeting,
     addParticipant,
     removeParticipant,
-    setParticipants,
     isMuted,
     isCameraOff,
     participants,
@@ -49,8 +47,11 @@ const MeetingRoom = () => {
     toggleCamera,
     updateParticipantStream,
     updateParticipantMedia,
+    addOnlineUser,
+    removeOnlineUser,
   } = useMeetingStore();
 
+  const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<"chat" | "participants">("chat");
@@ -64,6 +65,7 @@ const MeetingRoom = () => {
     toggleCameraTrack,
     startScreenShare,
     stopScreenShare,
+    startLocalMedia,
     registerRemoteVideoRef,
   } = useWebRTC({
     meetingCode: roomId!,
@@ -73,26 +75,41 @@ const MeetingRoom = () => {
     },
   });
 
-  const handleToggleMic = () => {
+  const handleToggleMic = async () => {
+    if (!useMeetingStore.getState().localStream) {
+      try {
+        await startLocalMedia();
+      } catch {
+        toast.error("Could not access microphone.");
+        return;
+      }
+    }
     const newMutedState = !isMuted;
     toggleMic();
-    toggleMicTrack(newMutedState);
+    toggleMicTrack(!newMutedState);
     if (socket.connected) {
       socket.emit("toggle-audio", {
         meetingCode: roomId,
-        userId: socket.id,
         isMuted: newMutedState,
       });
     }
   };
-  const handleToggleCamera = () => {
+
+  const handleToggleCamera = async () => {
+    if (!useMeetingStore.getState().localStream) {
+      try {
+        await startLocalMedia();
+      } catch {
+        toast.error("Could not access camera. Please check permissions.");
+        return;
+      }
+    }
     const newCameraState = !isCameraOff;
     toggleCamera();
-    toggleCameraTrack(newCameraState);
+    toggleCameraTrack(!newCameraState);
     if (socket.connected) {
       socket.emit("toggle-video", {
         meetingCode: roomId,
-        userId: socket.id,
         isCameraOff: newCameraState,
       });
     }
@@ -118,84 +135,111 @@ const MeetingRoom = () => {
 
   useEffect(() => {
     if (!roomId) return;
-    joinMeeting(roomId).catch(() => {});
-  }, [roomId]);
+    joinMeeting(roomId)
+      .then(() => {
+        queryClient.invalidateQueries({
+          queryKey: ["meeting-details", roomId],
+        });
+      })
+      .catch(() => {});
+  }, [roomId, queryClient]);
 
   useEffect(() => {
     const handleExistingUsers = (
       users: {
-        userId: string;
+        socketId: string;
+        dbUserId: string;
         userName: string;
-        dbUserId?: string;
         isMuted: boolean;
         isCameraOff: boolean;
+        isScreenSharing: boolean;
       }[],
     ) => {
-      const mapped = users.map((u) => ({
-        id: u.userId,
-        dbUserId: u.dbUserId,
-        name: u.userName,
-        isMuted: u.isMuted,
-        isCameraOff: u.isCameraOff,
-        isScreenSharing: false,
-        isActiveSpeaker: false,
-      }));
-      setParticipants(mapped);
+      users.forEach((u) => {
+        if (u.dbUserId === user?._id) return;
+
+        addParticipant({
+          id: u.dbUserId,
+          socketId: u.socketId,
+          name: u.userName,
+          isMuted: u.isMuted,
+          isCameraOff: u.isCameraOff,
+          isScreenSharing: u.isScreenSharing,
+          isActiveSpeaker: false,
+        });
+
+        // Mark as online
+        addOnlineUser(u.dbUserId);
+      });
+
+      if (socket.connected && roomId) {
+        const { isMuted: localMuted, isCameraOff: localCameraOff } =
+          useMeetingStore.getState();
+        socket.emit("sync-media-state", {
+          meetingCode: roomId,
+          isMuted: localMuted,
+          isCameraOff: localCameraOff,
+        });
+      }
     };
 
     socket.on("existing-users", handleExistingUsers);
     return () => {
       socket.off("existing-users", handleExistingUsers);
     };
-  }, [socket, setParticipants]);
+  }, [socket, addParticipant, addOnlineUser, user, roomId]);
 
   useEffect(() => {
     const handleUserConnected = ({
-      userId,
-      userName,
+      socketId,
       dbUserId,
+      userName,
       isMuted,
       isCameraOff,
+      isScreenSharing,
     }: {
-      userId: string;
-      userName: string;
+      socketId: string;
       dbUserId: string;
+      userName: string;
       isMuted: boolean;
       isCameraOff: boolean;
+      isScreenSharing: boolean;
     }) => {
       addParticipant({
-        id: userId,
-        dbUserId,
+        id: dbUserId,
+        socketId,
         name: userName,
         isMuted,
         isCameraOff,
-        isScreenSharing: false,
+        isScreenSharing,
         isActiveSpeaker: false,
       });
+      addOnlineUser(dbUserId);
     };
 
-    const handleUserDisconnected = (userId: string) => {
-      removeParticipant(userId);
+    const handleUserDisconnected = ({ dbUserId }: { dbUserId: string }) => {
+      removeParticipant(dbUserId);
+      removeOnlineUser(dbUserId);
     };
 
     const handleAudioToggled = ({
-      userId,
+      dbUserId,
       isMuted,
     }: {
-      userId: string;
+      dbUserId: string;
       isMuted: boolean;
     }) => {
-      updateParticipantMedia(userId, { isMuted });
+      updateParticipantMedia(dbUserId, { isMuted });
     };
 
     const handleVideoToggled = ({
-      userId,
+      dbUserId,
       isCameraOff,
     }: {
-      userId: string;
+      dbUserId: string;
       isCameraOff: boolean;
     }) => {
-      updateParticipantMedia(userId, { isCameraOff });
+      updateParticipantMedia(dbUserId, { isCameraOff });
     };
 
     const handleNotification = (msg: string) => {
@@ -215,17 +259,24 @@ const MeetingRoom = () => {
       socket.off("participant-video-toggled", handleVideoToggled);
       socket.off("notification", handleNotification);
     };
-  }, [socket, addParticipant, removeParticipant, updateParticipantMedia]);
+  }, [
+    socket,
+    addParticipant,
+    removeParticipant,
+    updateParticipantMedia,
+    addOnlineUser,
+    removeOnlineUser,
+  ]);
 
   useEffect(() => {
     const handleScreenShareToggled = ({
-      userId,
+      dbUserId,
       isScreenSharing,
     }: {
-      userId: string;
+      dbUserId: string;
       isScreenSharing: boolean;
     }) => {
-      updateParticipantMedia(userId, { isScreenSharing });
+      updateParticipantMedia(dbUserId, { isScreenSharing });
     };
 
     socket.on("participant-screen-share-toggled", handleScreenShareToggled);
@@ -233,6 +284,47 @@ const MeetingRoom = () => {
       socket.off("participant-screen-share-toggled", handleScreenShareToggled);
     };
   }, [socket, updateParticipantMedia]);
+
+  useEffect(() => {
+    const handleMediaSync = ({
+      dbUserId,
+      isMuted,
+      isCameraOff,
+      isScreenSharing,
+    }: {
+      dbUserId: string;
+      isMuted: boolean;
+      isCameraOff: boolean;
+      isScreenSharing: boolean;
+    }) => {
+      updateParticipantMedia(dbUserId, {
+        isMuted,
+        isCameraOff,
+        isScreenSharing,
+      });
+    };
+
+    socket.on("participant-media-sync", handleMediaSync);
+    return () => {
+      socket.off("participant-media-sync", handleMediaSync);
+    };
+  }, [socket, updateParticipantMedia]);
+
+  useEffect(() => {
+    const handleOnline = ({ dbUserId }: { dbUserId: string }) => {
+      addOnlineUser(dbUserId);
+    };
+    const handleOffline = ({ dbUserId }: { dbUserId: string }) => {
+      removeOnlineUser(dbUserId);
+    };
+
+    socket.on("user-online", handleOnline);
+    socket.on("user-offline", handleOffline);
+    return () => {
+      socket.off("user-online", handleOnline);
+      socket.off("user-offline", handleOffline);
+    };
+  }, [socket, addOnlineUser, removeOnlineUser]);
 
   const isHost =
     meetingDetails?.createdBy?._id === user?._id ||
@@ -277,10 +369,10 @@ const MeetingRoom = () => {
     return (
       <div className="h-screen dark bg-gray-950 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
           </div>
-          <p className="text-gray-400 text-sm">Joining meeting...</p>
+          <p className="text-muted-foreground text-sm">Joining meeting...</p>
         </div>
       </div>
     );
@@ -290,13 +382,13 @@ const MeetingRoom = () => {
     return (
       <div className="h-screen dark bg-gray-950 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-            <VideoOff className="w-8 h-8 text-red-400" />
+          <div className="w-16 h-16 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center">
+            <VideoOff className="w-8 h-8 text-destructive" />
           </div>
           <p className="text-white font-semibold text-lg">Meeting has ended</p>
           <button
             onClick={() => navigate("/dashboard")}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-xl text-white text-sm transition-colors"
+            className="px-4 py-2 bg-primary hover:bg-primary/90 rounded-xl text-primary-foreground text-sm transition-colors"
           >
             Go back to dashboard
           </button>
@@ -309,8 +401,8 @@ const MeetingRoom = () => {
 
   return (
     <TooltipProvider>
-      <div className="dark h-screen flex flex-col bg-gray-950 text-foreground overflow-hidden">
-        <header className="flex items-center justify-between px-5 py-3 bg-gray-900/80 border-b border-white/5 backdrop-blur-xl shrink-0">
+      <div className="dark h-screen flex flex-col bg-background/95 text-foreground overflow-hidden">
+        <header className="flex items-center justify-between px-5 py-3 bg-primary/5 border-b border-white/5 backdrop-blur-xl shrink-0">
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex flex-col">
               <Tooltip>
@@ -327,11 +419,22 @@ const MeetingRoom = () => {
                   </TooltipContent>
                 )}
               </Tooltip>
-              <div className="flex items-center gap-2 text-xs text-gray-400">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>
                   {participantCount} participant
                   {participantCount !== 1 ? "s" : ""}
                 </span>
+                {meetingDetails?.status === "ongoing" && (
+                  <>
+                    <span className="w-1 h-1 rounded-full bg-border" />
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                      <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
+                        Live
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -341,15 +444,15 @@ const MeetingRoom = () => {
                 <TooltipTrigger asChild>
                   <button
                     onClick={copyCode}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 border border-border rounded-xl hover:bg-muted/50 transition-all"
                   >
-                    <span className="font-mono text-xs text-gray-300 tracking-wider">
+                    <span className="font-mono text-xs text-muted-foreground tracking-wider">
                       {roomId}
                     </span>
                     {copied ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-primary" />
                     ) : (
-                      <Copy className="w-3.5 h-3.5 text-gray-400" />
+                      <Copy className="w-3.5 h-3.5 text-muted-foreground" />
                     )}
                   </button>
                 </TooltipTrigger>
@@ -362,28 +465,13 @@ const MeetingRoom = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onClick={() => {
-                    setSidebarTab("participants");
-                    setIsSidebarOpen(true);
-                  }}
-                  className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
-                >
-                  <Users className="w-4 h-4 text-gray-300" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>Participants</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
                   onClick={() => setIsSidebarOpen((v) => !v)}
-                  className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                  className="p-2 rounded-xl bg-muted/30 border border-border hover:bg-muted/50 transition-all font-foreground"
                 >
                   {isSidebarOpen ? (
-                    <ChevronRight className="w-4 h-4 text-gray-300" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   ) : (
-                    <ChevronLeft className="w-4 h-4 text-gray-300" />
+                    <ChevronLeft className="w-4 h-4 text-muted-foreground" />
                   )}
                 </button>
               </TooltipTrigger>
@@ -411,7 +499,7 @@ const MeetingRoom = () => {
           </div>
 
           {isSidebarOpen && (
-            <div className="w-80 flex flex-col border-l border-white/5 bg-gray-900/60 shrink-0">
+            <div className="w-80 flex flex-col border-l border-white/5 bg-card/10 shrink-0">
               <div className="flex border-b border-white/5 shrink-0">
                 {[
                   { id: "chat", label: "chat" },
@@ -425,8 +513,8 @@ const MeetingRoom = () => {
                     onClick={() => setSidebarTab(tab.id as any)}
                     className={`flex-1 py-2.5 text-xs font-medium capitalize transition-all ${
                       sidebarTab === tab.id
-                        ? "text-emerald-400 border-b-2 border-emerald-500"
-                        : "text-gray-500 hover:text-gray-300"
+                        ? "text-primary border-b-2 border-primary"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {tab.label}

@@ -1,8 +1,5 @@
-"Placeholder input component - uses Tailwind CSS"
-
-<<<<<<< HEAD
-=======
 import { cn } from "@/lib/utils"
+import React from "react"
 
 const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   ({ className, type, ...props }, ref) => {
@@ -24,4 +21,3 @@ const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLI
 Input.displayName = "Input"
 
 export { Input }
->>>>>>> updated frontend and backend files

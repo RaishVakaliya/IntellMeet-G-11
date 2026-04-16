@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   Link,
   useNavigate,
@@ -41,9 +41,11 @@ export const AuthPage = () => {
     }
   }, [modeParam, navigate]);
 
+  const googleAuthProcessed = useRef(false);
   useEffect(() => {
     const completeGoogleAuth = async () => {
-      if (!oauthToken) return;
+      if (!oauthToken || googleAuthProcessed.current) return;
+      googleAuthProcessed.current = true;
 
       try {
         const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
@@ -78,7 +80,7 @@ export const AuthPage = () => {
     };
 
     completeGoogleAuth();
-  }, [oauthToken, navigate, searchParams, setSearchParams]);
+  }, [oauthToken, navigate, searchParams, setSearchParams, setAuth]);
 
   const toggleMode = (newMode: "signin" | "signup") => {
     navigate(`/auth/${newMode}`);
@@ -142,7 +144,7 @@ export const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-background">
       <div className="flex flex-col justify-center px-12 lg:px-24 auth-left-column text-white relative overflow-hidden">
         <div className="auth-orbits-container">
           <div className="orbit-ring orbit-ring-1">
@@ -216,25 +218,25 @@ export const AuthPage = () => {
               together.
             </h1>
           </div>
-          <p className="text-lg text-gray-400 font-medium leading-relaxed max-w-sm">
+          <p className="text-lg text-muted-foreground font-medium leading-relaxed max-w-sm">
             AI-powered collaboration that transcribes, summarizes, and turns
             your meetings into action automatically.
           </p>
         </div>
       </div>
 
-      <div className="flex flex-col justify-center items-center px-6 py-12 bg-[#f8fafc]">
-        <div className="w-full max-w-md bg-[#ffffff] p-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100">
-          <div className="flex bg-gray-100/80 p-1.5 rounded-2xl mb-10">
+      <div className="flex flex-col justify-center items-center px-6 py-12 bg-muted">
+        <div className="w-full max-w-md bg-card p-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-border">
+          <div className="flex bg-muted p-1.5 rounded-2xl mb-10">
             <button
               onClick={() => toggleMode("signin")}
-              className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${mode === "signin" ? "bg-white text-gray-900 shadow-lg" : "text-gray-500 hover:text-gray-700 font-semibold"}`}
+              className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${mode === "signin" ? "bg-background text-foreground shadow-lg" : "text-muted-foreground hover:text-foreground font-semibold"}`}
             >
               Sign In
             </button>
             <button
               onClick={() => toggleMode("signup")}
-              className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${mode === "signup" ? "bg-white text-gray-900 shadow-lg" : "text-gray-500 hover:text-gray-700 font-semibold"}`}
+              className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${mode === "signup" ? "bg-background text-foreground shadow-lg" : "text-muted-foreground hover:text-foreground font-semibold"}`}
             >
               Sign Up
             </button>
@@ -243,7 +245,7 @@ export const AuthPage = () => {
           <form className="space-y-6" onSubmit={handleSubmit}>
             {mode === "signup" && (
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-600 block px-1">
+                <label className="text-sm font-bold text-muted-foreground block px-1">
                   Full Name
                 </label>
                 <input
@@ -251,13 +253,13 @@ export const AuthPage = () => {
                   placeholder="Enter your name"
                   value={fullName}
                   onChange={(event) => setFullName(event.target.value)}
-                  className="w-full px-4 py-4 rounded-xl border border-gray-100 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-medium"
+                  className="w-full px-4 py-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-medium"
                 />
               </div>
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-600 block px-1">
+              <label className="text-sm font-bold text-muted-foreground block px-1">
                 Email
               </label>
               <div className="relative">
@@ -266,14 +268,14 @@ export const AuthPage = () => {
                   placeholder="name@example.com"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  className="w-full px-4 py-4 rounded-xl border border-gray-100 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-medium pr-12"
+                  className="w-full px-4 py-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-medium pr-12"
                 />
-                <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-600 block px-1">
+              <label className="text-sm font-bold text-muted-foreground block px-1">
                 Password
               </label>
               <div className="relative">
@@ -286,7 +288,7 @@ export const AuthPage = () => {
                   }
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  className="w-full px-4 py-4 rounded-xl border border-gray-100 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-medium"
+                  className="w-full px-4 py-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-medium"
                 />
               </div>
             </div>
@@ -295,7 +297,7 @@ export const AuthPage = () => {
               size="lg"
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-14 rounded-2xl bg-[#10b981] hover:bg-[#0da371] text-white font-bold text-base flex items-center justify-center gap-2 group shadow-xl shadow-green-100 transition-all active:scale-[0.98]"
+              className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base flex items-center justify-center gap-2 group shadow-xl shadow-primary/10 transition-all active:scale-[0.98]"
             >
               {isSubmitting ? "Please wait..." : submitLabel}
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -304,10 +306,10 @@ export const AuthPage = () => {
 
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-100"></span>
+              <span className="w-full border-t border-border"></span>
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="px-4 text-gray-400 font-bold tracking-widest text-[10px]">
+              <span className="px-4 text-muted-foreground font-bold tracking-widest text-[10px]">
                 or continue with
               </span>
             </div>
@@ -317,7 +319,7 @@ export const AuthPage = () => {
             variant="outline"
             size="lg"
             onClick={handleGoogleLogin}
-            className="w-full h-14 rounded-2xl border-gray-100 bg-white hover:bg-gray-50 flex items-center justify-center gap-3 font-bold text-gray-700 transition-all shadow-sm active:scale-[0.98]"
+            className="w-full h-14 rounded-2xl border-border bg-background hover:bg-muted/50 flex items-center justify-center gap-3 font-bold text-foreground transition-all shadow-sm active:scale-[0.98]"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path

@@ -5,6 +5,8 @@ import { saveMessage } from "../controllers/chatController.js";
 
 let io;
 
+const roomScreenSharer = new Map();
+
 export const initializeSocket = async (httpServer) => {
   io = new Server(httpServer, {
     cors: {
@@ -30,48 +32,52 @@ export const initializeSocket = async (httpServer) => {
   }
 
   io.on("connection", (socket) => {
-    console.log(`[Socket] User connected: ${socket.id}`);
-
     socket.on(
       "join-room",
       async ({ meetingCode, userId, userName, dbUserId }) => {
-        if (!meetingCode || !userId) {
+        if (!meetingCode || !dbUserId) {
           console.warn(`[Socket] join-room failed: missing payload`, {
             meetingCode,
-            userId,
+            dbUserId,
           });
           return;
         }
 
-        if (socket.data.currentRoom === meetingCode) {
+        if (
+          socket.data.currentRoom === meetingCode &&
+          socket.data.dbUserId === dbUserId
+        ) {
           console.log(
-            `[Socket] ${userName} (${userId}) already in room ${meetingCode}, skipping re-join`,
+            `[Socket] ${userName} (${dbUserId}) already in room ${meetingCode}, skipping re-join`,
           );
           return;
         }
 
         console.log(
-          `[Socket] User ${userName} (${userId}) joining room: ${meetingCode}`,
+          `[Socket] User ${userName} (socket=${socket.id}, db=${dbUserId}) joining room: ${meetingCode}`,
         );
 
+        socket.data.socketId = socket.id;
         socket.data.userId = userId;
         socket.data.userName = userName;
         socket.data.dbUserId = dbUserId;
         socket.data.isMuted = true;
         socket.data.isCameraOff = true;
+        socket.data.isScreenSharing = false;
 
         let existingUsers = [];
         try {
           const existingSockets = await io.in(meetingCode).fetchSockets();
           existingUsers = existingSockets
+            .filter((s) => s.data.dbUserId && s.data.dbUserId !== dbUserId)
             .map((s) => ({
-              userId: s.data.userId,
-              userName: s.data.userName,
+              socketId: s.id,
               dbUserId: s.data.dbUserId,
+              userName: s.data.userName,
               isMuted: s.data.isMuted ?? true,
               isCameraOff: s.data.isCameraOff ?? true,
-            }))
-            .filter((u) => u.userId);
+              isScreenSharing: s.data.isScreenSharing ?? false,
+            }));
         } catch (err) {
           console.error("[Socket] fetchSockets failed:", err.message);
         }
@@ -86,27 +92,409 @@ export const initializeSocket = async (httpServer) => {
         );
 
         socket.to(meetingCode).emit("user-connected", {
-          userId,
-          userName,
+          socketId: socket.id,
           dbUserId,
+          userName,
           isMuted: socket.data.isMuted,
           isCameraOff: socket.data.isCameraOff,
+          isScreenSharing: socket.data.isScreenSharing,
         });
 
-        io.to(meetingCode).emit(
-          "notification",
-          `${userName} joined the meeting`,
-        );
+        io.to(meetingCode).emit("user-online", { dbUserId });
+
+        socket
+          .to(meetingCode)
+          .emit("notification", `${userName} joined the meeting`);
       },
     );
 
-    socket.on("disconnect", () => {
-      const { currentRoom, userId, userName } = socket.data ?? {};
+=======
+
+    socket.on(
+      "join-room",
+      async ({ meetingCode, userId, userName, dbUserId }) => {
+        if (!meetingCode || !dbUserId) {
+          console.warn(`[Socket] join-room failed: missing payload`, {
+            meetingCode,
+            dbUserId,
+          });
+          return;
+        }
+
+        if (
+          socket.data.currentRoom === meetingCode &&
+          socket.data.dbUserId === dbUserId
+        ) {
+          console.log(
+            `[Socket] ${userName} (${dbUserId}) already in room ${meetingCode}, skipping re-join`,
+          );
+          return;
+        }
+
+        console.log(
+          `[Socket] User ${userName} (socket=${socket.id}, db=${dbUserId}) joining room: ${meetingCode}`,
+        );
+
+        socket.data.socketId = socket.id;
+        socket.data.userId = userId;
+        socket.data.userName = userName;
+        socket.data.dbUserId = dbUserId;
+        socket.data.isMuted = true;
+        socket.data.isCameraOff = true;
+        socket.data.isScreenSharing = false;
+
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+=======
+    console.log(`[Socket] User connected: ${socket.id}`);
+
+    socket.on(
+      "join-room",
+      async ({ meetingCode, userId, userName, dbUserId }) => {
+        if (!meetingCode || !dbUserId) {
+          console.warn(`[Socket] join-room failed: missing payload`, {
+            meetingCode,
+            dbUserId,
+          });
+          return;
+        }
+
+        if (
+          socket.data.currentRoom === meetingCode &&
+          socket.data.dbUserId === dbUserId
+        ) {
+          console.log(
+            `[Socket] ${userName} (${dbUserId}) already in room ${meetingCode}, skipping re-join`,
+          );
+          return;
+        }
+
+        console.log(
+          `[Socket] User ${userName} (socket=${socket.id}, db=${dbUserId}) joining room: ${meetingCode}`,
+        );
+
+        socket.data.socketId = socket.id;
+        socket.data.userId = userId;
+        socket.data.userName = userName;
+        socket.data.dbUserId = dbUserId;
+        socket.data.isMuted = true;
+        socket.data.isCameraOff = true;
+        socket.data.isScreenSharing = false;
+
+        let existingUsers = [];
+        try {
+          const existingSockets = await io.in(meetingCode).fetchSockets();
+          existingUsers = existingSockets
+            .filter((s) => s.data.dbUserId && s.data.dbUserId !== dbUserId)
+            .map((s) => ({
+              socketId: s.id,
+              dbUserId: s.data.dbUserId,
+              userName: s.data.userName,
+              isMuted: s.data.isMuted ?? true,
+              isCameraOff: s.data.isCameraOff ?? true,
+              isScreenSharing: s.data.isScreenSharing ?? false,
+            }));
+        } catch (err) {
+          console.error("[Socket] fetchSockets failed:", err.message);
+        }
+
+        // Now join the room
+        socket.join(meetingCode);
+        socket.data.currentRoom = meetingCode;
+
+        socket.emit("existing-users", existingUsers);
+        console.log(
+          `[Socket] Sent existing-users (${existingUsers.length}) to ${userName}`,
+        );
+
+        socket.to(meetingCode).emit("user-connected", {
+          socketId: socket.id,
+          dbUserId,
+          userName,
+          isMuted: socket.data.isMuted,
+          isCameraOff: socket.data.isCameraOff,
+          isScreenSharing: socket.data.isScreenSharing,
+        });
+
+        io.to(meetingCode).emit("user-online", { dbUserId });
+
+        socket
+          .to(meetingCode)
+          .emit("notification", `${userName} joined the meeting`);
+      },
+    );
+=======
+    socket.on(
+      "join-room",
+      async ({ meetingCode, userId, userName, dbUserId }) => {
+        if (!meetingCode || !dbUserId) {
+          console.warn(`[Socket] join-room failed: missing payload`, {
+            meetingCode,
+            dbUserId,
+          });
+          return;
+        }
+
+        if (
+          socket.data.currentRoom === meetingCode &&
+          socket.data.dbUserId === dbUserId
+        ) {
+          console.log(
+            `[Socket] ${userName} (${dbUserId}) already in room ${meetingCode}, skipping re-join`,
+          );
+          return;
+        }
+
+        console.log(
+          `[Socket] User ${userName} (socket=${socket.id}, db=${dbUserId}) joining room: ${meetingCode}`,
+        );
+
+        socket.data.socketId = socket.id;
+        socket.data.userId = userId;
+        socket.data.userName = userName;
+        socket.data.dbUserId = dbUserId;
+        socket.data.isMuted = true;
+        socket.data.isCameraOff = true;
+        socket.data.isScreenSharing = false;
+
+        let existingUsers = [];
+        try {
+          const existingSockets = await io.in(meetingCode).fetchSockets();
+          existingUsers = existingSockets
+            .filter((s) => s.data.dbUserId && s.data.dbUserId !== dbUserId)
+            .map((s) => ({
+              socketId: s.id,
+              dbUserId: s.data.dbUserId,
+              userName: s.data.userName,
+              isMuted: s.data.isMuted ?? true,
+              isCameraOff: s.data.isCameraOff ?? true,
+              isScreenSharing: s.data.isScreenSharing ?? false,
+            }));
+        } catch (err) {
+          console.error("[Socket] fetchSockets failed:", err.message);
+        }
+
+        // Now join the room
+        socket.join(meetingCode);
+        socket.data.currentRoom = meetingCode;
+
+        socket.emit("existing-users", existingUsers);
+        console.log(
+          `[Socket] Sent existing-users (${existingUsers.length}) to ${userName}`,
+        );
+
+        socket.to(meetingCode).emit("user-connected", {
+          socketId: socket.id,
+          dbUserId,
+          userName,
+          isMuted: socket.data.isMuted,
+          isCameraOff: socket.data.isCameraOff,
+          isScreenSharing: socket.data.isScreenSharing,
+        });
+
+        io.to(meetingCode).emit("user-online", { dbUserId });
+
+        socket
+          .to(meetingCode)
+          .emit("notification", `${userName} joined the meeting`);
+      },
+    );
+
+=======
+
+    socket.on(
+      "join-room",
+      async ({ meetingCode, userId, userName, dbUserId }) => {
+        if (!meetingCode || !dbUserId) {
+          console.warn(`[Socket] join-room failed: missing payload`, {
+            meetingCode,
+            dbUserId,
+          });
+          return;
+        }
+
+        if (
+          socket.data.currentRoom === meetingCode &&
+          socket.data.dbUserId === dbUserId
+        ) {
+          console.log(
+            `[Socket] ${userName} (${dbUserId}) already in room ${meetingCode}, skipping re-join`,
+          );
+          return;
+        }
+
+        console.log(
+          `[Socket] User ${userName} (socket=${socket.id}, db=${dbUserId}) joining room: ${meetingCode}`,
+        );
+
+        socket.data.socketId = socket.id;
+        socket.data.userId = userId;
+        socket.data.userName = userName;
+        socket.data.dbUserId = dbUserId;
+        socket.data.isMuted = true;
+        socket.data.isCameraOff = true;
+        socket.data.isScreenSharing = false;
+
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+        let existingUsers = [];
+        try {
+          const existingSockets = await io.in(meetingCode).fetchSockets();
+            .filter((s) => s.data.dbUserId && s.data.dbUserId !== dbUserId)
+            .map((s) => ({
+              socketId: s.id,
+              dbUserId: s.data.dbUserId,
+              userName: s.data.userName,
+              isMuted: s.data.isMuted ?? true,
+              isCameraOff: s.data.isCameraOff ?? true,
+              isScreenSharing: s.data.isScreenSharing ?? false,
+            }));
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+=======
+        existingUsers = existingSockets
+            .filter((s) => s.data.dbUserId && s.data.dbUserId !== dbUserId)
+            .map((s) => ({
+              socketId: s.id,
+              dbUserId: s.data.dbUserId,
+              userName: s.data.userName,
+              isMuted: s.data.isMuted ?? true,
+              isCameraOff: s.data.isCameraOff ?? true,
+              isScreenSharing: s.data.isScreenSharing ?? false,
+            }));
+=======
+            .filter((s) => s.data.dbUserId && s.data.dbUserId !== dbUserId)
+            .map((s) => ({
+              socketId: s.id,
+              dbUserId: s.data.dbUserId,
+              userName: s.data.userName,
+              isMuted: s.data.isMuted ?? true,
+              isCameraOff: s.data.isCameraOff ?? true,
+              isScreenSharing: s.data.isScreenSharing ?? false,
+            }));
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+        } catch (err) {
+          console.error("[Socket] fetchSockets failed:", err.message);
+        }
+
+<<<<<<< HEAD
+        // Now join the room
+=======
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+        socket.join(meetingCode);
+        socket.data.currentRoom = meetingCode;
+
+        socket.emit("existing-users", existingUsers);
+        console.log(
+          `[Socket] Sent existing-users (${existingUsers.length}) to ${userName}`,
+        );
+
+          socketId: socket.id,
+          dbUserId,
+          userName,
+          isMuted: socket.data.isMuted,
+          isCameraOff: socket.data.isCameraOff,
+          isScreenSharing: socket.data.isScreenSharing,
+        });
+
+        io.to(meetingCode).emit("user-online", { dbUserId });
+
+        socket
+          .to(meetingCode)
+          .emit("notification", `${userName} joined the meeting`);
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+=======
+        socket.to(meetingCode).emit("user-connected", {
+          socketId: socket.id,
+          dbUserId,
+          userName,
+          isMuted: socket.data.isMuted,
+          isCameraOff: socket.data.isCameraOff,
+          isScreenSharing: socket.data.isScreenSharing,
+        });
+
+        io.to(meetingCode).emit("user-online", { dbUserId });
+
+        socket
+          .to(meetingCode)
+          .emit("notification", `${userName} joined the meeting`);
+=======
+          socketId: socket.id,
+          dbUserId,
+          userName,
+          isMuted: socket.data.isMuted,
+          isCameraOff: socket.data.isCameraOff,
+          isScreenSharing: socket.data.isScreenSharing,
+        });
+
+        io.to(meetingCode).emit("user-online", { dbUserId });
+
+        socket
+          .to(meetingCode)
+          .emit("notification", `${userName} joined the meeting`);
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+      },
+    );
+
+      const { currentRoom, dbUserId, userName } = socket.data ?? {};
       console.log(
-        `[Socket] User disconnected: ${socket.id}${currentRoom ? ` from room: ${currentRoom}` : ""}`,
+        `[Socket] User disconnected: ${socket.id} (db=${dbUserId})${currentRoom ? ` from room: ${currentRoom}` : ""}`,
       );
-      if (currentRoom && userId) {
-        socket.to(currentRoom).emit("user-disconnected", userId);
+      if (currentRoom && dbUserId) {
+        socket.to(currentRoom).emit("user-disconnected", { dbUserId });
+
+        socket.to(currentRoom).emit("user-offline", { dbUserId });
+
+        if (roomScreenSharer.get(currentRoom) === dbUserId) {
+          roomScreenSharer.delete(currentRoom);
+          socket.to(currentRoom).emit("participant-screen-share-toggled", {
+            dbUserId,
+            isScreenSharing: false,
+          });
+        }
+
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+=======
+    socket.on("disconnect", () => {
+      const { currentRoom, dbUserId, userName } = socket.data ?? {};
+      console.log(
+        `[Socket] User disconnected: ${socket.id} (db=${dbUserId})${currentRoom ? ` from room: ${currentRoom}` : ""}`,
+      );
+      if (currentRoom && dbUserId) {
+        socket.to(currentRoom).emit("user-disconnected", { dbUserId });
+
+        socket.to(currentRoom).emit("user-offline", { dbUserId });
+
+        if (roomScreenSharer.get(currentRoom) === dbUserId) {
+          roomScreenSharer.delete(currentRoom);
+          socket.to(currentRoom).emit("participant-screen-share-toggled", {
+            dbUserId,
+            isScreenSharing: false,
+          });
+        }
+
+        io.to(currentRoom).emit(
+          "notification",
+          `${userName ?? "A user"} left the meeting`,
+        );
+      }
+    });
+=======
+      const { currentRoom, dbUserId, userName } = socket.data ?? {};
+      console.log(
+        `[Socket] User disconnected: ${socket.id} (db=${dbUserId})${currentRoom ? ` from room: ${currentRoom}` : ""}`,
+      );
+      if (currentRoom && dbUserId) {
+        socket.to(currentRoom).emit("user-disconnected", { dbUserId });
+
+        socket.to(currentRoom).emit("user-offline", { dbUserId });
+
+        if (roomScreenSharer.get(currentRoom) === dbUserId) {
+          roomScreenSharer.delete(currentRoom);
+          socket.to(currentRoom).emit("participant-screen-share-toggled", {
+            dbUserId,
+            isScreenSharing: false,
+          });
+        }
+
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
         io.to(currentRoom).emit(
           "notification",
           `${userName ?? "A user"} left the meeting`,
@@ -153,28 +541,259 @@ export const initializeSocket = async (httpServer) => {
       socket.to(meetingCode).emit("user-stop-typing", { userId });
     });
 
-    socket.on("offer", (payload) =>
-      io.to(payload.target).emit("offer", payload),
-    );
-    socket.on("answer", (payload) =>
-      io.to(payload.target).emit("answer", payload),
-    );
-    socket.on("ice-candidate", (incoming) =>
-      io.to(incoming.target).emit("ice-candidate", incoming),
-    );
-
-    socket.on("toggle-audio", ({ meetingCode, userId, isMuted }) => {
-      socket.data.isMuted = isMuted;
-      socket
-        .to(meetingCode)
-        .emit("participant-audio-toggled", { userId, isMuted });
+    socket.on("offer", (payload) => {
+      io.to(payload.target).emit("offer", {
+        ...payload,
+        callerDbUserId: socket.data.dbUserId,
+        callerSocketId: socket.id,
+      });
     });
 
-    socket.on("toggle-video", ({ meetingCode, userId, isCameraOff }) => {
+    socket.on("answer", (payload) => {
+      io.to(payload.target).emit("answer", {
+        ...payload,
+        callerDbUserId: socket.data.dbUserId,
+        callerSocketId: socket.id,
+      });
+    });
+
+    socket.on("ice-candidate", (incoming) => {
+      io.to(incoming.target).emit("ice-candidate", {
+        ...incoming,
+        fromDbUserId: socket.data.dbUserId,
+        fromSocketId: socket.id,
+      });
+    });
+
+    socket.on("toggle-audio", ({ meetingCode, isMuted }) => {
+      socket.data.isMuted = isMuted;
+      socket.to(meetingCode).emit("participant-audio-toggled", {
+        dbUserId: socket.data.dbUserId,
+        isMuted,
+      });
+    });
+
+    socket.on("toggle-video", ({ meetingCode, isCameraOff }) => {
       socket.data.isCameraOff = isCameraOff;
-      socket
-        .to(meetingCode)
-        .emit("participant-video-toggled", { userId, isCameraOff });
+      socket.to(meetingCode).emit("participant-video-toggled", {
+        dbUserId: socket.data.dbUserId,
+        isCameraOff,
+      });
+    });
+
+    socket.on("toggle-screen-share", ({ meetingCode, isScreenSharing }) => {
+      const dbUserId = socket.data.dbUserId;
+      if (!meetingCode || !dbUserId) return;
+
+      if (isScreenSharing) {
+        const currentSharer = roomScreenSharer.get(meetingCode);
+        if (currentSharer && currentSharer !== dbUserId) {
+          socket.emit("screen-share-rejected", {
+            reason: "Another participant is already sharing their screen.",
+          });
+          return;
+        }
+        roomScreenSharer.set(meetingCode, dbUserId);
+      } else {
+        if (roomScreenSharer.get(meetingCode) === dbUserId) {
+          roomScreenSharer.delete(meetingCode);
+        }
+      }
+
+      socket.data.isScreenSharing = isScreenSharing;
+      io.to(meetingCode).emit("participant-screen-share-toggled", {
+        dbUserId,
+        isScreenSharing,
+      });
+    });
+
+    socket.on("sync-media-state", ({ meetingCode, isMuted, isCameraOff }) => {
+      if (!meetingCode || !socket.data.dbUserId) return;
+
+      socket.data.isMuted = isMuted;
+      socket.data.isCameraOff = isCameraOff;
+
+      socket.to(meetingCode).emit("participant-media-sync", {
+        dbUserId: socket.data.dbUserId,
+        isMuted,
+        isCameraOff,
+        isScreenSharing: socket.data.isScreenSharing ?? false,
+      });
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+=======
+    socket.on("typing", ({ meetingCode, userId, userName }) => {
+      socket.to(meetingCode).emit("user-typing", { userId, userName });
+    });
+    socket.on("stop-typing", ({ meetingCode, userId }) => {
+      socket.to(meetingCode).emit("user-stop-typing", { userId });
+    });
+
+    socket.on("offer", (payload) => {
+      io.to(payload.target).emit("offer", {
+        ...payload,
+        callerDbUserId: socket.data.dbUserId,
+        callerSocketId: socket.id,
+      });
+    });
+
+    socket.on("answer", (payload) => {
+      io.to(payload.target).emit("answer", {
+        ...payload,
+        callerDbUserId: socket.data.dbUserId,
+        callerSocketId: socket.id,
+      });
+    });
+
+    socket.on("ice-candidate", (incoming) => {
+      io.to(incoming.target).emit("ice-candidate", {
+        ...incoming,
+        fromDbUserId: socket.data.dbUserId,
+        fromSocketId: socket.id,
+      });
+    });
+
+    socket.on("toggle-audio", ({ meetingCode, isMuted }) => {
+      socket.data.isMuted = isMuted;
+      socket.to(meetingCode).emit("participant-audio-toggled", {
+        dbUserId: socket.data.dbUserId,
+        isMuted,
+      });
+    });
+
+    socket.on("toggle-video", ({ meetingCode, isCameraOff }) => {
+      socket.data.isCameraOff = isCameraOff;
+      socket.to(meetingCode).emit("participant-video-toggled", {
+        dbUserId: socket.data.dbUserId,
+        isCameraOff,
+      });
+    });
+
+    socket.on("toggle-screen-share", ({ meetingCode, isScreenSharing }) => {
+      const dbUserId = socket.data.dbUserId;
+      if (!meetingCode || !dbUserId) return;
+
+      if (isScreenSharing) {
+        const currentSharer = roomScreenSharer.get(meetingCode);
+        if (currentSharer && currentSharer !== dbUserId) {
+          socket.emit("screen-share-rejected", {
+            reason: "Another participant is already sharing their screen.",
+          });
+          return;
+        }
+        roomScreenSharer.set(meetingCode, dbUserId);
+      } else {
+        if (roomScreenSharer.get(meetingCode) === dbUserId) {
+          roomScreenSharer.delete(meetingCode);
+        }
+      }
+
+      socket.data.isScreenSharing = isScreenSharing;
+      io.to(meetingCode).emit("participant-screen-share-toggled", {
+        dbUserId,
+        isScreenSharing,
+      });
+    });
+
+    socket.on("sync-media-state", ({ meetingCode, isMuted, isCameraOff }) => {
+      if (!meetingCode || !socket.data.dbUserId) return;
+
+      socket.data.isMuted = isMuted;
+      socket.data.isCameraOff = isCameraOff;
+
+      socket.to(meetingCode).emit("participant-media-sync", {
+        dbUserId: socket.data.dbUserId,
+        isMuted,
+        isCameraOff,
+        isScreenSharing: socket.data.isScreenSharing ?? false,
+      });
+    });
+=======
+    socket.on("typing", ({ meetingCode, userId, userName }) => {
+      socket.to(meetingCode).emit("user-typing", { userId, userName });
+    });
+    socket.on("stop-typing", ({ meetingCode, userId }) => {
+      socket.to(meetingCode).emit("user-stop-typing", { userId });
+    });
+
+    socket.on("offer", (payload) => {
+      io.to(payload.target).emit("offer", {
+        ...payload,
+        callerDbUserId: socket.data.dbUserId,
+        callerSocketId: socket.id,
+      });
+    });
+
+    socket.on("answer", (payload) => {
+      io.to(payload.target).emit("answer", {
+        ...payload,
+        callerDbUserId: socket.data.dbUserId,
+        callerSocketId: socket.id,
+      });
+    });
+
+    socket.on("ice-candidate", (incoming) => {
+      io.to(incoming.target).emit("ice-candidate", {
+        ...incoming,
+        fromDbUserId: socket.data.dbUserId,
+        fromSocketId: socket.id,
+      });
+    });
+
+    socket.on("toggle-audio", ({ meetingCode, isMuted }) => {
+      socket.data.isMuted = isMuted;
+      socket.to(meetingCode).emit("participant-audio-toggled", {
+        dbUserId: socket.data.dbUserId,
+        isMuted,
+      });
+    });
+
+    socket.on("toggle-video", ({ meetingCode, isCameraOff }) => {
+      socket.data.isCameraOff = isCameraOff;
+      socket.to(meetingCode).emit("participant-video-toggled", {
+        dbUserId: socket.data.dbUserId,
+        isCameraOff,
+      });
+    });
+
+    socket.on("toggle-screen-share", ({ meetingCode, isScreenSharing }) => {
+      const dbUserId = socket.data.dbUserId;
+      if (!meetingCode || !dbUserId) return;
+
+      if (isScreenSharing) {
+        const currentSharer = roomScreenSharer.get(meetingCode);
+        if (currentSharer && currentSharer !== dbUserId) {
+          socket.emit("screen-share-rejected", {
+            reason: "Another participant is already sharing their screen.",
+          });
+          return;
+        }
+        roomScreenSharer.set(meetingCode, dbUserId);
+      } else {
+        if (roomScreenSharer.get(meetingCode) === dbUserId) {
+          roomScreenSharer.delete(meetingCode);
+        }
+      }
+
+      socket.data.isScreenSharing = isScreenSharing;
+      io.to(meetingCode).emit("participant-screen-share-toggled", {
+        dbUserId,
+        isScreenSharing,
+      });
+    });
+
+    socket.on("sync-media-state", ({ meetingCode, isMuted, isCameraOff }) => {
+      if (!meetingCode || !socket.data.dbUserId) return;
+
+      socket.data.isMuted = isMuted;
+      socket.data.isCameraOff = isCameraOff;
+
+      socket.to(meetingCode).emit("participant-media-sync", {
+        dbUserId: socket.data.dbUserId,
+        isMuted,
+        isCameraOff,
+        isScreenSharing: socket.data.isScreenSharing ?? false,
+      });
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
     });
 
     socket.on("join-lobby", (userId) => {

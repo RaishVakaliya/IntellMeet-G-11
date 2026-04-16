@@ -1,6 +1,7 @@
 export type Participant = {
   id: string;
   dbUserId?: string;
+  socketId?: string;
   name: string;
   avatar?: string;
   isMuted: boolean;
@@ -28,6 +29,8 @@ export type MeetingState = {
   participants: Participant[];
   messages: ChatMessage[];
   typingUsers: { id: string; name: string }[];
+  speakingUsers: Record<string, boolean>;
+  onlineUsers: string[];
   localStream: MediaStream | null;
 
   //Actions
@@ -36,12 +39,14 @@ export type MeetingState = {
   setParticipants: (participants: Participant[]) => void;
   addParticipant: (participant: Participant) => void;
   removeParticipant: (id: string) => void;
+  updateParticipantSocketId: (dbUserId: string, socketId: string) => void;
   toggleMic: () => void;
   toggleCamera: () => void;
   toggleScreenShare: () => void;
   toggleChat: () => void;
   sendMessage: (text: string, senderName: string, senderId?: string) => void;
   setActiveSpeaker: (id: string) => void;
+  setSpeaking: (userId: string, isSpeaking: boolean) => void;
   updateParticipantStream: (id: string, stream: MediaStream) => void;
   updateParticipantMedia: (
     id: string,
@@ -54,6 +59,9 @@ export type MeetingState = {
   setLocalStream: (stream: MediaStream | null) => void;
   setTypingUser: (user: { id: string; name: string }) => void;
   removeTypingUser: (id: string) => void;
+  setOnlineUsers: (userIds: string[]) => void;
+  addOnlineUser: (userId: string) => void;
+  removeOnlineUser: (userId: string) => void;
   leaveMeeting: () => void;
   leaveRoom: () => void;
 };

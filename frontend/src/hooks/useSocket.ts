@@ -12,7 +12,11 @@ export const getSocket = (): Socket => {
       autoConnect: false,
       withCredentials: true,
       reconnection: true,
+<<<<<<< HEAD
       reconnectionAttempts: 5,
+=======
+      reconnectionAttempts: 10,
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
       reconnectionDelay: 1000,
     });
   }
@@ -22,7 +26,10 @@ export const getSocket = (): Socket => {
 export const useSocket = (meetingCode?: string) => {
   const { user, accessToken } = useAuthStore();
   const socketRef = useRef<Socket>(getSocket());
+<<<<<<< HEAD
 
+=======
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
   const joinedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -41,10 +48,17 @@ export const useSocket = (meetingCode?: string) => {
         userName: user.username,
         dbUserId: user._id,
       });
+<<<<<<< HEAD
     };
 
     if (meetingCode && user && joinedRef.current !== meetingCode) {
       joinedRef.current = meetingCode;
+=======
+      joinedRef.current = meetingCode;
+    };
+
+    if (meetingCode && user && joinedRef.current !== meetingCode) {
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
       if (socket.connected) {
         emitJoinRoom();
       } else {
@@ -52,6 +66,7 @@ export const useSocket = (meetingCode?: string) => {
       }
     }
 
+<<<<<<< HEAD
     const handleReconnect = () => {
       console.log("[Socket] Reconnected — rejoining room/lobby");
       joinedRef.current = null;
@@ -65,6 +80,15 @@ export const useSocket = (meetingCode?: string) => {
             userName: user.username,
             dbUserId: user._id,
           });
+=======
+    const handleConnect = () => {
+      console.log("[Socket] Connected:", socket.id);
+
+      if (meetingCode && user) {
+        joinedRef.current = null;
+        setTimeout(() => {
+          emitJoinRoom();
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
         }, 100);
       } else if (user) {
         socket.emit("join-lobby", user._id);
@@ -81,6 +105,7 @@ export const useSocket = (meetingCode?: string) => {
       console.error("[Socket] Connection error:", error);
     };
 
+<<<<<<< HEAD
     const handleConnect = () => {
       console.log("[Socket] Connected:", socket.id);
     };
@@ -93,6 +118,14 @@ export const useSocket = (meetingCode?: string) => {
       socket.off("reconnect", handleReconnect);
       socket.off("connect_error", handleError);
       socket.off("connect", handleConnect);
+=======
+    socket.on("connect", handleConnect);
+    socket.on("connect_error", handleError);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("connect_error", handleError);
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
     };
   }, [meetingCode, user, accessToken]);
 

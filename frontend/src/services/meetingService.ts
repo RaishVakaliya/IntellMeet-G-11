@@ -1,11 +1,9 @@
 import { apiFetch } from "@/lib/apiFetch";
 
-type ApiError = Error & { status?: number };
+type ApiError = Error &amp; { status?: number };
 
 export type MeetingParticipantRecord = {
-  user:
-    | string
-    | { _id: string; name: string; email: string; avatar?: string };
+  user: string | { _id: string; name: string; email: string; avatar?: string };
   role: string;
   leftAt?: string | null;
 };
@@ -17,13 +15,12 @@ export interface MeetingData {
   meetingCode: string;
   status: "scheduled" | "ongoing" | "ended";
   createdAt: string;
+  endTime?: string;
   createdBy?: { _id: string; name: string; email: string };
   participants: MeetingParticipantRecord[];
 }
 
-export interface MeetingDetails extends MeetingData {
-  endTime?: string;
-}
+export interface MeetingDetails extends MeetingData {}
 
 export const countActiveMeetingParticipants = (
   participants: MeetingParticipantRecord[] | undefined,

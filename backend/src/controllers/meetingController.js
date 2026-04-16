@@ -99,15 +99,13 @@ export const endMeeting = async (req, res) => {
       userIds.forEach((uid) => io.to(`user:${uid}`).emit("meetings-updated"));
     } catch {}
 
-    try {
-      const io = getIO();
-      io.to(code).emit("meeting-ended", {
-        meetingCode: code,
-        message: "Meeting has ended by host",
-      });
-    } catch {
-      // Socket server not initialized; safely ignore.
-    }
+    } catch {}
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+=======
+    } catch {}
+=======
+    } catch {}
+>>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
 
     return res.status(200).json({
       message: "Meeting ended",
@@ -180,13 +178,17 @@ export const joinMeeting = async (req, res) => {
       (p) => p.user.toString() === req.user._id.toString(),
     );
 
+    if (meeting.status === "scheduled") {
+      meeting.status = "ongoing";
+      meeting.startTime = meeting.startTime || new Date();
+    }
+
     if (!isAlreadyParticipant) {
       meeting.participants.push({
         user: req.user._id,
         role: "member",
         joinedAt: new Date(),
       });
-      await meeting.save();
 
       if (redisClient.isOpen) {
         await redisClient.del(`meeting:${meetingCode}`);
@@ -199,6 +201,14 @@ export const joinMeeting = async (req, res) => {
         io.to(`user:${meeting.createdBy.toString()}`).emit("meetings-updated");
       } catch {}
     }
+
+    await meeting.save();
+
+    try {
+      const io = getIO();
+      io.to(`user:${req.user._id}`).emit("meetings-updated");
+      io.to(`user:${meeting.createdBy.toString()}`).emit("meetings-updated");
+    } catch {}
 
     res.status(200).json(meeting);
   } catch (error) {

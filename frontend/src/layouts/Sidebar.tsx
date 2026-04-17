@@ -3,7 +3,8 @@ import {
   Home, Video, LayoutDashboard, Columns3,
   LogOut, ChevronRight, Sparkles, Zap,
 } from "lucide-react";
-import { useAuthStore, useToastStore } from "@/store";
+import { useAuthStore } from "@/stores/authStore";
+import { toast } from "sonner";
 import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/utils";
 
@@ -16,12 +17,12 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const { user, logout } = useAuthStore();
-  const { addToast } = useToastStore();
+
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    addToast("Signed out successfully", "info");
+    toast("Signed out successfully");
     navigate("/auth");
   };
 

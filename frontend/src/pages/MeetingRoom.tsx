@@ -11,7 +11,7 @@ import { getMeetingDetails, endMeeting } from "@/services/meetingService";
 import { useSocket } from "@/hooks/useSocket";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAudioDetection } from "@/hooks/useAudioDetection";
-import Layout from "@/layouts/DashboardLayout";
+import { DashboardLayout } from "@/layouts/DashboardLayout";
 import VideoGrid from "@/meeting/VideoGrid";
 import ControlsBar from "@/meeting/ControlsBar";
 import ChatPanel from "@/meeting/ChatPanel";

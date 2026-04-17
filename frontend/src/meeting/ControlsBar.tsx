@@ -16,10 +16,7 @@ import {
   PhoneOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-<<<<<<< HEAD
-=======
 import { toast } from "sonner";
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
 
 interface ControlsBarProps {
   onLeave: () => void;
@@ -73,28 +70,17 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
         className,
       )}
     >
-<<<<<<< HEAD
-      <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg">
-=======
-      <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-card/40 backdrop-blur-2xl border border-white/10 shadow-2xl">
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+      <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-card/40 backdrop-blur-2xl border border-border shadow-2xl">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               onClick={handleToggleMic}
-              size="icon-lg"
+              size="icon"
               className={cn(
-<<<<<<< HEAD
-                "rounded-xl transition-all",
-                isMuted
-                  ? "bg-red-500/80 hover:bg-red-500"
-                  : "bg-white/10 hover:bg-white/20",
-=======
                 "rounded-xl transition-all border-2 border-border",
                 isMuted
-                  ? "bg-destructive/80 hover:bg-destructive text-destructive-foreground"
+                  ? "bg-destructive hover:bg-destructive text-destructive-foreground"
                   : "bg-muted hover:bg-muted/80 text-foreground",
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
               )}
             >
               {isMuted ? (
@@ -105,7 +91,7 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
             </Button>
           </TooltipTrigger>
           <TooltipContent side="top">
-            {isMuted ? "Unmute" : "Mute"}
+            {isMuted ? "Unmute microphone" : "Mute microphone"}
           </TooltipContent>
         </Tooltip>
 
@@ -113,19 +99,12 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
           <TooltipTrigger asChild>
             <Button
               onClick={handleToggleCamera}
-              size="icon-lg"
+              size="icon"
               className={cn(
-<<<<<<< HEAD
-                "rounded-xl transition-all",
-                isCameraOff
-                  ? "bg-red-500/80 hover:bg-red-500"
-                  : "bg-white/10 hover:bg-white/20",
-=======
                 "rounded-xl transition-all border-2 border-border",
                 isCameraOff
-                  ? "bg-destructive/80 hover:bg-destructive text-destructive-foreground"
+                  ? "bg-destructive hover:bg-destructive text-destructive-foreground"
                   : "bg-muted hover:bg-muted/80 text-foreground",
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
               )}
             >
               {isCameraOff ? (
@@ -136,7 +115,7 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
             </Button>
           </TooltipTrigger>
           <TooltipContent side="top">
-            {isCameraOff ? "Turn on camera" : "Turn off camera"}
+            {isCameraOff ? "Turn camera on" : "Turn camera off"}
           </TooltipContent>
         </Tooltip>
 
@@ -144,19 +123,12 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
           <TooltipTrigger asChild>
             <Button
               onClick={handleScreenShare}
-              size="icon-lg"
+              size="icon"
               className={cn(
-<<<<<<< HEAD
-                "rounded-xl transition-all",
-                isScreenSharing
-                  ? "bg-emerald-600/80 hover:bg-emerald-600"
-                  : "bg-white/10 hover:bg-white/20",
-=======
                 "rounded-xl transition-all border-2 border-border",
                 isScreenSharing
-                  ? "bg-primary/80 hover:bg-primary text-primary-foreground"
+                  ? "bg-primary hover:bg-primary text-primary-foreground"
                   : "bg-muted hover:bg-muted/80 text-foreground",
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
               )}
             >
               {isScreenSharing ? (
@@ -167,52 +139,40 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
             </Button>
           </TooltipTrigger>
           <TooltipContent side="top">
-            {isScreenSharing ? "Stop sharing" : "Share screen"}
+            {isScreenSharing ? "Stop screen sharing" : "Share screen"}
           </TooltipContent>
         </Tooltip>
 
-<<<<<<< HEAD
-        <div className="w-px h-6 bg-white/10 mx-1" />
-=======
-        <div className="w-px h-6 bg-border mx-1" />
+        <div className="w-px h-10 bg-border mx-2" />
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              size="icon-lg"
-              className="rounded-xl bg-muted hover:bg-muted/80 text-foreground transition-all group border-2 border-border"
-              onClick={() => toast.info("Recording feature coming soon!")}
+              size="icon"
+              className="rounded-xl bg-muted hover:bg-muted/80 text-foreground border-2 border-border group transition-all"
+              onClick={() => toast.info("Recording feature coming soon!", { duration: 3000 })}
             >
-              <div className="w-3 h-3 rounded-full bg-destructive animate-pulse group-hover:scale-110 transition-transform" />
+              <div className="w-3 h-3 rounded-full bg-destructive animate-pulse group-hover:scale-110 transition-all duration-200" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="top">Record Meeting</TooltipContent>
+          <TooltipContent side="top">Record meeting</TooltipContent>
         </Tooltip>
-        <div className="w-px h-6 bg-border mx-1" />
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+
+        <div className="w-px h-10 bg-border mx-2" />
 
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               onClick={onLeave}
-<<<<<<< HEAD
-              className="rounded-xl bg-red-600 hover:bg-red-700 text-white px-4 h-11"
-=======
-              className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground px-4 h-11"
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+              className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground px-6 h-11 shadow-2xl font-semibold"
             >
-              <PhoneOff className="w-4 h-4 mr-1.5" />
-              <span className="font-semibold">
-                {isHost ? "End Meeting" : "Leave"}
-              </span>
+              <PhoneOff className="w-4 h-4 mr-2" />
+              {isHost ? "End Meeting" : "Leave"}
             </Button>
           </TooltipTrigger>
           <TooltipContent
             side="top"
-<<<<<<< HEAD
-            className="bg-red-600 text-white border-none"
-=======
-            className="bg-destructive text-destructive-foreground border-none"
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+            className="bg-destructive text-destructive-foreground border-destructive/50"
           >
             {isHost ? "End meeting for everyone" : "Leave meeting"}
           </TooltipContent>
@@ -223,3 +183,4 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
 };
 
 export default ControlsBar;
+

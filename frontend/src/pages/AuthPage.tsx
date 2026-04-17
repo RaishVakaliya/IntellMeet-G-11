@@ -10,12 +10,11 @@ import { ArrowRight, Mail } from "lucide-react";
 import "./AuthPage.css";
 import { toast } from "sonner";
 import { useAuthStore } from "../stores/authStore";
-import AppLogoImg from "../assets/AppLogo.png";
+import AppLogoImg from "@/assets/AppLogo.png";
 
 type AuthMode = "signin" | "signup";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL: string = (import.meta.env as any).VITE_API_BASE_URL || "http://localhost:5000";
 
 export const AuthPage = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -73,7 +72,7 @@ export const AuthPage = () => {
         setSearchParams(params, { replace: true });
 
         navigate("/dashboard", { replace: true });
-      } catch {
+      } catch (error: unknown) {
         toast.error("Could not complete Google sign in");
         navigate("/auth/signin", { replace: true });
       }
@@ -93,7 +92,7 @@ export const AuthPage = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (mode === "signup" &amp;&amp; !fullName.trim()) {
+    if (mode === "signup" && !fullName.trim()) {
       toast.error("Please enter your full name");
       return;
     }
@@ -134,7 +133,7 @@ export const AuthPage = () => {
         mode === "signin" ? "Welcome back!" : "Account created successfully",
       );
       navigate("/dashboard", { replace: true });
-    } catch (error) {
+    } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Something went wrong";
       toast.error(message);
@@ -243,7 +242,7 @@ export const AuthPage = () => {
           </div>
 
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {mode === "signup" &amp;&amp; (
+            {mode === "signup" && (
               <div className="space-y-2">
                 <label className="text-sm font-bold text-muted-foreground block px-1">
                   Full Name
@@ -346,3 +345,4 @@ export const AuthPage = () => {
     </div>
   );
 };
+

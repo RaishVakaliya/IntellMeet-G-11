@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/apiFetch";
 
-type ApiError = Error &amp; { status?: number };
+type ApiError = Error & { status?: number };
 
 export type MeetingParticipantRecord = {
   user: string | { _id: string; name: string; email: string; avatar?: string };
@@ -111,3 +111,4 @@ export const endMeeting = async (
   const data = await res.json();
   return data.meeting;
 };
+

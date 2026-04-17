@@ -163,32 +163,20 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
   if (!isChatOpen) return null;
 
   return (
-<<<<<<< HEAD
-    <div className="flex flex-col flex-1 min-h-0 bg-gray-900/90 backdrop-blur-xl">
-      <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/5 shrink-0">
-        <div className="flex items-center gap-2">
-          <MessageSquare className="w-4 h-4 text-emerald-400" />
-          <h3 className="text-sm font-semibold text-white">In-call messages</h3>
-=======
     <div className="flex flex-col flex-1 min-h-0 bg-primary/10 backdrop-blur-3xl">
-      <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/5 bg-card/20 shrink-0">
+      <div className="flex items-center justify-between px-4 py-3.5 border-b border-border bg-card/20 shrink-0">
         <div className="flex items-center gap-2">
           <MessageSquare className="w-4 h-4 text-primary" />
           <h3 className="text-sm font-semibold text-foreground">
             In-call messages
           </h3>
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-3 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      <div className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-3 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-<<<<<<< HEAD
-            <Spinner className="size-6 text-emerald-500" />
-=======
             <Spinner className="size-6 text-primary" />
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
           </div>
         ) : (
           <>
@@ -207,15 +195,6 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
 
             {allMessages.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
-<<<<<<< HEAD
-                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                  <MessageSquare className="w-6 h-6 text-gray-500" />
-                </div>
-                <p className="text-gray-400 text-sm font-medium">
-                  No messages yet
-                </p>
-                <p className="text-gray-500 text-xs">
-=======
                 <div className="w-12 h-12 rounded-2xl bg-muted border border-border flex items-center justify-center">
                   <MessageSquare className="w-6 h-6 text-muted-foreground" />
                 </div>
@@ -223,7 +202,6 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
                   No messages yet
                 </p>
                 <p className="text-muted-foreground/60 text-xs">
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
                   Start the conversation below
                 </p>
               </div>
@@ -233,17 +211,10 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
         <div ref={bottomRef} />
       </div>
 
-<<<<<<< HEAD
-      <div className="px-3 py-3 border-t border-white/5 bg-gray-900/40">
-        <div className="h-4 mb-1">
-          {typingUsers.length > 0 && (
-            <p className="text-[10px] text-emerald-400 font-medium animate-pulse italic">
-=======
-      <div className="px-3 py-3 border-t border-white/5 bg-card/30">
+      <div className="px-3 py-3 border-t border-border bg-card/30">
         <div className="h-4 mb-1">
           {typingUsers.length > 0 && (
             <p className="text-[10px] text-primary font-medium animate-pulse italic">
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
               {typingUsers.length === 1
                 ? `${typingUsers[0].name} is typing...`
                 : `${typingUsers.map((u) => u.name).join(", ")} are typing...`}
@@ -256,36 +227,23 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder="Send a message..."
-<<<<<<< HEAD
-            className="flex-1 bg-white/5 border-white/10 text-sm h-9 rounded-xl focus-visible:ring-emerald-500/30"
-=======
             className="flex-1 bg-muted/20 border-border text-sm h-9 rounded-xl"
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
           />
           <Button
-            size="icon-sm"
+            size="icon"
             onClick={handleSend}
             disabled={!input.trim()}
             className={cn(
-              "rounded-xl transition-all duration-200",
+              "rounded-xl h-9 w-9 transition-all duration-200",
               input.trim()
-<<<<<<< HEAD
-                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                : "bg-white/5 text-gray-600 cursor-not-allowed border border-white/5",
-=======
                 ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-                : "bg-muted text-muted-foreground cursor-not-allowed border border-border",
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+                : "bg-muted text-muted-foreground cursor-not-allowed border border-border"
             )}
           >
             <Send className="w-3.5 h-3.5" />
           </Button>
         </div>
-<<<<<<< HEAD
-        <p className="text-[10px] text-gray-600 mt-1.5 text-center">
-=======
         <p className="text-[10px] text-muted-foreground mt-1.5 text-center">
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
           Messages are only visible during this meeting
         </p>
       </div>
@@ -310,37 +268,25 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     className={cn("flex flex-col gap-0.5", isMe ? "items-end" : "items-start")}
   >
     {!isMe && (
-<<<<<<< HEAD
-      <span className="text-[10px] text-gray-400 font-medium px-1">{name}</span>
-=======
       <span className="text-[10px] text-muted-foreground font-medium px-1">
         {name}
       </span>
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
     )}
     <div
       className={cn(
         "max-w-[85%] rounded-2xl px-3 py-2 text-sm wrap-break-words break-all whitespace-pre-wrap",
         isMe
-<<<<<<< HEAD
-          ? "bg-emerald-600/80 text-white rounded-br-sm"
-          : "bg-white/8 text-gray-100 rounded-bl-sm border border-white/5",
-=======
           ? "bg-primary text-primary-foreground rounded-br-sm shadow-sm"
-          : "bg-muted/40 text-foreground rounded-bl-sm border border-border",
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
+          : "bg-muted/40 text-foreground rounded-bl-sm border border-border"
       )}
     >
       {text}
     </div>
-<<<<<<< HEAD
-    <span className="text-[10px] text-gray-500 px-1">{formatTime(time)}</span>
-=======
     <span className="text-[10px] text-muted-foreground/60 px-1">
       {formatTime(time)}
     </span>
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
   </div>
 );
 
 export default ChatPanel;
+

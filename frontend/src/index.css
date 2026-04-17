@@ -1,16 +1,9 @@
-<<<<<<< HEAD
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 @import "@fontsource-variable/geist";
 @import "tw-animate-css";
-/* @import "shadcn/tailwind.css"; */
-=======
-@import "@fontsource-variable/geist";
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
 
 @custom-variant dark (&:is(.dark *));
 
@@ -92,7 +85,6 @@
 }
 
 .dark {
-<<<<<<< HEAD
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.006 285.885);
@@ -125,62 +117,21 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.552 0.016 285.938);
-=======
-  --background: oklch(0.1 0 0); /* Near black */
-  --foreground: oklch(0.98 0 0); /* Pure white text */
-  --card: oklch(0.14 0 0); /* Slightly lighter than background */
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.12 0 0);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.98 0 0); /* White primary */
-  --primary-foreground: oklch(0.1 0 0);
-  --secondary: oklch(0.18 0 0);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.16 0 0);
-  --muted-foreground: oklch(0.6 0 0);
-  --accent: oklch(0.2 0 0);
-  --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.5 0.2 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.6 0 0);
-  --chart-1: oklch(0.6 0.2 250);
-  --chart-2: oklch(0.7 0.15 150);
-  --chart-3: oklch(0.8 0.15 80);
-  --chart-4: oklch(0.6 0.2 300);
-  --chart-5: oklch(0.6 0.2 20);
-  --sidebar: oklch(0.08 0 0);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.98 0 0);
-  --sidebar-primary-foreground: oklch(0.1 0 0);
-  --sidebar-accent: oklch(0.16 0 0);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(1 0 0 / 5%);
-  --sidebar-ring: oklch(0.6 0 0);
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
   }
   html {
-<<<<<<< HEAD
-    @apply font-sans text-slate-900 antialiased;
+    @apply font-sans antialiased;
   }
 }
 
 /* Custom Styled Scrollbar */
-=======
-    @apply font-sans text-foreground bg-background antialiased;
-  }
-}
-
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -191,29 +142,16 @@
 }
 
 ::-webkit-scrollbar-thumb {
-<<<<<<< HEAD
-  background: #e2e8f0; /* slate-200 */
-=======
   background: var(--border);
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-<<<<<<< HEAD
-  background: #cbd5e1; /* slate-300 */
+  background: var(--muted-foreground);
 }
 
 /* For Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #e2e8f0 transparent;
-=======
-  background: var(--muted-foreground);
-}
-
-* {
-  scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
 }

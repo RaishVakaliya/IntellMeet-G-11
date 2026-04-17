@@ -20,7 +20,6 @@ import { execSync } from "child_process";
 
 dotenv.config();
 
-<<<<<<< HEAD
 //Connect DB & Redis - TEMP MOCK FOR TESTING
 let useMockDB = true;
 
@@ -28,23 +27,11 @@ connectDB().catch(err => console.log('DB connect failed:', err.message));
 // connectRedis().catch(err => console.log('Redis connect failed:', err.message));
 
 console.log('Using mock DB/Redis for demo (add .env for real)');
-=======
-// Connect MongoDB
-await connectDB();
-
-// Redis disabled temporarily
-// await connectRedis();
->>>>>>> updated frontend and backend files
 
 const app = express();
 const httpServer = createServer(app);
 
-<<<<<<< HEAD
-//await initializeSocket(httpServer); // TEMP disable sockets until DB ready
-=======
-// Socket disabled temporarily
-// await initializeSocket(httpServer);
->>>>>>> updated frontend and backend files
+await initializeSocket(httpServer);
 
 // Security Middleware
 app.use(helmet());
@@ -52,15 +39,9 @@ app.use(helmet());
 // ✅ Fixed CORS for localhost + 127.0.0.1
 app.use(
   cors({
-<<<<<<< HEAD
     origin: process.env.FRONTEND_URL || [
       "http://localhost:5173",
-      
-=======
-    origin: [
-     
       "http://127.0.0.1:5173",
->>>>>>> updated frontend and backend files
     ],
     credentials: true,
   })

@@ -99,14 +99,6 @@ export const endMeeting = async (req, res) => {
       userIds.forEach((uid) => io.to(`user:${uid}`).emit("meetings-updated"));
     } catch {}
 
-    } catch {}
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
-=======
-    } catch {}
-=======
-    } catch {}
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
-
     return res.status(200).json({
       message: "Meeting ended",
       meeting,

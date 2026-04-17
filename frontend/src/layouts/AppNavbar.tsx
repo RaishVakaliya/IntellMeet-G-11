@@ -29,45 +29,16 @@ export const AppNavbar = () => {
   const [isCheckingLogout, setIsCheckingLogout] = useState(false);
 
   const handleLogout = async () => {
-    if (!user || isCheckingLogout) return;
     setIsCheckingLogout(true);
     try {
-      const meetings = await getMyMeetings();
-      const hostActiveMeeting = meetings.find((meeting) => {
-        const isActive = meeting.status !== "ended";
-        const createdByMatches =
-          meeting.createdBy?._id === user._id ||
-          (!!user.email && meeting.createdBy?.email === user.email);
-        const hostParticipantMatches = meeting.participants.some(
-          (participant) => {
-            if (participant.role !== "host") return false;
-            const participantUserId =
-              typeof participant.user === "string"
-                ? participant.user
-                : participant.user?._id;
-            return participantUserId === user._id;
-          },
-        );
-
-        return isActive && (createdByMatches || hostParticipantMatches);
-      });
-
-      if (hostActiveMeeting) {
-        toast.error("End your active hosted meeting before logging out.", {
-          action: {
-            label: "Go to meeting",
-            onClick: () => navigate(`/room/${hostActiveMeeting.meetingCode}`),
-          },
-        });
-        return;
-      }
-
       await logout();
       navigate("/auth/signin", { replace: true });
     } catch {
-      toast.error("Could not verify ongoing meetings. Please try again.");
-    } finally {
+      toast.error("Logout failed. Clearing local data.");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
       setIsCheckingLogout(false);
+      navigate("/auth/signin", { replace: true });
     }
   };
 

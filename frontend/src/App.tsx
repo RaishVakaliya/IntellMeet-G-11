@@ -9,11 +9,6 @@ import { Toaster } from "sonner";
 import { useAuthStore } from "./stores/authStore";
 
 function App() {
-    <BrowserRouter>
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
-      <Toaster richColors position="top-center" />
-      <Routes>
-=======
   const hydrateAuth = useAuthStore((state) => state.hydrateAuth);
 
   useEffect(() => {
@@ -22,91 +17,6 @@ function App() {
 
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <Toaster richColors position="top-center" />
-      <Routes>
-=======
-  return (
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <Toaster richColors position="top-center" />
-=======
-    <BrowserRouter>
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
-      <Toaster richColors position="top-center" />
-      <Routes>
-=======
-  const hydrateAuth = useAuthStore((state) => state.hydrateAuth);
-
-  useEffect(() => {
-    hydrateAuth();
-  }, [hydrateAuth]);
-
-  return (
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <Toaster richColors position="top-center" />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <PublicOnlyRoute>
-              <LandingPage />
-            </PublicOnlyRoute>
-          }
-        />
-        <Route path="/auth" element={<Navigate to="/auth/signin" replace />} />
-
-        <Route
-          path="/auth/:mode"
-          element={
-            <PublicOnlyRoute>
-              <AuthPage />
-            </PublicOnlyRoute>
-          }
-        />
-
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Homepage />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/room/:roomId"
-          element={
-            <ProtectedRoute>
-              <MeetingRoom />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
-  );
-}
-=======
-    <BrowserRouter>
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
-      <Toaster richColors position="top-center" />
-      <Routes>
-=======
-  const hydrateAuth = useAuthStore((state) => state.hydrateAuth);
-
-  useEffect(() => {
-    hydrateAuth();
-  }, [hydrateAuth]);
-
-  return (
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <Toaster richColors position="top-center" />
-      <Routes>
-=======
-  return (
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <Toaster richColors position="top-center" />
-=======
-    <BrowserRouter>
->>>>>>> 0bcab1727e0ddebe55990aaaa6b42b86e922bf4a
       <Toaster richColors position="top-center" />
       <Routes>
         <Route
@@ -151,3 +61,4 @@ function App() {
 }
 
 export default App;
+

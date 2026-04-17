@@ -1,6 +1,5 @@
 import { Sidebar } from "./Sidebar";
-import { Navbar } from "./Navbar";
-import { ToastContainer } from "@/components/ui/Toast";
+import { AppNavbar } from "./AppNavbar";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -12,12 +11,11 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
     <div className="flex min-h-screen">
       <Sidebar />
       <div className="flex-1 ml-[220px] flex flex-col min-h-screen">
-        <Navbar title={title} />
+        <AppNavbar />
         <main className="flex-1 p-6 overflow-x-hidden">
           {children}
         </main>
       </div>
-      <ToastContainer />
     </div>
   );
 }

@@ -3,6 +3,8 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { LandingPage } from "./pages/LandingPage";
 import { AuthPage } from "./pages/AuthPage";
 import Homepage from "./pages/Homepage";
+import { DashboardLayout } from "./layouts/DashboardLayout";
+import Dashboard from "./pages/Dashboard";
 import MeetingRoom from "./pages/MeetingRoom";
 import { ProtectedRoute, PublicOnlyRoute } from "./components/ProtectedRoute";
 import { Toaster } from "sonner";
@@ -42,7 +44,33 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Homepage />
+              <div className="DashboardLayoutWrapper">
+                <DashboardLayout>
+                  <Dashboard />
+                </DashboardLayout>
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/MeetingRoom" element={
+            <ProtectedRoute>
+              <div className="DashboardLayoutWrapper">
+                <DashboardLayout>
+                  <MeetingRoom />
+                </DashboardLayout>
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/*"
+          element={
+            <ProtectedRoute>
+              <div className="DashboardLayoutWrapper">
+                <DashboardLayout>
+                  <div>Page not found</div>
+                </DashboardLayout>
+              </div>
             </ProtectedRoute>
           }
         />

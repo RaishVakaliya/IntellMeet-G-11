@@ -7,7 +7,11 @@ import { DashboardLayout } from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import MeetingRoom from "./pages/MeetingRoom";
 import AnalyticsPage from "./pages/analytics";
+import EditProfile from "./pages/EditProfile";
+import Settings from "./pages/Settings";
+import Help from "./pages/Help";
 import { ProtectedRoute, PublicOnlyRoute } from "./components/ProtectedRoute";
+
 import { Toaster } from "sonner";
 import { useAuthStore } from "./stores/authStore";
 
@@ -73,6 +77,33 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/profile/edit" element={
+            <ProtectedRoute>
+              <div className="DashboardLayoutWrapper">
+                <DashboardLayout>
+                  <EditProfile />
+                </DashboardLayout>
+              </div>
+            </ProtectedRoute>
+          } />
+        <Route path="/settings" element={
+            <ProtectedRoute>
+              <div className="DashboardLayoutWrapper">
+                <DashboardLayout>
+                  <Settings />
+                </DashboardLayout>
+              </div>
+            </ProtectedRoute>
+          } />
+        <Route path="/help" element={
+            <ProtectedRoute>
+              <div className="DashboardLayoutWrapper">
+                <DashboardLayout>
+                  <Help />
+                </DashboardLayout>
+              </div>
+            </ProtectedRoute>
+          } />
         <Route
           path="/dashboard/*"
           element={
@@ -93,7 +124,8 @@ function App() {
               <MeetingRoom />
             </ProtectedRoute>
           }
-        />
+        />  
+
       </Routes>
     </BrowserRouter>
   );

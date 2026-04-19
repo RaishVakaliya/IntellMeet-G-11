@@ -6,6 +6,7 @@ import Homepage from "./pages/Homepage";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import MeetingRoom from "./pages/MeetingRoom";
+import AnalyticsPage from "./pages/analytics";
 import { ProtectedRoute, PublicOnlyRoute } from "./components/ProtectedRoute";
 import { Toaster } from "sonner";
 import { useAuthStore } from "./stores/authStore";
@@ -62,6 +63,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/analytics" element={
+            <ProtectedRoute>
+              <div className="DashboardLayoutWrapper">
+                <DashboardLayout>
+                  <AnalyticsPage />
+                </DashboardLayout>
+              </div>
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/dashboard/*"
           element={
@@ -89,4 +100,3 @@ function App() {
 }
 
 export default App;
-

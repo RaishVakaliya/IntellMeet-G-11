@@ -11,10 +11,14 @@ export default defineConfig([
     files: ['**/*.{ts,tsx}'],
     extends: [
       js.configs.recommended,
-      tseslint.configs.recommended,
+      ...tseslint.configs.recommended,
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
     ],
+    rules: {
+      'no-const-assign': 'off',
+      'constructor-super': 'off'
+    },
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,

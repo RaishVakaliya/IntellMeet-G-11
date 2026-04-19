@@ -39,10 +39,15 @@ app.use(helmet());
 // ✅ Fixed CORS for localhost + 127.0.0.1
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || [
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-    ],
+    origin: function (origin, callback) {
+      // Allow localhost and 127.0.0.1:5173 for dev, reflect origin
+      const allowedPattern = /^http:\/\/(localhost|127\.0\.0\.1):5173$/;
+      if (allowedPattern.test(origin || '') || !origin) {
+        callback(null, origin);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   })
 );

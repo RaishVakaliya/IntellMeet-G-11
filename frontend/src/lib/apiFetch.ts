@@ -1,6 +1,7 @@
 import { useAuthStore } from "@/stores/authStore";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE = import.meta.env.MODE === 'development' ? '' : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000');
+  // Uses Vite proxy /api -> localhost:5000 in dev (relative paths), absolute in prod
 
 export async function apiFetch(
   path: string,

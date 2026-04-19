@@ -62,7 +62,7 @@ const Dashboard = () => {
       toast.success("Meeting created successfully!");
       navigate(`/room/${meeting.meetingCode}`);
     },
-    onError: () => toast.error("Failed to create meeting"),
+    onError: (error) => toast.error(error.message || "Failed to create meeting"),
   });
 
   const handleCreateMeeting = () => {

@@ -29,6 +29,19 @@ export const useWebRTC = ({
   socket,
   onRemoteStream,
 }: UseWebRTCOptions) => {
+  if (!meetingCode) {
+    return {
+      localVideoRef: { current: null },
+      localStreamRef: { current: null },
+      toggleMicTrack: () => {},
+      toggleCameraTrack: () => {},
+      startScreenShare: async () => null,
+      stopScreenShare: () => {},
+      startLocalMedia: async () => null,
+      registerRemoteVideoRef: () => {},
+      peerConnections: new Map(),
+    };
+  }
   const { setLocalStream } = useMeetingStore();
 
   const localStreamRef = useRef<MediaStream | null>(null);

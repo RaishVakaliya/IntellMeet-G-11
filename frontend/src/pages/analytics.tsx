@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "../components/ui/tooltip";
 import {
   Check,
   Copy,
@@ -21,21 +21,23 @@ import {
   PhoneOff,
   Users,
   ChevronRight,
+  BarChart3,
+  Activity,
 } from "lucide-react";
-import { useMeetingStore } from "@/stores/meetingStore";
-import { useAuthStore } from "@/stores/authStore";
-import { getMeetingDetails, endMeeting } from "@/services/meetingService";
-import { useSocket } from "@/hooks/useSocket";
-import { useWebRTC } from "@/hooks/useWebRTC";
-import { useAudioDetection } from "@/hooks/useAudioDetection";
-import { DashboardLayout } from "@/layouts/DashboardLayout";
-import VideoGrid from "@/meeting/VideoGrid";
-import ControlsBar from "@/meeting/ControlsBar";
-import ChatPanel from "@/meeting/ChatPanel";
-import ParticipantList from "@/meeting/ParticipantList";
+import { useMeetingStore } from "../stores/meetingStore";
+import { useAuthStore } from "../stores/authStore";
+import { getMeetingDetails, endMeeting } from "../services/meetingService";
+import { useSocket } from "../hooks/useSocket";
+import { useWebRTC } from "../hooks/useWebRTC";
+import { useAudioDetection } from "../hooks/useAudioDetection";
+import { DashboardLayout } from "../layouts/DashboardLayout";
+import VideoGrid from "../meeting/VideoGrid";
+import ControlsBar from "../meeting/ControlsBar";
+import ChatPanel from "../meeting/ChatPanel";
+import ParticipantList from "../meeting/ParticipantList";
 import { toast } from "sonner";
 
-export default function MeetingRoom() {
+export default function AnalyticsPage() {
   const { code } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -111,7 +113,7 @@ export default function MeetingRoom() {
     joinMeeting(roomId)
       .then(() => setIsJoining(false))
       .catch(() => {
-        toast.error("Failed to join meeting");
+        toast.error("Failed to join analytics session");
         navigate("/dashboard");
       });
   }, [roomId, queryMeetingDetails.data, joinMeeting, navigate]);
@@ -202,7 +204,7 @@ export default function MeetingRoom() {
       })
     );
     socket?.on("meeting-ended", () => {
-      toast("Meeting ended by host");
+      toast("Session ended");
       navigate("/dashboard");
     });
 
@@ -234,7 +236,7 @@ export default function MeetingRoom() {
         <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
           <Check className="w-8 h-8 text-primary" />
         </div>
-        <p className="text-muted-foreground text-sm">Joining meeting...</p>
+        <p className="text-muted-foreground text-sm">Loading analytics...</p>
       </div>
     );
   }
@@ -243,9 +245,9 @@ export default function MeetingRoom() {
     return (
       <div className="flex flex-col items-center gap-4 text-center">
         <div className="w-16 h-16 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center">
-          <VideoOff className="w-8 h-8 text-destructive" />
+          <BarChart3 className="w-8 h-8 text-destructive" />
         </div>
-        <p className="text-destructive text-sm">Meeting not found</p>
+        <p className="text-destructive text-sm">Analytics session not found</p>
         <Button variant="destructive" onClick={() => navigate("/dashboard")}>
           Go to Dashboard
         </Button>
@@ -267,11 +269,11 @@ export default function MeetingRoom() {
                   className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 border border-border rounded-xl hover:bg-muted/50 transition-all"
                 >
                   <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{code}</span>
+                  <span className="text-sm font-medium">{code} Analytics</span>
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                <p>Meeting code: {code}</p>
+                <p>Session ID: {code}</p>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -285,20 +287,18 @@ export default function MeetingRoom() {
             </Tooltip>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Badge variant="secondary" className="h-5 px-2">
-                {activeCount}
+                {activeCount} Active
               </Badge>
-              {queryMeetingDetails.data.status === "ongoing" && (
-                <Badge
-                  variant="default"
-                  className="h-5 px-2 bg-emerald-500/20 border-emerald-500/30 text-emerald-400"
-                >
-                  Live
-                </Badge>
-              )}
+              <Badge
+                variant="default"
+                className="h-5 px-2 bg-emerald-500/20 border-emerald-500/30 text-emerald-400"
+              >
+                Live Data
+              </Badge>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline">{queryMeetingDetails.data.title}</Badge>
+            <Badge variant="outline">Analytics Dashboard</Badge>
             <Button
               variant="ghost"
               size="sm"
@@ -335,7 +335,7 @@ export default function MeetingRoom() {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Chat
+                Logs
               </button>
             </div>
             {sidebarTab === "participants" && (
@@ -363,7 +363,7 @@ export default function MeetingRoom() {
               onToggleScreenShare={handleToggleScreenShare}
               onLeave={handleLeaveMeeting}
               localVideoRef={localVideoRef}
-              audioLevel={audioLevel}
+              audioLevel={audioDetection.audioLevel}
             />
           </main>
         </div>

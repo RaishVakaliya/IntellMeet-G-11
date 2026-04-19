@@ -1,19 +1,14 @@
 import { Sidebar } from "./Sidebar";
 import { AppNavbar } from "./AppNavbar";
-
 import { useState } from "react";
-
 interface DashboardLayoutProps {
   children: React.ReactNode;
   title?: string;
 }
-
 interface SidebarProps {
   isCollapsed: boolean;
   onToggle: () => void;
 }
-
-
 export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -22,7 +17,6 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const sidebarWidth = isCollapsed ? '60px' : '220px';
 
   const mainMlClass = `transition-all duration-300 ${isCollapsed ? 'ml-0' : 'ml-[220px]'}`;
-
   return (
     <div className="flex min-h-screen">
       <Sidebar isCollapsed={isCollapsed} onToggle={toggleSidebar} />

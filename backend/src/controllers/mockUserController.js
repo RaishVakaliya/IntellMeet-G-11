@@ -1,6 +1,18 @@
 const users = new Map(); // in-memory DB
 let userIdCounter = 1;
 
+// Pre-populate demo user for instant testing
+if (users.size === 0) {
+  const demoUser = {
+    _id: 'mock_1',
+    name: 'Demo User',
+    email: 'demo@example.com',
+    password: 'demo', // matches simpleHash
+  };
+  users.set(demoUser.email, demoUser);
+  console.log('✅ Pre-populated demo user: demo@example.com / demo');
+}
+
 const simpleHash = (pass) => pass; // demo only, no real hash
 
 export const signup = async (req, res) => {

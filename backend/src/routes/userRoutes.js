@@ -1,14 +1,6 @@
 import express from "express";
 import passport from "../config/passport.js";
-import { googleCallback } from "../controllers/userController.js";
-import {
-  signup,
-  login,
-  refreshToken,
-  logout,
-  getUserProfile,
-  uploadAvatar,
-} from "../controllers/userController.js";
+import { googleCallback, signup, login, refreshToken, logout, getUserProfile, uploadAvatar } from "../controllers/mockUserController.js";
 import { protect } from "../middleware/authMiddleware.js";
 // Mocks for unused routes
 const authLimiter = (req, res, next) => next();
@@ -34,7 +26,7 @@ router.get(
 
 router.post("/signup", authLimiter, signup);
 router.post("/login", authLimiter, login);
-router.post("/refresh-token", refreshToken);
+router.post("/refresh-token", protect, refreshToken);
 router.post("/logout", logout);
 
 //protected routes

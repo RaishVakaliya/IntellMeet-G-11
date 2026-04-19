@@ -11,10 +11,11 @@ import "./AuthPage.css";
 import { toast } from "sonner";
 import { useAuthStore } from "../stores/authStore";
 import AppLogoImg from "@/assets/AppLogo.png";
+import { apiFetch } from "../lib/apiFetch";
 
 type AuthMode = "signin" | "signup";
 
-const API_BASE_URL: string = (import.meta.env as any).VITE_API_BASE_URL || "http://localhost:5000";
+
 
 export const AuthPage = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -47,9 +48,8 @@ export const AuthPage = () => {
       googleAuthProcessed.current = true;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+        const response = await apiFetch(`/api/auth/profile`, {
           headers: { Authorization: `Bearer ${oauthToken}` },
-          credentials: "include",
         });
 
         if (!response.ok) {
@@ -109,12 +109,10 @@ export const AuthPage = () => {
           ? { name: fullName.trim(), email: email.trim(), password }
           : { email: email.trim(), password };
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+        const response = await apiFetch(`/api/auth/${endpoint}`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
 
       const data = await response.json();
       if (!response.ok) {
@@ -345,4 +343,3 @@ export const AuthPage = () => {
     </div>
   );
 };
-

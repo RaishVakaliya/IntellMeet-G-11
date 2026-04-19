@@ -1,4 +1,4 @@
-import { Meeting } from "../models/meetingModel.js";
+import { createMeetingMock, findUserActiveMeeting, findMeetingByCode, updateMeeting, findUserMeetings } from "../utils/mockMeetings.js";
 import { nanoid } from "nanoid";
 import redisClient from "../config/redis.js";
 import { getIO } from "../sockets/socket.js";
@@ -9,10 +9,7 @@ export const createMeeting = async (req, res) => {
   try {
     const { title, description, startTime } = req.body;
 
-    const existingMeeting = await Meeting.findOne({
-      createdBy: req.user._id,
-      status: { $ne: "ended" },
-    });
+    const existingMeeting = await findUserActiveMeeting(req.user._id);
 
     if (existingMeeting) {
       return res.status(400).json({
@@ -23,7 +20,7 @@ export const createMeeting = async (req, res) => {
 
     const meetingCode = nanoid(10);
 
-    const meeting = await Meeting.create({
+    const meeting = await createMeetingMock({
       title,
       description,
       startTime: startTime || new Date(),
@@ -44,6 +41,7 @@ export const createMeeting = async (req, res) => {
 
     res.status(201).json(meeting);
   } catch (error) {
+    console.error('Create meeting error:', error);
     res.status(500).json({ message: "Error creating meeting" });
   }
 };
@@ -52,7 +50,7 @@ export const endMeeting = async (req, res) => {
   try {
     const { code } = req.params;
 
-    const meeting = await Meeting.findOne({ meetingCode: code });
+    const meeting = await findMeetingByCode(code);
     if (!meeting) {
       return res.status(404).json({ message: "Meeting not found" });
     }
@@ -69,12 +67,14 @@ export const endMeeting = async (req, res) => {
     }
 
     if (meeting.status !== "ended") {
-      meeting.status = "ended";
-      meeting.endTime = new Date();
-      meeting.participants.forEach((participant) => {
-        if (!participant.leftAt) participant.leftAt = new Date();
+      await updateMeeting(code, {
+        status: "ended",
+        endTime: new Date(),
+        participants: meeting.participants.map((participant) => ({
+          ...participant,
+          leftAt: participant.leftAt || new Date(),
+        })),
       });
-      await meeting.save();
     }
 
     if (redisClient.isOpen) {
@@ -104,6 +104,7 @@ export const endMeeting = async (req, res) => {
       meeting,
     });
   } catch (error) {
+    console.error('End meeting error:', error);
     return res.status(500).json({ message: "Error ending meeting" });
   }
 };
@@ -119,9 +120,7 @@ export const getMyMeetings = async (req, res) => {
       }
     }
 
-    const meetings = await Meeting.find({
-      $or: [{ createdBy: req.user._id }, { "participants.user": req.user._id }],
-    }).populate("createdBy", "name email avatar");
+    const meetings = await findUserMeetings(req.user._id);
 
     if (redisClient.isOpen) {
       await redisClient.setEx(
@@ -134,6 +133,7 @@ export const getMyMeetings = async (req, res) => {
 
     res.status(200).json(meetings);
   } catch (error) {
+    console.error('Get meetings error:', error);
     res.status(500).json({ message: "Error fetching meetings" });
   }
 };
@@ -145,15 +145,12 @@ export const joinMeeting = async (req, res) => {
       return res.status(400).json({ message: "Meeting code is required" });
     }
 
-    const meeting = await Meeting.findOne({ meetingCode });
+    let meeting = await findMeetingByCode(meetingCode);
     if (!meeting) return res.status(404).json({ message: "Meeting not found" });
     if (meeting.status === "ended")
       return res.status(400).json({ message: "Meeting already ended" });
 
-    const joinerActiveMeeting = await Meeting.findOne({
-      createdBy: req.user._id,
-      status: { $ne: "ended" },
-    });
+    const joinerActiveMeeting = await findUserActiveMeeting(req.user._id);
 
     if (
       joinerActiveMeeting &&
@@ -170,9 +167,10 @@ export const joinMeeting = async (req, res) => {
       (p) => p.user.toString() === req.user._id.toString(),
     );
 
+    const updates = {};
     if (meeting.status === "scheduled") {
-      meeting.status = "ongoing";
-      meeting.startTime = meeting.startTime || new Date();
+      updates.status = "ongoing";
+      updates.startTime = meeting.startTime || new Date();
     }
 
     if (!isAlreadyParticipant) {
@@ -181,6 +179,7 @@ export const joinMeeting = async (req, res) => {
         role: "member",
         joinedAt: new Date(),
       });
+      updates.participants = meeting.participants;
 
       if (redisClient.isOpen) {
         await redisClient.del(`meeting:${meetingCode}`);
@@ -194,7 +193,7 @@ export const joinMeeting = async (req, res) => {
       } catch {}
     }
 
-    await meeting.save();
+    meeting = await updateMeeting(meetingCode, updates);
 
     try {
       const io = getIO();
@@ -204,6 +203,7 @@ export const joinMeeting = async (req, res) => {
 
     res.status(200).json(meeting);
   } catch (error) {
+    console.error('Join meeting error:', error);
     res.status(500).json({ message: "Error joining meeting" });
   }
 };
@@ -219,9 +219,7 @@ export const getMeetingDetails = async (req, res) => {
       }
     }
 
-    const meeting = await Meeting.findOne({ meetingCode: code })
-      .populate("participants.user", "name email avatar")
-      .populate("createdBy", "name email avatar");
+    const meeting = await findMeetingByCode(code);
 
     if (!meeting) return res.status(404).json({ message: "Meeting not found" });
 
@@ -236,6 +234,8 @@ export const getMeetingDetails = async (req, res) => {
 
     res.status(200).json(meeting);
   } catch (error) {
+    console.error('Get meeting details error:', error);
     res.status(500).json({ message: "Error fetching meeting details" });
   }
 };
+

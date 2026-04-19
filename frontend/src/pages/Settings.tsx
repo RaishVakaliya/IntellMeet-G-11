@@ -4,11 +4,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { 
   User, Mail, Bell, Shield, CreditCard, Globe, Save, Download, 
-  Loader2, Smartphone, Volume2, Moon 
+  Loader2, Smartphone, Volume2, Moon, Sparkles 
 } from 'lucide-react';
 import { toast } from 'sonner';
 

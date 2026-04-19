@@ -26,7 +26,7 @@ router.get(
 
 router.post("/signup", authLimiter, signup);
 router.post("/login", authLimiter, login);
-router.post("/refresh-token", protect, refreshToken);
+router.post("/refresh-token", refreshToken);
 router.post("/logout", logout);
 
 //protected routes

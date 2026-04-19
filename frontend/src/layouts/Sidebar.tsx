@@ -14,15 +14,15 @@ import { cn } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
 
 const NAV_ITEMS = [
-  { to: "/dashboard", label: "My Dashboard", icon: LayoutDashboard },
-  { to: "/MeetingRoom", label: "My Meetings", icon: Calendar },
-  { to: "/analytics", label: "Analytics", icon: BarChart3 },
-  { to: "/room/new", label: "Quick Meeting", icon: Video, badge: "Live" },
+  { path: "/Dashboard", label: "My Dashboard", icon: LayoutDashboard },
+  { path: "/MeetingRoom", label: "My Meetings", icon: Calendar },
+  { path: "/Analytics", label: "Analytics", icon: BarChart3 },
+  { path: "/room/new", label: "Quick Meeting", icon: Video, badge: "Live" },
 ];
 
 const PROFILE_MENU_ITEMS = [
-  { label: "Edit Profile", path: "/profile/edit", icon: User, action: "edit-profile" },
-  { label: "Settings", path: "/settings", icon: Settings, action: "settings" },
+  { label: "Edit Profile", path: "/EditProfile", icon: User, action: "edit-profile" },
+  { label: "Settings", path: "/Settings", icon: Settings, action: "settings" },
   { label: "Help & Support", path: "/help", icon: HelpCircle, action: "help" },
 ];
 export function Sidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; onToggle: () => void }) {

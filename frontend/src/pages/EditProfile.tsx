@@ -83,7 +83,20 @@ export default function EditProfile() {
     );
   }
 
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-xl font-bold">?</span>
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Profile not found</h2>
+          <p className="text-muted-foreground mb-6">Please refresh or log in again.</p>
+          <Button onClick={() => window.location.reload()}>Reload</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 max-w-2xl">
@@ -110,7 +123,7 @@ export default function EditProfile() {
                     alt="Profile picture"
                   />
                   <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-                    {getInitials(profile.username)}
+                    {getInitials(profile.username || 'Unknown User')}
                   </AvatarFallback>
                 </Avatar>
                 <Label

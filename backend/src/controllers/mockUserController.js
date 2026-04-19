@@ -1,3 +1,5 @@
+import { generateAccessToken } from '../utils/generateToken.js';
+
 const users = new Map(); // in-memory DB
 let userIdCounter = 1;
 
@@ -31,7 +33,7 @@ export const signup = async (req, res) => {
     };
     users.set(email, user);
 
-    const accessToken = Buffer.from(JSON.stringify({ userId })).toString('base64'); // simple token
+    const accessToken = generateAccessToken(userId);
     res.status(201).json({
       _id: user._id,
       name: user.name,
@@ -48,7 +50,7 @@ export const login = async (req, res) => {
   try {
     const user = users.get(email);
     if (user && user.password === simpleHash(password)) {
-      const accessToken = Buffer.from(JSON.stringify({ userId: user._id })).toString('base64');
+      const accessToken = generateAccessToken(user._id);
       res.status(200).json({
         _id: user._id,
         name: user.name,
@@ -65,22 +67,7 @@ export const login = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
   try {
-    // Mock req.user from token
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ message: "No token" });
-    
-    try {
-      const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
-      const allUsers = Array.from(users.values());
-      const user = allUsers.find(u => u._id === decoded.userId);
-      if (user) {
-        res.status(200).json(user);
-      } else {
-        res.status(404).json({ message: "User not found" });
-      }
-    } catch {
-      res.status(401).json({ message: "Invalid token" });
-    }
+    res.status(200).json(req.user);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
@@ -90,7 +77,14 @@ export const logout = (req, res) => {
   res.status(200).json({ message: "Logged out successfully" });
 };
 
-// Stub others
-export const refreshToken = (req, res) => res.status(501).json({ message: "Not implemented" });
-export const uploadAvatar = (req, res) => res.status(501).json({ message: "Not implemented" });
+export const refreshToken = async (req, res) => {
+  try {
+    const accessToken = generateAccessToken(req.user._id);
+    res.status(200).json({ accessToken });
+  } catch (error) {
+    res.status(500).json({ message: "Refresh failed" });
+  }
+};
+
+export const uploadAvatar = (req, res) => res.status(200).json({ message: "Upload stub" });
 export const googleCallback = (req, res) => res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/signin`);

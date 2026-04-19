@@ -77,7 +77,7 @@ export default function AnalyticsPage() {
     onRemoteStream: undefined 
   });
 
-  const audioDetection = localStream ? useAudioDetection(localStream) : { audioLevel: 0, isSpeaking: false };
+  const audioDetection = localStream ? useAudioDetection("local", localStream) : { audioLevel: 0, isSpeaking: false };
 
   const [copied, setCopied] = useState(false);
   const [isJoining, setIsJoining] = useState(true);

@@ -1,24 +1,38 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMeetingStore } from "@/stores/meetingStore";
 
 export const useAudioDetection = (
-  userId: string,
+  userId: string | undefined,
   stream: MediaStream | undefined,
-) => {
+): { audioLevel: number; isSpeaking: boolean } => {
   const { setSpeaking } = useMeetingStore();
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const [audioLevel, setAudioLevel] = useState(0);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   useEffect(() => {
-    if (!stream || !userId) return;
+    if (!stream) {
+      setAudioLevel(0);
+      setIsSpeaking(false);
+      if (userId) setSpeaking(userId, false);
+      return;
+    }
 
     const audioTracks = stream.getAudioTracks();
     if (audioTracks.length === 0) {
-      setSpeaking(userId, false);
+      setAudioLevel(0);
+      setIsSpeaking(false);
+      if (userId) setSpeaking(userId, false);
       return;
     }
+
+    let lastSpeakingState = false;
+    const THRESHOLD = 35;
+    const SMOOTHING = 0.8;
+    let currentVolume = 0;
 
     try {
       const AudioContextClass =
@@ -41,11 +55,6 @@ export const useAudioDetection = (
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
 
-      let lastSpeakingState = false;
-      const THRESHOLD = 35;
-      const SMOOTHING = 0.8;
-      let currentVolume = 0;
-
       const checkAudio = () => {
         if (!analyserRef.current) return;
 
@@ -58,12 +67,15 @@ export const useAudioDetection = (
         const average = sum / bufferLength;
 
         currentVolume = average * (1 - SMOOTHING) + currentVolume * SMOOTHING;
+        const normalizedLevel = currentVolume / 255; // 0-1 range
+        const speaking = currentVolume > THRESHOLD;
 
-        const isSpeaking = currentVolume > THRESHOLD;
+        setAudioLevel(normalizedLevel);
+        setIsSpeaking(speaking);
 
-        if (isSpeaking !== lastSpeakingState) {
-          lastSpeakingState = isSpeaking;
-          setSpeaking(userId, isSpeaking);
+        if (userId && speaking !== lastSpeakingState) {
+          lastSpeakingState = speaking;
+          setSpeaking(userId, speaking);
         }
 
         animationFrameRef.current = requestAnimationFrame(checkAudio);
@@ -71,7 +83,9 @@ export const useAudioDetection = (
 
       checkAudio();
     } catch (err) {
-      console.error("Audio detection error for user", userId, err);
+      console.error("Audio detection error", userId || "local", err);
+      setAudioLevel(0);
+      setIsSpeaking(false);
     }
 
     return () => {
@@ -87,7 +101,11 @@ export const useAudioDetection = (
       ) {
         audioContextRef.current.close();
       }
-      setSpeaking(userId, false);
+      if (userId) setSpeaking(userId, false);
+      setAudioLevel(0);
+      setIsSpeaking(false);
     };
-  }, [userId, stream, setSpeaking]);
+  }, [stream, userId, setSpeaking]);
+
+  return { audioLevel, isSpeaking };
 };

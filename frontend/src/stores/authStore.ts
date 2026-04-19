@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { AuthState } from "@/types/auth";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE = (import.meta.env as any).DEV ? '' : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000');
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,

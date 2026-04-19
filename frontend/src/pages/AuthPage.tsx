@@ -86,7 +86,7 @@ export const AuthPage = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `${API_BASE_URL}/api/auth/google`;
+    window.location.href = `/api/auth/google`;
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {

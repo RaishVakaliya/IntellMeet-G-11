@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuthStore } from "@/stores/authStore";
 
-const SOCKET_URL = "";
+const SOCKET_URL = (import.meta.env as any).DEV ? "/socket.io" : "http://localhost:5000";
 
 let socketInstance: Socket | null = null;
 

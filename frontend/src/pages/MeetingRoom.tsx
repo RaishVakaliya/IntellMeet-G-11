@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,13 +14,7 @@ import {
   Copy,
   VideoOff,
   ChevronLeft,
-  Mic,
-  MicOff,
-  Video,
-  ScreenShare,
   PhoneOff,
-  Users,
-  ChevronRight,
 } from "lucide-react";
 import { useMeetingStore } from "@/stores/meetingStore";
 import { useAuthStore } from "@/stores/authStore";
@@ -28,7 +22,6 @@ import { getMeetingDetails, endMeeting } from "@/services/meetingService";
 import { useSocket } from "@/hooks/useSocket";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAudioDetection } from "@/hooks/useAudioDetection";
-import { DashboardLayout } from "@/layouts/DashboardLayout";
 import VideoGrid from "@/meeting/VideoGrid";
 import ControlsBar from "@/meeting/ControlsBar";
 import ChatPanel from "@/meeting/ChatPanel";
@@ -38,14 +31,11 @@ import { toast } from "sonner";
 export default function MeetingRoom() {
   const { code } = useParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const {
     participants,
     messages,
     typingUsers,
-    speakingUsers,
-    onlineUsers,
     localStream,
     isMuted,
     isCameraOff,
@@ -69,13 +59,13 @@ export default function MeetingRoom() {
     startLocalMedia,
     startScreenShare,
     stopScreenShare,
-  } = useWebRTC({ 
-    meetingCode: code!, 
-    socket, 
-    onRemoteStream: undefined 
+  } = useWebRTC({
+    meetingCode: code!,
+    socket,
+    onRemoteStream: undefined,
   });
 
-  const audioDetection = localStream ? useAudioDetection(localStream) : { audioLevel: 0, isSpeaking: false };
+  const { audioLevel, isSpeaking } = useAudioDetection("local", localStream ?? undefined);
 
   const [copied, setCopied] = useState(false);
   const [isJoining, setIsJoining] = useState(true);
@@ -89,7 +79,8 @@ export default function MeetingRoom() {
   });
 
   const isHost =
-    queryMeetingDetails.data?.createdBy?._id === useAuthStore.getState().user?._id;
+    queryMeetingDetails.data?.createdBy?._id ===
+    useAuthStore.getState().user?._id;
 
   const joinMeeting = useCallback(
     (id: string): Promise<void> => {
@@ -104,8 +95,19 @@ export default function MeetingRoom() {
     [socket]
   );
 
-  const meetingDetails = queryMeetingDetails.data;
+  // ✅ Fix 2: Set roomId when meeting details load
+  useEffect(() => {
+    if (queryMeetingDetails.data?.meetingCode && !roomId) {
+      useMeetingStore.getState().setRoomId(queryMeetingDetails.data.meetingCode);
+    }
+  }, [queryMeetingDetails.data, roomId]);
 
+  // ✅ Fix 3: Start local media once on mount
+  useEffect(() => {
+    startLocalMedia();
+  }, [startLocalMedia]);
+
+  // ✅ Fix 4: Join meeting after roomId and meeting data are ready
   useEffect(() => {
     if (!roomId || !queryMeetingDetails.data) return;
     joinMeeting(roomId)
@@ -115,13 +117,6 @@ export default function MeetingRoom() {
         navigate("/dashboard");
       });
   }, [roomId, queryMeetingDetails.data, joinMeeting, navigate]);
-
-  // Set roomId when meeting details load
-  useEffect(() => {
-    if (queryMeetingDetails.data?.meetingCode && !roomId) {
-      useMeetingStore.getState().setRoomId(queryMeetingDetails.data.meetingCode);
-    }
-  }, [queryMeetingDetails.data, roomId]);
 
   const copyCode = () => {
     navigator.clipboard.writeText(code ?? "");
@@ -134,7 +129,7 @@ export default function MeetingRoom() {
     navigate("/dashboard");
   };
 
-  const handleToggleMic = async () => {
+  const handleToggleMic = () => {
     const newMutedState = !isMuted;
     socket?.emit("toggle-audio", {
       meetingCode: roomId,
@@ -143,7 +138,7 @@ export default function MeetingRoom() {
     updateParticipantMedia("local", { isMuted: newMutedState });
   };
 
-  const handleToggleCamera = async () => {
+  const handleToggleCamera = () => {
     const newCameraState = !isCameraOff;
     socket?.emit("toggle-video", {
       meetingCode: roomId,
@@ -225,12 +220,11 @@ export default function MeetingRoom() {
     removeOnlineUser,
     updateParticipantMedia,
     navigate,
-    roomId,
   ]);
 
   if (isJoining) {
     return (
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center justify-center h-screen gap-4">
         <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
           <Check className="w-8 h-8 text-primary" />
         </div>
@@ -241,7 +235,7 @@ export default function MeetingRoom() {
 
   if (!queryMeetingDetails.data) {
     return (
-      <div className="flex flex-col items-center gap-4 text-center">
+      <div className="flex flex-col items-center justify-center h-screen gap-4 text-center">
         <div className="w-16 h-16 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center">
           <VideoOff className="w-8 h-8 text-destructive" />
         </div>
@@ -253,11 +247,12 @@ export default function MeetingRoom() {
     );
   }
 
-  const activeCount = queryMeetingDetails.data!.participants?.length ?? 0;
+  const activeCount = queryMeetingDetails.data.participants?.length ?? 0;
 
   return (
     <TooltipProvider>
       <div className="dark h-screen flex flex-col bg-background/95 text-foreground overflow-hidden">
+        {/* Header */}
         <header className="flex items-center justify-between px-5 py-3 bg-primary/5 border-b border-white/5 backdrop-blur-xl shrink-0">
           <div className="flex items-center gap-4">
             <Tooltip>
@@ -283,6 +278,7 @@ export default function MeetingRoom() {
                 </Button>
               </TooltipContent>
             </Tooltip>
+
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Badge variant="secondary" className="h-5 px-2">
                 {activeCount}
@@ -297,6 +293,7 @@ export default function MeetingRoom() {
               )}
             </div>
           </div>
+
           <div className="flex items-center gap-2">
             <Badge variant="outline">{queryMeetingDetails.data.title}</Badge>
             <Button
@@ -311,10 +308,11 @@ export default function MeetingRoom() {
         </header>
 
         <div className="flex flex-1 overflow-hidden">
+          {/* Sidebar */}
           <div
             className={`transition-all duration-300 ${
               isSidebarOpen ? "w-80" : "w-0"
-            } flex flex-col border-l border-white/5 bg-card/10 shrink-0`}
+            } flex flex-col border-r border-white/5 bg-card/10 shrink-0 overflow-hidden`}
           >
             <div className="flex border-b border-white/5 shrink-0">
               <button
@@ -322,7 +320,7 @@ export default function MeetingRoom() {
                 className={`flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
                   sidebarTab === "participants"
                     ? "text-primary border-primary"
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground hover:text-foreground border-transparent"
                 }`}
               >
                 Participants
@@ -332,12 +330,13 @@ export default function MeetingRoom() {
                 className={`flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
                   sidebarTab === "chat"
                     ? "text-primary border-primary"
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground hover:text-foreground border-transparent"
                 }`}
               >
                 Chat
               </button>
             </div>
+
             {sidebarTab === "participants" && (
               <ParticipantList participants={participants} />
             )}
@@ -346,6 +345,7 @@ export default function MeetingRoom() {
             )}
           </div>
 
+          {/* Main content */}
           <main className="flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 p-4 overflow-auto">
               <VideoGrid

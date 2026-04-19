@@ -236,7 +236,7 @@ export function Sidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; onTog
         >
           <Avatar className="h-8 w-8">
             <AvatarImage
-              src={`https://api.dicebear.com/7.x/identicon/svg?seed=${user.username}`}
+              src={user.avatarUrl || `https://api.dicebear.com/7.x/identicon/svg?seed=${user.username}`}
               alt={user.username}
             />
             <AvatarFallback className="text-xs font-semibold text-slate-900 bg-slate-100">

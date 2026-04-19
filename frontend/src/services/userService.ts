@@ -4,6 +4,7 @@ import type { User } from '../types/auth';
 export interface UpdateProfileData {
   username?: string;
   email?: string;
+  avatarUrl?: string;
 }
 
 export const getProfile = async (): Promise<User> => {

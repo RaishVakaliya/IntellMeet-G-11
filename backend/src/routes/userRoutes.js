@@ -1,6 +1,6 @@
 import express from "express";
 import passport from "../config/passport.js";
-import { googleCallback, signup, login, refreshToken, logout, getUserProfile, uploadAvatar } from "../controllers/mockUserController.js";
+import { googleCallback, signup, login, refreshToken, logout, getUserProfile, uploadAvatar, updateProfile } from "../controllers/mockUserController.js";
 import { protect } from "../middleware/authMiddleware.js";
 // Mocks for unused routes
 const authLimiter = (req, res, next) => next();
@@ -32,5 +32,7 @@ router.post("/logout", logout);
 //protected routes
 router.get("/profile", protect, getUserProfile);
 router.post("/avatar-upload", protect, upload.single("avatar"), uploadAvatar);
+
+router.put("/profile", protect, updateProfile);
 
 export default router;

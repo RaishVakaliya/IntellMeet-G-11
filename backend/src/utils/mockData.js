@@ -17,4 +17,6 @@ if (users.size === 0) {
   console.log('✅ Global mockData: Demo user created - demo@example.com / demo');
 }
 
+export const getNextUserId = () => `mock_${userIdCounter++}`;
+
 export { users, userIdCounter, meetings, meetingIdCounter };

@@ -19,18 +19,6 @@ export const getChatHistory = async (req, res) => {
 };
 
 export const saveMessage = async (meetingCode, senderId, message) => {
-  try {
-    if (!message) return false;
-
-    await ChatMessage.create({
-      meetingCode,
-      sender: senderId,
-      content: message,
-    });
-
-    return true;
-  } catch (error) {
-    console.error("Error saving message:", error);
-    return false;
-  }
+  console.log(`[Mock Chat] Saved message to ${meetingCode}`);
+  return true;
 };

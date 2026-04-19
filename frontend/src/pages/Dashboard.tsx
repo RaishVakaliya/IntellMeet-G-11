@@ -10,18 +10,15 @@ import {
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
-import { Separator } from "../components/ui/separator";
 import {
   Video,
   Plus,
   Users,
   Clock,
-  ChevronDown,
   Loader2,
   VideoOff,
   RefreshCw,
   Sparkles,
-  ArrowRight,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -93,7 +90,11 @@ const Dashboard = () => {
     },
     {
       label: "This Week",
-      value: meetings.filter((m) => new Date(m.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length,
+      value: meetings.filter(
+        (m) =>
+          new Date(m.createdAt) >
+          new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      ).length,
       icon: Clock,
       change: "+5%",
     },
@@ -102,10 +103,14 @@ const Dashboard = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground text-lg mt-1">Welcome back! Here's what's happening with your meetings.</p>
+          <p className="text-muted-foreground text-lg mt-1">
+            Welcome back,{" "}
+            <span className="font-semibold text-foreground">{user?.username}!</span>{" "}
+            Here's what's happening with your meetings.
+          </p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => refetch()} size="sm">
@@ -128,7 +133,9 @@ const Dashboard = () => {
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1 space-y-4">
             <div>
-              <label className="text-sm font-semibold text-foreground mb-2 block">Meeting Title</label>
+              <label className="text-sm font-semibold text-foreground mb-2 block">
+                Meeting Title
+              </label>
               <Input
                 placeholder="E.g., Team sync, Client call"
                 value={meetingTitle}
@@ -137,7 +144,9 @@ const Dashboard = () => {
               />
             </div>
             <div>
-              <label className="text-sm font-semibold text-foreground mb-2 block">Description (optional)</label>
+              <label className="text-sm font-semibold text-foreground mb-2 block">
+                Description (optional)
+              </label>
               <Input
                 placeholder="Brief description..."
                 value={meetingDescription}
@@ -154,7 +163,11 @@ const Dashboard = () => {
             >
               Quick Join
             </Button>
-            <Button className="flex-1 h-12" onClick={handleCreateMeeting} disabled={createMutation.isPending}>
+            <Button
+              className="flex-1 h-12"
+              onClick={handleCreateMeeting}
+              disabled={createMutation.isPending}
+            >
               {createMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
@@ -166,15 +179,20 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Stats Cards */}
-        {stats.map(({ label, value, icon: Icon, change }, i) => (
-          <div key={label} className="bg-card border rounded-2xl p-6 hover:shadow-lg transition-all group">
+        {stats.map(({ label, value, icon: Icon, change }) => (
+          <div
+            key={label}
+            className="bg-card border rounded-2xl p-6 hover:shadow-lg transition-all group"
+          >
             <div className="flex items-center justify-between mb-2">
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                 <Icon className="w-6 h-6 text-primary" />
               </div>
-              <Badge variant="secondary" className="text-xs">{change}</Badge>
+              <Badge variant="secondary" className="text-xs">
+                {change}
+              </Badge>
             </div>
             <div>
               <p className="text-3xl font-bold text-foreground">{value}</p>
@@ -202,7 +220,9 @@ const Dashboard = () => {
                   </div>
                   <div>
                     <p className="font-semibold text-foreground">{meeting.title}</p>
-                    <p className="text-sm text-muted-foreground">{formatDate(meeting.createdAt)}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDate(meeting.createdAt)}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -222,7 +242,9 @@ const Dashboard = () => {
             <div className="text-center py-12">
               <VideoOff className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-1">No meetings yet</h3>
-              <p className="text-muted-foreground mb-4">Get started by creating your first meeting.</p>
+              <p className="text-muted-foreground mb-4">
+                Get started by creating your first meeting.
+              </p>
               <div className="flex gap-3 justify-center">
                 <Button variant="outline">Browse templates</Button>
                 <Button>Create Meeting</Button>

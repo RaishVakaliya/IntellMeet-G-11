@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Video, LayoutDashboard, Calendar, BarChart3,
-  LogOut, Sparkles, Zap, ChevronRight, Users,
+  LogOut, Zap, ChevronRight, Users,
   User, Settings, HelpCircle, ChevronUp,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
+import AppLogo from "@/assets/AppLogo.png";
 
 const NAV_ITEMS = [
   { path: "/Dashboard", label: "My Dashboard", icon: LayoutDashboard },
@@ -25,6 +26,7 @@ const PROFILE_MENU_ITEMS = [
   { label: "Settings", path: "/Settings", icon: Settings, action: "settings" },
   { label: "Help & Support", path: "/help", icon: HelpCircle, action: "help" },
 ];
+
 export function Sidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; onToggle: () => void }) {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
@@ -52,7 +54,6 @@ export function Sidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; onTog
     }
   };
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
@@ -77,30 +78,57 @@ export function Sidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; onTog
     >
       {/* Logo + Toggle */}
       <div className="flex items-center justify-between mb-8">
-        <div className={`flex items-center gap-2.5 px-2 transition-all duration-300 ${isCollapsed ? "opacity-0 w-0" : ""}`}>
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center flex-shrink-0">
-            <Sparkles size={15} className="text-white" />
-          </div>
-          <span className="font-display font-bold text-lg text-slate-900 tracking-tight">IntellMeet</span>
+        <div
+          className={`flex items-center gap-2.5 px-2 transition-all duration-300 ${
+            isCollapsed ? "opacity-0 w-0 overflow-hidden" : ""
+          }`}
+        >
+          {/* ✅ Larger Logo Image */}
+          <img
+            src={AppLogo}
+            alt="IntellMeet Logo"
+            className="w-12 h-12 rounded-xl object-contain flex-shrink-0"
+          />
+          <span className="font-display font-bold text-lg text-slate-900 tracking-tight">
+            IntellMeet
+          </span>
         </div>
+
+        {/* Collapsed state: show logo only */}
+        {isCollapsed && (
+          <img
+            src={AppLogo}
+            alt="IntellMeet Logo"
+            className="w-9 h-9 rounded-lg object-contain mx-auto"
+          />
+        )}
+
         <button
           onClick={onToggle}
           className="p-1.5 rounded-xl bg-blue-500/5 hover:bg-blue-500/10 transition-all text-slate-700 hover:text-blue-900"
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${isCollapsed ? "rotate-180" : ""}`} />
+          <ChevronRight
+            className={`w-4 h-4 transition-transform duration-300 ${
+              isCollapsed ? "rotate-180" : ""
+            }`}
+          />
         </button>
       </div>
 
       {/* Nav */}
       <nav className="flex flex-col gap-1 flex-1">
-        <p className={`text-[10px] font-semibold text-slate-500 uppercase tracking-widest px-3 mb-2 transition-all ${isCollapsed ? "opacity-0 w-0" : ""}`}>
+        <p
+          className={`text-[10px] font-semibold text-slate-500 uppercase tracking-widest px-3 mb-2 transition-all ${
+            isCollapsed ? "opacity-0 w-0" : ""
+          }`}
+        >
           Navigation
         </p>
-        {NAV_ITEMS.map(({ to, label, icon: Icon, badge }) => (
+        {NAV_ITEMS.map(({ path, label, icon: Icon, badge }) => (
           <NavLink
-            key={to}
-            to={to}
+            key={path}
+            to={path}
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group",
@@ -116,10 +144,18 @@ export function Sidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; onTog
                   size={16}
                   className={cn(
                     "flex-shrink-0 transition-colors",
-                    isActive ? "text-blue-600" : "text-slate-600 group-hover:text-blue-700"
+                    isActive
+                      ? "text-blue-600"
+                      : "text-slate-600 group-hover:text-blue-700"
                   )}
                 />
-                <span className={`flex-1 transition-all ${isCollapsed ? "opacity-0 w-0 overflow-hidden" : ""}`}>{label}</span>
+                <span
+                  className={`flex-1 transition-all ${
+                    isCollapsed ? "opacity-0 w-0 overflow-hidden" : ""
+                  }`}
+                >
+                  {label}
+                </span>
                 {badge && !isCollapsed && (
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 animate-pulse-slow">
                     {badge}
@@ -132,7 +168,11 @@ export function Sidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; onTog
 
         <div className="h-px bg-slate-200/50 my-3 mx-1" />
 
-        <div className={`glass rounded-xl p-3 mx-1 flex items-start gap-2.5 transition-all duration-300 ${isCollapsed ? "opacity-0 w-0" : ""}`}>
+        <div
+          className={`glass rounded-xl p-3 mx-1 flex items-start gap-2.5 transition-all duration-300 ${
+            isCollapsed ? "opacity-0 w-0 overflow-hidden" : ""
+          }`}
+        >
           <div className="w-7 h-7 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
             <Zap size={13} className="text-blue-400" />
           </div>
@@ -147,7 +187,9 @@ export function Sidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; onTog
             <div className="h-px bg-slate-200/50 my-4" />
             <div className="flex items-center gap-2.5 px-3 pb-2">
               <Users size={14} className="text-slate-500" />
-              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Active Meeting</p>
+              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
+                Active Meeting
+              </p>
             </div>
             <div className="space-y-2 mb-4">
               <ParticipantList />
@@ -157,7 +199,10 @@ export function Sidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; onTog
       </nav>
 
       {/* User profile with popup menu */}
-      <div className="border-t border-slate-200/50 pt-4 mt-2 px-1 relative" ref={profileRef}>
+      <div
+        className="border-t border-slate-200/50 pt-4 mt-2 px-1 relative"
+        ref={profileRef}
+      >
         {/* Profile Options Popup Menu */}
         {profileMenuOpen && !isCollapsed && (
           <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-50">
@@ -201,7 +246,9 @@ export function Sidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; onTog
           {!isCollapsed && (
             <>
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm font-semibold text-slate-900 truncate">{user.username}</p>
+                <p className="text-sm font-semibold text-slate-900 truncate">
+                  {user.username}
+                </p>
                 <p className="text-[10px] text-slate-600 truncate">{user.email}</p>
               </div>
               <ChevronUp

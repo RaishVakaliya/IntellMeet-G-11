@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import connectDB from "./src/config/db.js";
 import { connectRedis, redisClient } from "./src/config/redis.js";
-import RedisStore from "connect-redis";
+import { RedisStore } from "connect-redis";
 import { initializeSocket } from "./src/sockets/socket.js";
 import userRoutes from "./src/routes/userRoutes.js";
 import meetingRoutes from "./src/routes/meetingRoutes.js";
@@ -78,6 +78,21 @@ app.use(cookieParser());
 app.use("/api/auth", userRoutes);
 app.use("/api/meetings", meetingRoutes);
 app.use("/api/chats", chatRoutes);
+
+// Global error handler - catches 500s and middleware crashes
+app.use((err, req, res, next) => {
+  console.error('🚨 Backend Error Details:', {
+    message: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    user: req.user ? req.user.email : 'no-user'
+  });
+  res.status(500).json({ 
+    message: 'Server error during request',
+    ...(process.env.NODE_ENV === 'development' ? { error: err.message } : {})
+  });
+});
 
 // Test Route
 app.get("/", (req, res) => {

@@ -1,4 +1,4 @@
-import { users } from '../utils/mockData.js';
+import User from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'intellmeet-fallback-secret-2024';
@@ -15,7 +15,7 @@ export const protect = async (req, res, next) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     console.log('JWT decoded payload:', decoded);
     
-    const user = Array.from(users.values()).find(u => u._id === decoded.userId);
+    const user = await User.findById(decoded.userId).select('-password');
     if (!user) {
       console.log('User not found for ID:', decoded.userId);
       return res.status(401).json({ message: "Invalid token - user not found" });

@@ -1,10 +1,10 @@
 import express from "express";
 import passport from "../config/passport.js";
-import { googleCallback, signup, login, refreshToken, logout, getUserProfile, uploadAvatar, updateProfile } from "../controllers/mockUserController.js";
+import { googleCallback, signup, login, refreshToken, logout, getUserProfile, uploadAvatar, updateProfile } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
-// Mocks for unused routes
+import { upload } from "../config/cloudinary.js";
+
 const authLimiter = (req, res, next) => next();
-const upload = { single: () => (req, res, next) => next() };
 
 const router = express.Router();
 

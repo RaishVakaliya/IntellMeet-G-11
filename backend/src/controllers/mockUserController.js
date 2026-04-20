@@ -1,4 +1,5 @@
 import { generateAccessToken } from '../utils/generateToken.js';
+import jwt from 'jsonwebtoken';
 
 import { users, userIdCounter, getNextUserId } from "../utils/mockData.js";
 
@@ -57,7 +58,7 @@ export const getUserProfile = async (req, res) => {
     const profile = {
       ...req.user,
       username: req.user.name,
-      avatarUrl: `https://ui-avatars.com/api/?name=${req.user.name || 'User'}&background=4F46E5&color=fff&size=128&bold=true&font-size=0.6`,
+      avatarUrl: req.user.avatarUrl || `https://ui-avatars.com/api/?name=${req.user.name || 'User'}&background=4F46E5&color=fff&size=128&bold=true&font-size=0.6`,
     };
     res.status(200).json(profile);
   } catch (error) {
@@ -71,9 +72,21 @@ export const logout = (req, res) => {
 
 export const refreshToken = async (req, res) => {
   try {
-    // Skip protect middleware check for refresh - always return demo token
-    const demoUserId = 'mock_1';
-    const accessToken = generateAccessToken(demoUserId);
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'intellmeet-fallback-secret-2024');
+    const user = Array.from(users.values()).find(u => u._id === decoded.userId);
+    
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    const accessToken = generateAccessToken(decoded.userId);
     res.status(200).json({ accessToken });
   } catch (error) {
     console.error('Refresh token error:', error);
@@ -82,11 +95,24 @@ export const refreshToken = async (req, res) => {
 };
 
 export const uploadAvatar = (req, res) => {
+  console.log('✅ Mock avatar upload called', { hasFile: !!req.file, userEmail: req.user?.email });
   try {
-    const userId = req.user._id;
-    const fakeCloudinaryUrl = `https://res.cloudinary.com/demo/image/upload/v1/user-avatars/${userId}.jpg`;
-    res.status(200).json({ url: fakeCloudinaryUrl });
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const mockUrl = `/mock-avatar-${req.file.originalname || 'avatar'}-${Date.now()}.jpg`;
+    const email = req.user.email;
+    const user = users.get(email);
+    if (user) {
+      user.avatar = mockUrl;
+      user.avatarUrl = mockUrl;
+      console.log('✅ Mock avatar set for', email, mockUrl);
+    }
+
+    res.status(200).json({ message: "Avatar uploaded (mock)", avatar: mockUrl });
   } catch (error) {
+    console.error('Upload error:', error);
     res.status(500).json({ message: "Upload failed" });
   }
 };

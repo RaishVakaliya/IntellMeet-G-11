@@ -151,3 +151,60 @@
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+.theme-toggle-pill {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: oklch(0.13 0 0);
+  border-radius: 999px;
+  padding: 4px;
+  border: 1px solid oklch(1 0 0 / 10%);
+}
+
+.dark .theme-toggle-pill {
+  background: oklch(0.13 0 0);
+  border-color: oklch(1 0 0 / 10%);
+}
+
+:root:not(.dark) .theme-toggle-pill {
+  background: oklch(0.2 0 0);
+  border-color: oklch(0 0 0 / 12%);
+}
+
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: oklch(0.6 0 0);
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+  color: oklch(0.85 0 0);
+}
+
+.theme-toggle-btn--active {
+  background: oklch(0.28 0 0);
+  color: oklch(0.98 0 0);
+  box-shadow: 0 1px 4px oklch(0 0 0 / 30%);
+}

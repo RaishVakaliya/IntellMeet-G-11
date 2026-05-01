@@ -7,6 +7,7 @@ import { useAudioDetection } from "@/hooks/useAudioDetection";
 interface VideoTileProps {
   participant: Participant;
   isLocal?: boolean;
+  large?: boolean;
   className?: string;
   registerVideoRef?: (el: HTMLVideoElement | null) => void;
 }
@@ -14,6 +15,7 @@ interface VideoTileProps {
 const VideoTile: React.FC<VideoTileProps> = ({
   participant,
   isLocal = false,
+  large = false,
   className,
   registerVideoRef,
 }) => {
@@ -47,6 +49,7 @@ const VideoTile: React.FC<VideoTileProps> = ({
     <div
       className={cn(
         "relative rounded-2xl overflow-hidden bg-card border-2 transition-all duration-300",
+        large ? "w-full h-full" : "aspect-video",
         participant.isActiveSpeaker
           ? "border-primary shadow-[0_0_20px_rgba(var(--primary),0.4)]"
           : "border-border hover:border-border/50",

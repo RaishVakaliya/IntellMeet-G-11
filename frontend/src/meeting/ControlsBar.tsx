@@ -14,9 +14,13 @@ import {
   Monitor,
   MonitorOff,
   PhoneOff,
+  LayoutGrid,
+  PanelLeft,
+  PanelRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import type { CallLayoutType } from "./VideoGrid";
 
 interface ControlsBarProps {
   onLeave: () => void;
@@ -26,7 +30,30 @@ interface ControlsBarProps {
   onToggleCamera?: () => void;
   isHost?: boolean;
   className?: string;
+  layout?: CallLayoutType;
+  onLayoutChange?: (layout: CallLayoutType) => void;
 }
+
+const layoutMeta: Record<
+  CallLayoutType,
+  { icon: React.ReactNode; label: string; next: CallLayoutType }
+> = {
+  grid: {
+    icon: <LayoutGrid className="w-5 h-5" />,
+    label: "Grid layout",
+    next: "speaker-left",
+  },
+  "speaker-left": {
+    icon: <PanelLeft className="w-5 h-5" />,
+    label: "Speaker left",
+    next: "speaker-right",
+  },
+  "speaker-right": {
+    icon: <PanelRight className="w-5 h-5" />,
+    label: "Speaker right",
+    next: "grid",
+  },
+};
 
 const ControlsBar: React.FC<ControlsBarProps> = ({
   onLeave,
@@ -36,6 +63,8 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
   onToggleCamera,
   isHost,
   className,
+  layout = "grid",
+  onLayoutChange,
 }) => {
   const {
     isMuted,
@@ -63,6 +92,13 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
     }
   };
 
+  const handleLayoutChange = () => {
+    const next = layoutMeta[layout].next;
+    onLayoutChange?.(next);
+  };
+
+  const currentMeta = layoutMeta[layout];
+
   return (
     <div
       className={cn(
@@ -71,6 +107,7 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
       )}
     >
       <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-card/40 backdrop-blur-2xl border border-white/10 shadow-2xl">
+        {/* Mic */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -95,6 +132,7 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
           </TooltipContent>
         </Tooltip>
 
+        {/* Camera */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -119,6 +157,7 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
           </TooltipContent>
         </Tooltip>
 
+        {/* Screen share */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -143,7 +182,26 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
           </TooltipContent>
         </Tooltip>
 
+        {/* Layout toggle */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={handleLayoutChange}
+              size="icon-lg"
+              className="rounded-xl transition-all border-2 border-border bg-muted hover:bg-muted/80 text-foreground"
+              aria-label={`Switch layout — current: ${currentMeta.label}`}
+            >
+              {currentMeta.icon}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            {currentMeta.label} — click to cycle
+          </TooltipContent>
+        </Tooltip>
+
         <div className="w-px h-6 bg-border mx-1" />
+
+        {/* Recording */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -156,8 +214,10 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
           </TooltipTrigger>
           <TooltipContent side="top">Record Meeting</TooltipContent>
         </Tooltip>
+
         <div className="w-px h-6 bg-border mx-1" />
 
+        {/* Leave / End */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

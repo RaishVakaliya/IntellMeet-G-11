@@ -12,7 +12,7 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 import { useSocket } from "@/hooks/useSocket";
 import { useWebRTC } from "@/hooks/useWebRTC";
-import VideoGrid from "@/meeting/VideoGrid";
+import VideoGrid, { type CallLayoutType } from "@/meeting/VideoGrid";
 import ControlsBar from "@/meeting/ControlsBar";
 import ChatPanel from "@/meeting/ChatPanel";
 import ParticipantList from "@/meeting/ParticipantList";
@@ -56,6 +56,7 @@ const MeetingRoom = () => {
   const [isLeaving, setIsLeaving] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<"chat" | "participants">("chat");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [layout, setLayout] = useState<CallLayoutType>("grid");
   const hasHandledMeetingEnd = useRef(false);
 
   const socket = useSocket(roomId);
@@ -246,11 +247,17 @@ const MeetingRoom = () => {
       toast.info(msg, { duration: 2500 });
     };
 
+    const handleErrorMessage = (msg: string) => {
+      toast.error(msg);
+      navigate("/dashboard");
+    };
+
     socket.on("user-connected", handleUserConnected);
     socket.on("user-disconnected", handleUserDisconnected);
     socket.on("participant-audio-toggled", handleAudioToggled);
     socket.on("participant-video-toggled", handleVideoToggled);
     socket.on("notification", handleNotification);
+    socket.on("error-message", handleErrorMessage);
 
     return () => {
       socket.off("user-connected", handleUserConnected);
@@ -258,6 +265,7 @@ const MeetingRoom = () => {
       socket.off("participant-audio-toggled", handleAudioToggled);
       socket.off("participant-video-toggled", handleVideoToggled);
       socket.off("notification", handleNotification);
+      socket.off("error-message", handleErrorMessage);
     };
   }, [
     socket,
@@ -405,36 +413,14 @@ const MeetingRoom = () => {
         <header className="flex items-center justify-between px-5 py-3 bg-primary/5 border-b border-white/5 backdrop-blur-xl shrink-0">
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex flex-col">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <p className="text-white text-sm font-medium leading-tight cursor-help">
-                    {meetingDetails?.title ?? "Meeting"}
-                  </p>
-                </TooltipTrigger>
-                {meetingDetails?.description && (
-                  <TooltipContent side="bottom" align="start">
-                    <p className="text-xs max-w-xs">
-                      {meetingDetails.description}
-                    </p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
+              <p className="text-white text-sm font-medium leading-tight">
+                {meetingDetails?.title ?? "Meeting"}
+              </p>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>
                   {participantCount} participant
                   {participantCount !== 1 ? "s" : ""}
                 </span>
-                {meetingDetails?.status === "ongoing" && (
-                  <>
-                    <span className="w-1 h-1 rounded-full bg-border" />
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                      <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
-                        Live
-                      </span>
-                    </div>
-                  </>
-                )}
               </div>
             </div>
 
@@ -487,6 +473,7 @@ const MeetingRoom = () => {
             <VideoGrid
               localVideoRef={localVideoRef}
               registerRemoteVideoRef={registerRemoteVideoRef}
+              layout={layout}
             />
             <ControlsBar
               onLeave={handleLeave}
@@ -495,6 +482,8 @@ const MeetingRoom = () => {
               onToggleMic={handleToggleMic}
               onToggleCamera={handleToggleCamera}
               isHost={Boolean(isHost)}
+              layout={layout}
+              onLayoutChange={setLayout}
             />
           </div>
 

@@ -7,7 +7,7 @@ const CACHE_EXPIRATION = 3600;
 
 export const createMeeting = async (req, res) => {
   try {
-    const { title, description, startTime } = req.body;
+    const { title, startTime } = req.body;
 
     const existingMeeting = await Meeting.findOne({
       createdBy: req.user._id,
@@ -25,7 +25,6 @@ export const createMeeting = async (req, res) => {
 
     const meeting = await Meeting.create({
       title,
-      description,
       startTime: startTime || new Date(),
       meetingCode,
       createdBy: req.user._id,

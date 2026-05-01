@@ -7,8 +7,6 @@ const meetingSchema = new mongoose.Schema(
       required: true,
     },
 
-    description: String,
-
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

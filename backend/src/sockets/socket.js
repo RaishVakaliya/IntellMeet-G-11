@@ -70,6 +70,22 @@ export const initializeSocket = async (httpServer) => {
         let existingUsers = [];
         try {
           const existingSockets = await io.in(meetingCode).fetchSockets();
+
+          const isAlreadyJoined = existingSockets.some(
+            (s) => s.data.dbUserId === dbUserId && s.id !== socket.id,
+          );
+
+          if (isAlreadyJoined) {
+            console.warn(
+              `[Socket] Denying join: ${userName} (${dbUserId}) already in room ${meetingCode}`,
+            );
+            socket.emit(
+              "error-message",
+              "You are already in this meeting from another tab or device.",
+            );
+            return;
+          }
+
           existingUsers = existingSockets
             .filter((s) => s.data.dbUserId && s.data.dbUserId !== dbUserId)
             .map((s) => ({

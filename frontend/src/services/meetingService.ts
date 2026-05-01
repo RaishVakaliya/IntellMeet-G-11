@@ -11,7 +11,6 @@ export type MeetingParticipantRecord = {
 export interface MeetingData {
   _id: string;
   title: string;
-  description?: string;
   meetingCode: string;
   status: "scheduled" | "ongoing" | "ended";
   createdAt: string;
@@ -39,11 +38,10 @@ const createApiError = (status: number, message: string) => {
 
 export const createMeeting = async (
   title: string,
-  description?: string,
 ): Promise<MeetingData> => {
   const res = await apiFetch("/api/meetings/create", {
     method: "POST",
-    body: JSON.stringify({ title, description, startTime: new Date() }),
+    body: JSON.stringify({ title, startTime: new Date() }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

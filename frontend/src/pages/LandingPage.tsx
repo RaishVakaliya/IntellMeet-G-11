@@ -23,7 +23,7 @@ import avatar5 from "../assets/landingImages/diverse_avatar_5.jpg";
 export const Navbar = () => {
   const navigate = useNavigate();
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-2">
@@ -32,14 +32,14 @@ export const Navbar = () => {
           <div className="hidden md:flex items-center gap-8">
             <a
               href="#"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
               Contact
             </a>
             <Button
               size="sm"
               onClick={() => navigate("/auth/signup")}
-              className="rounded-full px-6 bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="rounded-full px-6 bg-gray-900 hover:bg-gray-800 text-white"
             >
               Get Started
             </Button>
@@ -64,7 +64,7 @@ export const Hero = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mt-12 select-none">
         <div className="relative inline-block mb-12">
-          <div className="relative z-10 w-44 h-44 md:w-52 md:h-52 rounded-full border-[6px] border-background shadow-2xl overflow-hidden ring-4 ring-primary/10">
+          <div className="relative z-10 w-44 h-44 md:w-52 md:h-52 rounded-full border-[2px] shadow-2xl overflow-hidden ring-4 ring-primary/10">
             <img
               src={mainAvatar}
               alt="Main Host"
@@ -73,7 +73,7 @@ export const Hero = () => {
           </div>
 
           <div
-            className="absolute -top-6 -left-12 w-16 h-16 rounded-full border-4 border-background shadow-xl overflow-hidden animate-bounce"
+            className="absolute -top-6 -left-12 w-16 h-16 rounded-full border-1 shadow-xl overflow-hidden animate-bounce"
             style={{ animationDuration: "3s" }}
           >
             <img
@@ -83,7 +83,7 @@ export const Hero = () => {
             />
           </div>
           <div
-            className="absolute top-1/4 -right-14 w-20 h-20 rounded-full border-4 border-background shadow-xl overflow-hidden animate-bounce"
+            className="absolute top-1/4 -right-14 w-20 h-20 rounded-full border-1 shadow-xl overflow-hidden animate-bounce"
             style={{ animationDuration: "4s" }}
           >
             <img
@@ -93,7 +93,7 @@ export const Hero = () => {
             />
           </div>
           <div
-            className="absolute -bottom-10 right-2 w-14 h-14 rounded-full border-4 border-background shadow-xl overflow-hidden animate-bounce"
+            className="absolute -bottom-10 right-2 w-14 h-14 rounded-full border-1 shadow-xl overflow-hidden animate-bounce"
             style={{ animationDuration: "3.5s" }}
           >
             <img
@@ -104,11 +104,11 @@ export const Hero = () => {
           </div>
 
           <div className="absolute top-1/2 -left-48 hidden xl:flex flex-col gap-3">
-            <div className="bg-card/95 backdrop-blur-sm p-4 rounded-xl shadow-2xl border border-border flex flex-col items-start gap-1">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
+            <div className="bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-2xl border border-gray-200 flex flex-col items-start gap-1">
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">
                 Business strategy review
               </p>
-              <p className="text-xs font-semibold text-foreground">
+              <p className="text-xs font-semibold text-gray-900">
                 6:00 PM - 9:00 PM, Today
               </p>
             </div>
@@ -124,10 +124,10 @@ export const Hero = () => {
           </div>
         </div>
 
-        <h1 className="text-6xl md:text-7xl font-bold text-foreground tracking-tight mb-8">
+        <h1 className="text-6xl md:text-7xl font-bold text-gray-900 tracking-tight mb-8">
           Online meetings
         </h1>
-        <p className="max-w-xl mx-auto text-sm md:text-base text-muted-foreground mb-10 leading-relaxed font-medium">
+        <p className="max-w-xl mx-auto text-sm md:text-base text-gray-600 mb-10 leading-relaxed font-medium">
           Work from anywhere with the conferencing and communications
           capabilities of online meeting software.
         </p>
@@ -136,7 +136,7 @@ export const Hero = () => {
           <Button
             size="lg"
             onClick={() => navigate("/auth/signup")}
-            className="rounded-none bg-primary hover:bg-primary/90 px-12 h-14 text-primary-foreground text-base font-medium"
+            className="rounded-none bg-gray-900 hover:bg-gray-800 px-12 h-14 text-white text-base font-medium"
           >
             Sign up for free
           </Button>
@@ -144,7 +144,7 @@ export const Hero = () => {
             size="lg"
             variant="outline"
             onClick={() => navigate("/auth/signin")}
-            className="rounded-none border-primary/40 text-primary hover:bg-primary/5 px-12 h-14 text-base font-medium"
+            className="rounded-none border-gray-300 text-gray-900 hover:text-gray-900 hover:bg-gray-400 bg-gray-300 px-12 h-14 text-base font-medium"
           >
             Sign in
           </Button>
@@ -173,30 +173,30 @@ export const Features = () => {
               />
             </div>
 
-            <div className="absolute right-1/4 top-0 flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background p-2.5 shadow-lg md:h-12 md:w-12">
-              <Folder className="h-full w-full text-primary" />
+            <div className="absolute right-1/4 top-0 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white p-2.5 shadow-lg md:h-12 md:w-12">
+              <Folder className="h-full w-full text-gray-900" />
             </div>
-            <div className="absolute -left-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background p-2.5 shadow-lg md:h-12 md:w-12">
-              <MessageSquare className="h-full w-full text-primary" />
+            <div className="absolute -left-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white p-2.5 shadow-lg md:h-12 md:w-12">
+              <MessageSquare className="h-full w-full text-gray-900" />
             </div>
-            <div className="absolute -bottom-1 right-1/4 flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background p-2.5 shadow-lg md:h-12 md:w-12">
-              <Puzzle className="h-full w-full text-primary" />
+            <div className="absolute -bottom-1 right-1/4 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white p-2.5 shadow-lg md:h-12 md:w-12">
+              <Puzzle className="h-full w-full text-gray-900" />
             </div>
           </div>
 
           <div className="mx-auto max-w-[560px] text-center">
-            <h2 className="mb-6 text-5xl font-bold leading-[1.18] tracking-[-0.02em] text-foreground max-md:text-4xl max-sm:text-[2rem]">
+            <h2 className="mb-6 text-5xl font-bold leading-[1.18] tracking-[-0.02em] text-gray-900 max-md:text-4xl max-sm:text-[2rem]">
               Use IntellMeet with no obligations and free of charge - for as
               long as you like.
             </h2>
-            <p className="mx-auto mb-10 max-w-[530px] text-[19px] leading-relaxed text-muted-foreground max-md:text-base">
+            <p className="mx-auto mb-10 max-w-[530px] text-[19px] leading-relaxed text-gray-600 max-md:text-base">
               With the Upgrade function you can also opt for the additional
               benefits of the Teamspace Plus at any time.
             </p>
             <Button
               size="lg"
               onClick={() => navigate("/auth/signup")}
-              className="h-14 rounded-full bg-primary px-11 text-lg font-semibold text-primary-foreground shadow-md shadow-primary/20 hover:bg-primary/90"
+              className="h-14 rounded-full bg-gray-900 px-11 text-lg font-semibold text-white shadow-md shadow-gray-900/20 hover:bg-gray-800"
             >
               Get started
             </Button>
@@ -215,14 +215,14 @@ export const Features = () => {
               />
             </div>
 
-            <div className="absolute left-1/4 top-0 flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background p-2.5 shadow-lg md:h-12 md:w-12">
-              <MapPin className="h-full w-full text-primary" />
+            <div className="absolute left-1/4 top-0 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white p-2.5 shadow-lg md:h-12 md:w-12">
+              <MapPin className="h-full w-full text-gray-900" />
             </div>
-            <div className="absolute -right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background p-2.5 shadow-lg md:h-12 md:w-12">
-              <Share2 className="h-full w-full text-primary" />
+            <div className="absolute -right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white p-2.5 shadow-lg md:h-12 md:w-12">
+              <Share2 className="h-full w-full text-gray-900" />
             </div>
-            <div className="absolute -bottom-1 left-1/4 flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background p-2.5 shadow-lg md:h-12 md:w-12">
-              <ShieldCheck className="h-full w-full text-primary" />
+            <div className="absolute -bottom-1 left-1/4 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white p-2.5 shadow-lg md:h-12 md:w-12">
+              <ShieldCheck className="h-full w-full text-gray-900" />
             </div>
           </div>
         </div>
@@ -233,12 +233,12 @@ export const Features = () => {
 
 export const LandingPage = () => {
   return (
-    <main className="min-h-screen font-sans">
+    <main className="min-h-screen font-sans bg-white">
       <Navbar />
       <Hero />
       <Features />
-      <footer className="py-8 bg-card text-center border-t border-border">
-        <p className="text-xs text-muted-foreground font-medium tracking-wide">
+      <footer className="py-8 bg-gray-50 text-center border-t border-gray-200">
+        <p className="text-xs text-gray-500 font-medium tracking-wide">
           © 2026 IntellMeet. All rights reserved.
         </p>
       </footer>

@@ -17,14 +17,20 @@ import {
   LayoutGrid,
   PanelLeft,
   PanelRight,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  Check,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { CallLayoutType } from "./VideoGrid";
+import { Separator } from "@/components/ui/separator";
 
 interface ControlsBarProps {
   onLeave: () => void;
-  onScreenShare: () => Promise<void>;
+  onScreenShare: () => Promise<any>;
   onStopScreenShare?: () => void;
   onToggleMic?: () => void;
   onToggleCamera?: () => void;
@@ -32,6 +38,13 @@ interface ControlsBarProps {
   className?: string;
   layout?: CallLayoutType;
   onLayoutChange?: (layout: CallLayoutType) => void;
+  meetingTitle?: string;
+  participantCount?: number;
+  meetingCode?: string;
+  isSidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
+  onCopyCode?: () => void;
+  isCopied?: boolean;
 }
 
 const layoutMeta: Record<
@@ -65,11 +78,19 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
   className,
   layout = "grid",
   onLayoutChange,
+  meetingTitle,
+  participantCount = 0,
+  meetingCode,
+  isSidebarOpen,
+  onToggleSidebar,
+  onCopyCode,
+  isCopied,
 }) => {
   const {
     isMuted,
     isCameraOff,
     isScreenSharing,
+    participants,
     toggleMic,
     toggleCamera,
     toggleScreenShare,
@@ -83,9 +104,16 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
       await onStopScreenShare?.();
       toggleScreenShare();
     } else {
+      const isSomeoneElseSharing = participants.some((p) => p.isScreenSharing);
+      if (isSomeoneElseSharing) {
+        toast.error("Someone else is already sharing their screen");
+        return;
+      }
       try {
-        await onScreenShare();
-        toggleScreenShare();
+        const stream = await onScreenShare();
+        if (stream) {
+          toggleScreenShare();
+        }
       } catch (err) {
         console.warn("Screen share cancelled or failed");
       }
@@ -102,141 +130,199 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
   return (
     <div
       className={cn(
-        "absolute bottom-6 left-1/2 -translate-x-1/2 z-50",
+        "w-full px-2 sm:px-4 z-50 pointer-events-none",
         className,
       )}
     >
-      <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-card/40 backdrop-blur-2xl border border-white/10 shadow-2xl">
-        {/* Mic */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={handleToggleMic}
-              size="icon-lg"
-              className={cn(
-                "rounded-xl transition-all border-2 border-border",
-                isMuted
-                  ? "bg-destructive/80 hover:bg-destructive text-destructive-foreground"
-                  : "bg-muted hover:bg-muted/80 text-foreground",
-              )}
+      <div className="w-full flex items-center pointer-events-auto relative">
+        {/* Left: Meeting Details (Hidden on mobile) */}
+        <div className="hidden md:flex flex-1 items-center justify-start">
+          <div className="flex items-center gap-4 px-4 py-2 rounded-2xl bg-card/40 backdrop-blur-2xl border border-white/10 shadow-2xl min-w-fit">
+            <div className="flex flex-col">
+              <p className="text-white text-sm font-bold truncate max-w-[120px] lg:max-w-[200px]">
+                {meetingTitle ?? "Meeting"}
+              </p>
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                <Users className="w-3 h-3" />
+                <span>
+                  {participantCount} {participantCount === 1 ? "User" : "Users"}
+                </span>
+              </div>
+            </div>
+
+            <Separator orientation="vertical" className="h-8 bg-white/10" />
+
+            {meetingCode && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={onCopyCode}
+                    className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-white/5 transition-colors group"
+                  >
+                    <span className="font-mono text-xs text-muted-foreground group-hover:text-foreground">
+                      {meetingCode}
+                    </span>
+                    {isCopied ? (
+                      <Check className="w-3 h-3 text-primary" />
+                    ) : (
+                      <Copy className="w-3 h-3 text-muted-foreground group-hover:text-foreground" />
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top">Copy code</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Placeholder for Left */}
+        <div className="flex md:hidden flex-1" />
+
+        {/* Center: Controls */}
+        <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-card/60 sm:bg-card/40 backdrop-blur-2xl border border-white/10 shadow-2xl shrink-0">
+          {/* Mic */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleToggleMic}
+                size="icon"
+                className={cn(
+                  "w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all border border-white/10",
+                  isMuted
+                    ? "bg-destructive/80 hover:bg-destructive text-destructive-foreground"
+                    : "bg-muted/50 hover:bg-muted text-foreground",
+                )}
+              >
+                {isMuted ? (
+                  <MicOff className="w-4 h-4 sm:w-5 sm:h-5" />
+                ) : (
+                  <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              {isMuted ? "Unmute" : "Mute"}
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Camera */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleToggleCamera}
+                size="icon"
+                className={cn(
+                  "w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all border border-white/10",
+                  isCameraOff
+                    ? "bg-destructive/80 hover:bg-destructive text-destructive-foreground"
+                    : "bg-muted/50 hover:bg-muted text-foreground",
+                )}
+              >
+                {isCameraOff ? (
+                  <VideoOff className="w-4 h-4 sm:w-5 sm:h-5" />
+                ) : (
+                  <Video className="w-4 h-4 sm:w-5 sm:h-5" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              {isCameraOff ? "Turn on camera" : "Turn off camera"}
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Screen share (Hidden on very small mobile) */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleScreenShare}
+                size="icon"
+                className={cn(
+                  "flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all border border-white/10",
+                  isScreenSharing
+                    ? "bg-primary/80 hover:bg-primary text-primary-foreground"
+                    : "bg-muted/50 hover:bg-muted text-foreground",
+                )}
+              >
+                {isScreenSharing ? (
+                  <MonitorOff className="w-4 h-4 sm:w-5 sm:h-5" />
+                ) : (
+                  <Monitor className="w-4 h-4 sm:w-5 sm:h-5" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              {isScreenSharing ? "Stop sharing" : "Share screen"}
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Layout toggle (Hidden on mobile) */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleLayoutChange}
+                size="icon"
+                className="hidden sm:flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all border border-white/10 bg-muted/50 hover:bg-muted text-foreground"
+                aria-label={`Switch layout — current: ${currentMeta.label}`}
+              >
+                {currentMeta.icon}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">{currentMeta.label}</TooltipContent>
+          </Tooltip>
+
+          <div className="hidden sm:block w-px h-6 bg-white/10 mx-1" />
+
+          {/* Leave / End */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={onLeave}
+                className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground px-3 sm:px-4 h-10 sm:h-12 border border-white/10"
+              >
+                <PhoneOff className="w-4 h-4 sm:mr-1.5" />
+                <span className="hidden sm:inline font-bold text-xs uppercase tracking-tight">
+                  {isHost ? "End Meeting" : "Leave"}
+                </span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="top"
+              className="bg-destructive text-destructive-foreground border-none"
             >
-              {isMuted ? (
-                <MicOff className="w-5 h-5" />
-              ) : (
-                <Mic className="w-5 h-5" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            {isMuted ? "Unmute" : "Mute"}
-          </TooltipContent>
-        </Tooltip>
+              {isHost ? "End meeting for everyone" : "Leave meeting"}
+            </TooltipContent>
+          </Tooltip>
+        </div>
 
-        {/* Camera */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={handleToggleCamera}
-              size="icon-lg"
-              className={cn(
-                "rounded-xl transition-all border-2 border-border",
-                isCameraOff
-                  ? "bg-destructive/80 hover:bg-destructive text-destructive-foreground"
-                  : "bg-muted hover:bg-muted/80 text-foreground",
-              )}
-            >
-              {isCameraOff ? (
-                <VideoOff className="w-5 h-5" />
-              ) : (
-                <Video className="w-5 h-5" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            {isCameraOff ? "Turn on camera" : "Turn off camera"}
-          </TooltipContent>
-        </Tooltip>
-
-        {/* Screen share */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={handleScreenShare}
-              size="icon-lg"
-              className={cn(
-                "rounded-xl transition-all border-2 border-border",
-                isScreenSharing
-                  ? "bg-primary/80 hover:bg-primary text-primary-foreground"
-                  : "bg-muted hover:bg-muted/80 text-foreground",
-              )}
-            >
-              {isScreenSharing ? (
-                <MonitorOff className="w-5 h-5" />
-              ) : (
-                <Monitor className="w-5 h-5" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            {isScreenSharing ? "Stop sharing" : "Share screen"}
-          </TooltipContent>
-        </Tooltip>
-
-        {/* Layout toggle */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={handleLayoutChange}
-              size="icon-lg"
-              className="rounded-xl transition-all border-2 border-border bg-muted hover:bg-muted/80 text-foreground"
-              aria-label={`Switch layout — current: ${currentMeta.label}`}
-            >
-              {currentMeta.icon}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            {currentMeta.label} — click to cycle
-          </TooltipContent>
-        </Tooltip>
-
-        <div className="w-px h-6 bg-border mx-1" />
-
-        {/* Recording */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="icon-lg"
-              className="rounded-xl bg-muted hover:bg-muted/80 text-foreground transition-all group border-2 border-border"
-              onClick={() => toast.info("Recording feature coming soon!")}
-            >
-              <div className="w-3 h-3 rounded-full bg-destructive animate-pulse group-hover:scale-110 transition-transform" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">Record Meeting</TooltipContent>
-        </Tooltip>
-
-        <div className="w-px h-6 bg-border mx-1" />
-
-        {/* Leave / End */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={onLeave}
-              className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground px-4 h-11"
-            >
-              <PhoneOff className="w-4 h-4 mr-1.5" />
-              <span className="font-semibold">
-                {isHost ? "End Meeting" : "Leave"}
-              </span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent
-            side="top"
-            className="bg-destructive text-destructive-foreground border-none"
-          >
-            {isHost ? "End meeting for everyone" : "Leave meeting"}
-          </TooltipContent>
-        </Tooltip>
+        {/* Right: Sidebar Toggle */}
+        <div className="flex flex-1 items-center justify-end">
+          <div className="flex items-center px-1.5 sm:px-2 py-1.5 sm:py-2 rounded-2xl bg-card/60 sm:bg-card/40 backdrop-blur-2xl border border-white/10 shadow-2xl">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={onToggleSidebar}
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all",
+                    isSidebarOpen
+                      ? "bg-primary/20 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-white/5",
+                  )}
+                >
+                  {isSidebarOpen ? (
+                    <ChevronRight className="w-5 h-5" />
+                  ) : (
+                    <ChevronLeft className="w-5 h-5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                {isSidebarOpen ? "Hide panel" : "Show panel"}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
       </div>
     </div>
   );

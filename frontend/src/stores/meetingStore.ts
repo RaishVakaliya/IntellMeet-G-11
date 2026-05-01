@@ -4,7 +4,7 @@ import type { MeetingState } from "@/types/meeting";
 export const useMeetingStore = create<MeetingState>((set) => ({
   meetingId: null,
   roomId: null,
-  isMuted: false,
+  isMuted: true,
   isCameraOff: true,
   isScreenSharing: false,
   isChatOpen: true,
@@ -145,7 +145,7 @@ export const useMeetingStore = create<MeetingState>((set) => ({
     set({
       meetingId: null,
       roomId: null,
-      isMuted: false,
+      isMuted: true,
       isCameraOff: true,
       isScreenSharing: false,
       participants: [],
@@ -160,7 +160,7 @@ export const useMeetingStore = create<MeetingState>((set) => ({
     set({
       roomId: null,
       meetingId: null,
-      isMuted: false,
+      isMuted: true,
       isCameraOff: true,
       isScreenSharing: false,
       participants: [],

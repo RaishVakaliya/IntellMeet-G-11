@@ -20,7 +20,6 @@ interface LocalTileProps {
   isCameraOff: boolean;
   isScreenSharing: boolean;
   isSpeaking: boolean;
-  large?: boolean;
   className?: string;
 }
 
@@ -30,17 +29,15 @@ const LocalTile: React.FC<LocalTileProps> = ({
   isCameraOff,
   isScreenSharing,
   isSpeaking,
-  large,
   className,
 }) => (
   <div
     className={cn(
       "relative rounded-2xl overflow-hidden bg-card border-2 transition-all duration-300",
-      large ? "w-full h-full" : "aspect-video",
+      className || "w-full h-full",
       isSpeaking
         ? "border-primary shadow-[0_0_20px_rgba(var(--primary),0.4)]"
         : "border-border",
-      className,
     )}
   >
     <video
@@ -66,28 +63,16 @@ const LocalTile: React.FC<LocalTileProps> = ({
   </div>
 );
 
-// ─── Paginated grid layout ────────────────────────────────────────────────────
-
 interface PaginatedGridLayoutProps {
   localVideoRef: React.RefObject<HTMLVideoElement | null>;
   registerRemoteVideoRef: (peerId: string, el: HTMLVideoElement | null) => void;
 }
 
-/** Number of tiles to show per page based on total participant count */
 function pageSize(total: number): number {
   if (total <= 2) return 2;
   if (total <= 4) return 4;
   if (total <= 6) return 6;
   return 9;
-}
-
-/** CSS grid columns for N tiles on a page */
-function gridCols(n: number): string {
-  if (n <= 1) return "1fr";
-  if (n <= 2) return "repeat(2, 1fr)";
-  if (n <= 4) return "repeat(2, 1fr)";
-  if (n <= 6) return "repeat(3, 1fr)";
-  return "repeat(3, 1fr)";
 }
 
 const PaginatedGridLayout: React.FC<PaginatedGridLayoutProps> = ({
@@ -99,14 +84,14 @@ const PaginatedGridLayout: React.FC<PaginatedGridLayoutProps> = ({
   const { user } = useAuthStore();
   const isLocalSpeaking = speakingUsers[user?._id || "local"];
 
-  // Build a unified tile list: local first, then remote participants
-  type TileItem =
-    | { kind: "local" }
-    | { kind: "remote"; participantId: string };
+  type TileItem = { kind: "local" } | { kind: "remote"; participantId: string };
 
   const allTiles: TileItem[] = [
     { kind: "local" },
-    ...participants.map((p) => ({ kind: "remote" as const, participantId: p.id })),
+    ...participants.map((p) => ({
+      kind: "remote" as const,
+      participantId: p.id,
+    })),
   ];
 
   const total = allTiles.length;
@@ -115,7 +100,6 @@ const PaginatedGridLayout: React.FC<PaginatedGridLayoutProps> = ({
 
   const [page, setPage] = useState(0);
 
-  // Clamp page if participants leave and total pages shrinks
   useEffect(() => {
     setPage((p) => Math.min(p, Math.max(0, totalPages - 1)));
   }, [totalPages]);
@@ -127,12 +111,16 @@ const PaginatedGridLayout: React.FC<PaginatedGridLayoutProps> = ({
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Grid area */}
       <div
-        className="flex-1 grid gap-3 p-4"
-        style={{
-          gridTemplateColumns: gridCols(pageTiles.length),
-          gridTemplateRows: `repeat(${Math.ceil(pageTiles.length / parseInt(gridCols(pageTiles.length).split(" ").length.toString()))}, 1fr)`,
-          alignContent: "center",
-        }}
+        className={cn(
+          "flex-1 grid gap-2 sm:gap-3 p-2 sm:p-4 auto-rows-fr",
+          pageTiles.length === 1
+            ? "grid-cols-1"
+            : pageTiles.length === 2
+              ? "grid-cols-1 sm:grid-cols-2"
+              : pageTiles.length <= 4
+                ? "grid-cols-2"
+                : "grid-cols-2 md:grid-cols-3",
+        )}
       >
         {pageTiles.map((tile) => {
           if (tile.kind === "local") {
@@ -144,6 +132,7 @@ const PaginatedGridLayout: React.FC<PaginatedGridLayoutProps> = ({
                 isCameraOff={isCameraOff}
                 isScreenSharing={isScreenSharing}
                 isSpeaking={isLocalSpeaking}
+                className="w-full h-full"
               />
             );
           }
@@ -158,12 +147,12 @@ const PaginatedGridLayout: React.FC<PaginatedGridLayoutProps> = ({
               registerVideoRef={(el) =>
                 registerRemoteVideoRef(participant.id, el)
               }
+              className="w-full h-full"
             />
           );
         })}
       </div>
 
-      {/* Pagination controls — only shown when there are multiple pages */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4 pb-20 shrink-0">
           <button
@@ -215,8 +204,6 @@ const PaginatedGridLayout: React.FC<PaginatedGridLayoutProps> = ({
     </div>
   );
 };
-
-// ─── Main VideoGrid ───────────────────────────────────────────────────────────
 
 const VideoGrid: React.FC<VideoGridProps> = ({
   localVideoRef,
@@ -302,23 +289,28 @@ const VideoGrid: React.FC<VideoGridProps> = ({
     );
   }
 
-  const activeSpeakerId =
-    Object.entries(speakingUsers).find(
-      ([id, speaking]) => speaking && id !== localUserId,
-    )?.[0] ?? participants[0]?.id;
+  const screenSharingParticipant = participants.find((p) => p.isScreenSharing);
 
-  const spotlightParticipant = participants.find(
-    (p) => p.id === activeSpeakerId,
-  );
+  let spotlightParticipant = screenSharingParticipant;
+
+  if (!spotlightParticipant && !isScreenSharing) {
+    const activeSpeakerId =
+      Object.entries(speakingUsers).find(
+        ([id, speaking]) => speaking && id !== localUserId,
+      )?.[0] ?? participants[0]?.id;
+
+    spotlightParticipant = participants.find((p) => p.id === activeSpeakerId);
+  }
+
   const stripParticipants = participants.filter(
-    (p) => p.id !== activeSpeakerId,
+    (p) => p.id !== spotlightParticipant?.id,
   );
 
   const Strip = (
     <div
       className={cn(
-        "flex flex-col gap-2 p-2 overflow-y-auto shrink-0 no-scrollbar",
-        "w-52",
+        "flex lg:flex-col gap-2 p-2 overflow-x-auto lg:overflow-y-auto shrink-0 no-scrollbar bg-black/20 backdrop-blur-sm",
+        "w-full lg:w-52 h-32 lg:h-full",
       )}
     >
       <LocalTile
@@ -327,28 +319,28 @@ const VideoGrid: React.FC<VideoGridProps> = ({
         isCameraOff={isCameraOff}
         isScreenSharing={isScreenSharing}
         isSpeaking={isLocalSpeaking}
-        className="shrink-0"
+        className="shrink-0 w-48 lg:w-full aspect-[7/5]"
       />
       {stripParticipants.map((p) => (
         <VideoTile
           key={p.id}
           participant={p}
           registerVideoRef={(el) => registerRemoteVideoRef(p.id, el)}
-          className="shrink-0"
+          className="shrink-0 w-48 lg:w-full aspect-[7/4.5]"
         />
       ))}
     </div>
   );
 
   const Spotlight = (
-    <div className="flex-1 p-3 overflow-hidden">
+    <div className="flex-1 p-2 sm:p-3 overflow-hidden">
       {spotlightParticipant ? (
         <VideoTile
           participant={spotlightParticipant}
           registerVideoRef={(el) =>
             registerRemoteVideoRef(spotlightParticipant.id, el)
           }
-          large
+          className="w-full h-full"
         />
       ) : (
         <div className="relative w-full h-full rounded-2xl overflow-hidden bg-card border-2 border-border">
@@ -361,13 +353,13 @@ const VideoGrid: React.FC<VideoGridProps> = ({
           />
           {isCameraOff && !isScreenSharing && (
             <div className="absolute inset-0 bg-background flex items-center justify-center">
-              <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground text-3xl font-bold select-none">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-secondary flex items-center justify-center text-2xl sm:text-3xl font-bold select-none">
                 {user?.username?.[0]?.toUpperCase() ?? "U"}
               </div>
             </div>
           )}
-          <div className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-gradient-to-t from-black/80 to-transparent">
-            <span className="text-white font-medium">
+          <div className="absolute bottom-0 left-0 right-0 px-3 py-2 sm:px-4 sm:py-3 bg-gradient-to-t from-black/80 to-transparent">
+            <span className="text-white text-xs sm:text-sm font-medium">
               {user?.username} (You)
             </span>
           </div>
@@ -377,7 +369,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({
   );
 
   return (
-    <div className="flex-1 flex overflow-hidden">
+    <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
       {layout === "speaker-left" ? (
         <>
           {Strip}

@@ -22,6 +22,9 @@ import {
   Copy,
   Check,
   Users,
+  Circle,
+  Square,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -34,6 +37,10 @@ interface ControlsBarProps {
   onStopScreenShare?: () => void;
   onToggleMic?: () => void;
   onToggleCamera?: () => void;
+  onStartRecording?: () => Promise<void> | void;
+  onStopRecording?: () => Promise<void> | void;
+  isRecording?: boolean;
+  isUploading?: boolean;
   isHost?: boolean;
   className?: string;
   layout?: CallLayoutType;
@@ -74,7 +81,11 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
   onStopScreenShare,
   onToggleMic,
   onToggleCamera,
-  isHost,
+  onStartRecording,
+  onStopRecording,
+  isRecording = false,
+  isUploading = false,
+  isHost = false,
   className,
   layout = "grid",
   onLayoutChange,
@@ -123,6 +134,14 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
   const handleLayoutChange = () => {
     const next = layoutMeta[layout].next;
     onLayoutChange?.(next);
+  };
+
+  const handleRecordToggle = async () => {
+    if (isRecording) {
+      if (onStopRecording) await onStopRecording();
+    } else {
+      if (onStartRecording) await onStartRecording();
+    }
   };
 
   const currentMeta = layoutMeta[layout];
@@ -254,6 +273,40 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
               {isScreenSharing ? "Stop sharing" : "Share screen"}
             </TooltipContent>
           </Tooltip>
+
+          {/* Recording (Host only) */}
+          {isHost && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={handleRecordToggle}
+                  disabled={isUploading}
+                  size="icon"
+                  className={cn(
+                    "flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all border border-white/10",
+                    isRecording
+                      ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                      : "bg-muted/50 hover:bg-muted text-foreground",
+                  )}
+                >
+                  {isUploading ? (
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                  ) : isRecording ? (
+                    <Square className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />
+                  ) : (
+                    <Circle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" fill="currentColor" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                {isUploading
+                  ? "Uploading recording..."
+                  : isRecording
+                    ? "Stop recording"
+                    : "Start recording"}
+              </TooltipContent>
+            </Tooltip>
+          )}
 
           {/* Layout toggle (Hidden on mobile) */}
           <Tooltip>

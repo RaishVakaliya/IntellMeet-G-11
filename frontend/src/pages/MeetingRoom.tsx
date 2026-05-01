@@ -19,6 +19,7 @@ import ParticipantList from "@/meeting/ParticipantList";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Loader2, VideoOff, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMeetingRecording } from "@/hooks/useMeetingRecording";
 
 const MeetingRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -45,8 +46,9 @@ const MeetingRoom = () => {
   const [sidebarTab, setSidebarTab] = useState<"chat" | "participants">("chat");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [layout, setLayout] = useState<CallLayoutType>("grid");
+  const { isRecording, isUploading, startRecording, stopRecording } =
+    useMeetingRecording(roomId!);
   const hasHandledMeetingEnd = useRef(false);
-
   const socket = useSocket(roomId);
   const {
     localVideoRef,
@@ -110,6 +112,15 @@ const MeetingRoom = () => {
       queryFn: () => getMeetingDetails(roomId!),
       enabled: !!roomId && !!user,
       refetchInterval: 5000,
+    });
+
+  const isHost =
+    meetingDetails?.createdBy?._id === user?._id ||
+    meetingDetails?.participants?.some((p) => {
+      if (p.role !== "host") return false;
+      const participantUserId =
+        typeof p.user === "string" ? p.user : p.user?._id;
+      return participantUserId === user?._id;
     });
 
   useEffect(() => {
@@ -322,15 +333,6 @@ const MeetingRoom = () => {
     };
   }, [socket, addOnlineUser, removeOnlineUser]);
 
-  const isHost =
-    meetingDetails?.createdBy?._id === user?._id ||
-    meetingDetails?.participants?.some((p) => {
-      if (p.role !== "host") return false;
-      const participantUserId =
-        typeof p.user === "string" ? p.user : p.user?._id;
-      return participantUserId === user?._id;
-    });
-
   const handleLeave = async () => {
     if (isLeaving) return;
     setIsLeaving(true);
@@ -424,6 +426,10 @@ const MeetingRoom = () => {
                 onToggleSidebar={() => setIsSidebarOpen((v) => !v)}
                 onCopyCode={copyCode}
                 isCopied={copied}
+                isRecording={isRecording}
+                isUploading={isUploading}
+                onStartRecording={startRecording}
+                onStopRecording={stopRecording}
               />
             </div>
           </div>

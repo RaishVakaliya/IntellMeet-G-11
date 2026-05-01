@@ -8,13 +8,15 @@ export async function apiFetch(
 ): Promise<Response> {
   const store = useAuthStore.getState();
   const token = store.accessToken;
+  const isFormDataBody =
+    typeof FormData !== "undefined" && options.body instanceof FormData;
 
   const makeRequest = (t: string | null) =>
     fetch(`${API_BASE}${path}`, {
       ...options,
       credentials: "include",
       headers: {
-        "Content-Type": "application/json",
+        ...(isFormDataBody ? {} : { "Content-Type": "application/json" }),
         ...(options.headers as Record<string, string>),
         ...(t ? { Authorization: `Bearer ${t}` } : {}),
       },

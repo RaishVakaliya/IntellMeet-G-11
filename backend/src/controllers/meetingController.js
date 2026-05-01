@@ -1,9 +1,12 @@
 import { Meeting } from "../models/meetingModel.js";
-import { nanoid } from "nanoid";
+import { customAlphabet } from "nanoid";
 import redisClient from "../config/redis.js";
 import { getIO } from "../sockets/socket.js";
+import { cloudinary } from "../config/cloudinary.js";
+import { Readable } from "stream";
 
 const CACHE_EXPIRATION = 3600;
+const generateMeetingCode = customAlphabet('123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 10);
 
 export const createMeeting = async (req, res) => {
   try {
@@ -21,7 +24,7 @@ export const createMeeting = async (req, res) => {
       });
     }
 
-    const meetingCode = nanoid(10);
+    const meetingCode = generateMeetingCode();
 
     const meeting = await Meeting.create({
       title,
@@ -206,6 +209,89 @@ export const joinMeeting = async (req, res) => {
     res.status(200).json(meeting);
   } catch (error) {
     res.status(500).json({ message: "Error joining meeting" });
+  }
+};
+
+export const uploadMeetingRecording = async (req, res) => {
+  try {
+    const { code } = req.params;
+    const meeting = await Meeting.findOne({ meetingCode: code });
+
+    if (!meeting) {
+      return res.status(404).json({ message: "Meeting not found" });
+    }
+
+    const hostParticipant = meeting.participants.find((p) => p.role === "host");
+    const isHost =
+      hostParticipant?.user?.toString() === req.user._id.toString() ||
+      meeting.createdBy?.toString() === req.user._id.toString();
+
+    if (!isHost) {
+      return res
+        .status(403)
+        .json({ message: "Only the host can upload meeting recording" });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: "Recording file is required" });
+    }
+
+    const uploadedAsset = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: "video",
+          folder: "intellmeet-recordings",
+          public_id: `meeting-${code}-${Date.now()}`,
+          overwrite: true,
+        },
+        (error, result) => {
+          if (error || !result) {
+            reject(error || new Error("Cloudinary upload failed"));
+            return;
+          }
+          resolve(result);
+        },
+      );
+
+      Readable.from(req.file.buffer).pipe(uploadStream);
+    });
+
+    meeting.recordingUrl = uploadedAsset.secure_url;
+    await meeting.save();
+
+    if (redisClient.isOpen) {
+      const userCacheKeys = new Set([
+        `user-meetings:${meeting.createdBy.toString()}`,
+        ...meeting.participants.map(
+          (p) => `user-meetings:${p.user.toString()}`,
+        ),
+      ]);
+      await redisClient.del(`meeting:${code}`);
+      await Promise.all(
+        [...userCacheKeys].map((cacheKey) => redisClient.del(cacheKey)),
+      );
+    }
+
+    try {
+      const io = getIO();
+      const userIds = new Set([
+        meeting.createdBy.toString(),
+        ...meeting.participants.map((p) => p.user.toString()),
+      ]);
+      userIds.forEach((uid) => io.to(`user:${uid}`).emit("meetings-updated"));
+      io.to(code).emit("meeting-recording-ready", {
+        meetingCode: code,
+        recordingUrl: meeting.recordingUrl,
+      });
+    } catch {}
+
+    return res.status(200).json({
+      message: "Recording uploaded successfully",
+      recordingUrl: meeting.recordingUrl,
+      meeting,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Error uploading recording" });
   }
 };
 

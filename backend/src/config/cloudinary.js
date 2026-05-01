@@ -21,3 +21,19 @@ const storage = new CloudinaryStorage({
 });
 
 export const upload = multer({ storage });
+
+export const recordingUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 250 * 1024 * 1024, // 250 MB
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype?.startsWith("video/")) {
+      cb(null, true);
+      return;
+    }
+    cb(new Error("Only video files are allowed"), false);
+  },
+});
+
+export { cloudinary };

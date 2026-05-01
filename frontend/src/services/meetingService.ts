@@ -15,6 +15,7 @@ export interface MeetingData {
   status: "scheduled" | "ongoing" | "ended";
   createdAt: string;
   endTime?: string;
+  recordingUrl?: string;
   createdBy?: { _id: string; name: string; email: string };
   participants: MeetingParticipantRecord[];
 }
@@ -36,9 +37,7 @@ const createApiError = (status: number, message: string) => {
   return error;
 };
 
-export const createMeeting = async (
-  title: string,
-): Promise<MeetingData> => {
+export const createMeeting = async (title: string): Promise<MeetingData> => {
   const res = await apiFetch("/api/meetings/create", {
     method: "POST",
     body: JSON.stringify({ title, startTime: new Date() }),
@@ -108,4 +107,35 @@ export const endMeeting = async (
   }
   const data = await res.json();
   return data.meeting;
+};
+
+export const uploadMeetingRecording = async (
+  meetingCode: string,
+  recording: Blob,
+): Promise<{ recordingUrl: string; meeting: MeetingDetails }> => {
+  const formData = new FormData();
+  formData.append(
+    "recording",
+    recording,
+    `meeting-recording-${Date.now()}.webm`,
+  );
+
+  const res = await apiFetch(`/api/meetings/${meetingCode}/recording`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw createApiError(
+      res.status,
+      err.message || "Failed to upload meeting recording",
+    );
+  }
+
+  const data = await res.json();
+  return {
+    recordingUrl: data.recordingUrl,
+    meeting: data.meeting,
+  };
 };

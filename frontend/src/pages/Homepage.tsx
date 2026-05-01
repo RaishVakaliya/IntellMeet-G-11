@@ -553,6 +553,17 @@ const Homepage = () => {
                           </Badge>
                         </div>
 
+                        {m.recordingUrl && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => window.open(m.recordingUrl, "_blank")}
+                            className="h-7 px-3 text-xs border-primary/20 text-primary hover:bg-primary/10"
+                          >
+                            <Video className="w-3 h-3 mr-1" />
+                            Recording
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           onClick={() => handleJoinMeeting(m.meetingCode)}

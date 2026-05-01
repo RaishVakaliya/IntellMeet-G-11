@@ -4,6 +4,7 @@ import { LandingPage } from "./pages/LandingPage";
 import { AuthPage } from "./pages/AuthPage";
 import Homepage from "./pages/Homepage";
 import MeetingRoom from "./pages/MeetingRoom";
+import ProfilePage from "./pages/ProfilePage";
 import { ProtectedRoute, PublicOnlyRoute } from "./components/ProtectedRoute";
 import { Toaster } from "sonner";
 import { useAuthStore } from "./stores/authStore";
@@ -52,6 +53,15 @@ function App() {
           element={
             <ProtectedRoute>
               <MeetingRoom />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />

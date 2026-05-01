@@ -3,15 +3,36 @@ import type { AuthState } from "@/types/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
+const getInitialAuth = () => {
+  const token = localStorage.getItem("accessToken");
+  const userStr = localStorage.getItem("user");
+  if (token && userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      return { user, accessToken: token, isAuthenticated: true };
+    } catch {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+    }
+  }
+  return { user: null, accessToken: null, isAuthenticated: false };
+};
+
 export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  accessToken: null,
-  isAuthenticated: false,
+  ...getInitialAuth(),
 
   setAuth: (user, token) => {
     localStorage.setItem("accessToken", token);
     localStorage.setItem("user", JSON.stringify(user));
     set({ user, accessToken: token, isAuthenticated: true });
+  },
+
+  updateUser: (updates) => {
+    const current = get().user;
+    if (!current) return;
+    const updated = { ...current, ...updates };
+    localStorage.setItem("user", JSON.stringify(updated));
+    set({ user: updated });
   },
 
   refreshAccessToken: async () => {
@@ -51,16 +72,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   hydrateAuth: () => {
-    const token = localStorage.getItem("accessToken");
-    const userStr = localStorage.getItem("user");
-    if (token && userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        set({ user, accessToken: token, isAuthenticated: true });
-      } catch {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("user");
-      }
-    }
+    const auth = getInitialAuth();
+    set(auth);
   },
 }));

@@ -86,6 +86,28 @@ export const getUserProfile = async (req, res) => {
   res.status(200).json(req.user);
 };
 
+export const updateUserProfile = async (req, res) => {
+  try {
+    const { username } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      user.name = username || user.name;
+      const updatedUser = await user.save();
+      res.status(200).json({
+        _id: updatedUser._id,
+        username: updatedUser.name,
+        email: updatedUser.email,
+        avatar: updatedUser.avatar,
+      });
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const uploadAvatar = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });

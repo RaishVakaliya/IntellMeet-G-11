@@ -7,6 +7,7 @@ import {
   refreshToken,
   logout,
   getUserProfile,
+  updateUserProfile,
   uploadAvatar,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
@@ -38,6 +39,7 @@ router.post("/logout", logout);
 
 //protected routes
 router.get("/profile", protect, getUserProfile);
+router.patch("/profile", protect, updateUserProfile);
 router.post("/avatar-upload", protect, upload.single("avatar"), uploadAvatar);
 
 export default router;

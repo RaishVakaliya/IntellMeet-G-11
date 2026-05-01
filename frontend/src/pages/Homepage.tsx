@@ -17,7 +17,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
-import { Separator } from "../components/ui/separator";
 import {
   Video,
   Plus,
@@ -31,21 +30,12 @@ import {
   Loader2,
   VideoOff,
   RefreshCw,
-  Sparkles,
   Zap,
   LayoutGrid,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useSocket } from "@/hooks/useSocket";
 import { AppNavbar } from "../layouts/AppNavbar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
@@ -87,8 +77,6 @@ const statusConfig = {
   },
 } as const;
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 const Homepage = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -102,11 +90,8 @@ const Homepage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [meetingTitle, setMeetingTitle] = useState("");
-  const [meetingDescription, setMeetingDescription] = useState("");
-  const [roomsExpanded, setRoomsExpanded] = useState(true); // ✅ NEW
+  const [roomsExpanded, setRoomsExpanded] = useState(true);
   const joinInputRef = useRef<HTMLInputElement>(null);
-
-  // ── Data ────────────────────────────────────────────────────────────────────
 
   const {
     data: meetings = [],
@@ -136,12 +121,10 @@ const Homepage = () => {
   const createMutation = useMutation({
     mutationFn: ({
       title,
-      description,
     }: {
       title: string;
-      description?: string;
       instant: boolean;
-    }) => createMeeting(title, description),
+    }) => createMeeting(title),
     onSuccess: (meeting, { instant }) => {
       qc.invalidateQueries({ queryKey: ["my-meetings"] });
       toast.success("Meeting created successfully");
@@ -155,15 +138,12 @@ const Homepage = () => {
     onError: (e: Error) => toast.error(e.message || "Could not create meeting"),
   });
 
-  // ── Handlers ─────────────────────────────────────────────────────────────────
-
   const handleCreateMeeting = (instant = false) => {
     const title =
       meetingTitle.trim() ||
       (user ? `${user.username}'s Meeting` : "Instant Meeting");
     createMutation.mutate({
       title,
-      description: meetingDescription.trim() || undefined,
       instant,
     });
   };
@@ -225,8 +205,6 @@ const Homepage = () => {
 
   if (!user) return null;
 
-  // ── Render ────────────────────────────────────────────────────────────────────
-
   return (
     <div className="min-h-screen bg-background">
       <AppNavbar />
@@ -243,16 +221,15 @@ const Homepage = () => {
           </p>
         </div>
 
-        {/* ✅ NEW — Quick Join + Create Meeting cards */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {/* Quick Join */}
-          <div className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4 hover:border-primary/30 transition-all">
+          <div className="rounded-3xl border border-border bg-card p-6 flex flex-col gap-5 hover:border-primary/30 transition-all shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                <Zap className="w-4 h-4 text-primary" />
+              <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">
+                <p className="text-base font-bold text-foreground">
                   Quick Join
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -266,18 +243,18 @@ const Homepage = () => {
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleJoinMeeting()}
-                className="h-9 text-sm bg-background border-border"
+                className="h-11 text-sm bg-background border-border rounded-xl"
               />
               <Button
                 onClick={() => handleJoinMeeting()}
                 disabled={!joinCode.trim() || !!joiningCode}
-                className="h-9 px-3 shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 gap-1 text-xs"
+                className="h-11 px-5 shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 gap-2 text-sm font-bold rounded-xl"
               >
                 {joiningCode ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <>
-                    Join <ArrowRight className="w-3 h-3" />
+                    Join <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </Button>
@@ -285,13 +262,13 @@ const Homepage = () => {
           </div>
 
           {/* Create Meeting */}
-          <div className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4 hover:border-primary/30 transition-all">
+          <div className="rounded-3xl border border-border bg-card p-6 flex flex-col gap-5 hover:border-primary/30 transition-all shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                <Plus className="w-4 h-4 text-primary" />
+              <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                <Plus className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">
+                <p className="text-base font-bold text-foreground">
                   Create Meeting
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -299,146 +276,41 @@ const Homepage = () => {
                 </p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => handleCreateMeeting(true)}
-                disabled={isCreating}
-                className="flex-1 h-9 text-xs bg-primary text-white hover:bg-primary/90 gap-1.5"
-              >
-                {isCreating ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <>
-                    <Video className="w-3.5 h-3.5" /> Start Now
-                  </>
-                )}
-              </Button>
-              <Button
-                onClick={() => handleCreateMeeting(false)}
-                disabled={isCreating}
-                variant="outline"
-                className="flex-1 h-9 text-xs border-border gap-1.5"
-              >
-                <Link2 className="w-3.5 h-3.5" /> Get Link
-              </Button>
-            </div>
-          </div>
-        </section>
 
-        {/* Prepare Meeting */}
-        <section className="bg-card/50 backdrop-blur-sm rounded-3xl border border-border shadow-sm overflow-hidden flex flex-col">
-          <div className="px-6 py-4 border-b border-border bg-card/40">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-              Prepare Meeting
-            </h2>
-          </div>
-
-          <div className="p-6 space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
-                  Meeting Title
-                </label>
-                <Input
-                  placeholder={`Enter title (Default: ${user.username}'s Meeting)`}
-                  value={meetingTitle}
-                  onChange={(e) => setMeetingTitle(e.target.value)}
-                  className="h-11 bg-background border-border text-sm rounded-xl"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">
-                  Meeting Description
-                </label>
-                <Input
-                  placeholder="What is this meeting about? (Optional)"
-                  value={meetingDescription}
-                  onChange={(e) => setMeetingDescription(e.target.value)}
-                  className="h-11 bg-background border-border text-sm rounded-xl"
-                />
-              </div>
-            </div>
-
-            <Separator className="bg-slate-200/60" />
-
-            <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
-              <div className="flex shrink-0 shadow-sm rounded-xl overflow-hidden">
+            <div className="space-y-3">
+              <Input
+                placeholder={`Meeting Title (Optional)`}
+                value={meetingTitle}
+                onChange={(e) => setMeetingTitle(e.target.value)}
+                className="h-10 text-xs bg-background border-border rounded-xl"
+              />
+              <div className="flex gap-2">
                 <Button
                   onClick={() => handleCreateMeeting(true)}
                   disabled={isCreating}
-                  className="text-white rounded-r-none border-r h-10 px-4 gap-2 font-medium"
+                  className="flex-1 h-11 text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-2 rounded-xl"
                 >
                   {isCreating ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Plus className="w-5 h-5" />
-                  )}
-                  New Meeting
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      disabled={isCreating}
-                      className="text-white rounded-l-none h-10 px-2.5"
-                    >
-                      <ChevronDown className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-52">
-                    <DropdownMenuItem
-                      className="gap-2 cursor-pointer"
-                      onClick={() => handleCreateMeeting(false)}
-                    >
-                      <Link2 className="w-4 h-4 text-muted-foreground" />
-                      Get a meeting link
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="gap-2 cursor-pointer"
-                      onClick={() => handleCreateMeeting(true)}
-                    >
-                      <Video className="w-4 h-4 text-muted-foreground" />
-                      Start an instant meeting
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              <Separator
-                orientation="vertical"
-                className="h-8 hidden sm:block"
-              />
-
-              <div className="flex flex-1 gap-2">
-                <Input
-                  ref={joinInputRef}
-                  placeholder="Enter a code or link"
-                  value={joinCode}
-                  onChange={(e) => setJoinCode(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleJoinMeeting()}
-                  className="h-10 bg-background border-border text-sm"
-                />
-                <Button
-                  onClick={handleJoinMeeting}
-                  disabled={!joinCode.trim() || !!joiningCode}
-                  variant="outline"
-                  className="h-10 px-4 shrink-0 border-border text-foreground hover:bg-muted gap-1"
-                >
-                  {joiningCode === joinCode.trim() ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
                     <>
-                      Join
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <Video className="w-4 h-4" /> Start Now
                     </>
                   )}
+                </Button>
+                <Button
+                  onClick={() => handleCreateMeeting(false)}
+                  disabled={isCreating}
+                  variant="outline"
+                  className="flex-1 h-11 text-sm font-bold border-border gap-2 rounded-xl hover:bg-muted"
+                >
+                  <Link2 className="w-4 h-4" /> Get Link
                 </Button>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ✅ NEW — Meeting Rooms */}
         <section className="space-y-3">
           <button
             className="w-full flex items-center justify-between"
@@ -587,13 +459,13 @@ const Homepage = () => {
               {[...Array(3)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-14 rounded-xl bg-slate-100 animate-pulse"
+                  className="h-14 rounded-xl bg-muted animate-pulse"
                 />
               ))}
             </div>
           ) : meetings.length === 0 ? (
-            <div className="text-center py-14 border border-dashed border-slate-200 rounded-2xl bg-slate-50">
-              <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <div className="text-center py-14 border border-dashed border-border rounded-2xl bg-muted/20">
+              <div className="w-12 h-12 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <VideoOff className="w-5 h-5 text-muted-foreground" />
               </div>
               <p className="text-sm font-medium text-foreground">
@@ -709,7 +581,6 @@ const Homepage = () => {
           )}
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-4">
           {[
             { label: "Meetings", value: meetings.length, icon: Video },
@@ -741,12 +612,11 @@ const Homepage = () => {
         </div>
       </main>
 
-      {/* Meeting Link Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-teal-100 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Link2 className="w-3.5 h-3.5 text-primary" />
               </div>
               Meeting link is ready
@@ -757,7 +627,7 @@ const Homepage = () => {
               <p className="text-sm text-muted-foreground">
                 Share this code with people you want to meet with.
               </p>
-              <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+              <div className="flex items-center justify-between bg-muted/50 border border-border rounded-xl px-4 py-3">
                 <span className="font-mono text-base font-semibold text-foreground tracking-widest">
                   {createdMeeting.meetingCode}
                 </span>

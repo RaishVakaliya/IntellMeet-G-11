@@ -1,3 +1,7 @@
+import torch
+torch.set_num_threads(1)
+torch.set_num_interop_threads(1)
+
 import whisper
 import sys
 import json
@@ -6,7 +10,7 @@ import os
 
 warnings.filterwarnings("ignore")
 
-model = whisper.load_model("base")
+model = whisper.load_model("tiny")
 print("READY", flush=True)
 
 for line in sys.stdin:

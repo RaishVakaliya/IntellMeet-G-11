@@ -20,6 +20,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Loader2, VideoOff, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMeetingRecording } from "@/hooks/useMeetingRecording";
+import { useLiveTranscription } from "@/hooks/useLiveTranscription";
+import TranscriptionPanel from "@/meeting/TranscriptionPanel";
 
 const MeetingRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -43,11 +45,14 @@ const MeetingRoom = () => {
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
-  const [sidebarTab, setSidebarTab] = useState<"chat" | "participants">("chat");
+  const [sidebarTab, setSidebarTab] = useState<"chat" | "participants" | "captions">("chat");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [layout, setLayout] = useState<CallLayoutType>("grid");
   const { isRecording, isUploading, startRecording, stopRecording } =
     useMeetingRecording(roomId!);
+  
+  useLiveTranscription(true);
+
   const hasHandledMeetingEnd = useRef(false);
   const socket = useSocket(roomId);
   const {
@@ -168,7 +173,6 @@ const MeetingRoom = () => {
           isActiveSpeaker: false,
         });
 
-        // Mark as online
         addOnlineUser(u.dbUserId);
       });
 
@@ -447,6 +451,7 @@ const MeetingRoom = () => {
                 <div className="flex-1 flex overflow-x-auto">
                   {[
                     { id: "chat", label: "chat" },
+                    { id: "captions", label: "captions" },
                     {
                       id: "participants",
                       label: `participants (${participants.length + 1})`,
@@ -465,7 +470,6 @@ const MeetingRoom = () => {
                     </button>
                   ))}
                 </div>
-                {/* Mobile Close Button */}
                 <button
                   onClick={() => setIsSidebarOpen(false)}
                   className="lg:hidden p-3 border-l border-white/5 text-muted-foreground hover:text-foreground transition-colors"
@@ -477,6 +481,8 @@ const MeetingRoom = () => {
               <div className="flex-1 overflow-hidden flex flex-col">
                 {sidebarTab === "chat" ? (
                   <ChatPanel socket={socket} meetingCode={roomId!} />
+                ) : sidebarTab === "captions" ? (
+                  <TranscriptionPanel />
                 ) : (
                   <ParticipantList hostId={meetingDetails?.createdBy?._id} />
                 )}

@@ -16,7 +16,6 @@ export const initializeSocket = async (httpServer) => {
     },
   });
 
-  // Setup Redis Adapter
   try {
     const subClient = redisClient.duplicate();
     subClient.on("error", (err) => console.log("Redis Sub Client Error", err));

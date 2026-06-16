@@ -1,11 +1,9 @@
 services:
   - type: web
     name: intellmeet-backend
-    env: node
+    env: docker
     plan: free
     rootDir: backend
-    buildCommand: npm install
-    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production

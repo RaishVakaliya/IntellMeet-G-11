@@ -75,7 +75,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
       timestamp: string;
     }) => {
       sendMessage(msg.content, msg.sender.name, msg.sender._id);
-      removeTypingUser(msg.sender._id); // Stop typing when message received
+      removeTypingUser(msg.sender._id);
     };
 
     const handleUserTyping = ({

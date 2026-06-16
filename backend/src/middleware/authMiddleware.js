@@ -26,9 +26,8 @@ export const protect = async (req, res, next) => {
         return next();
       }
 
-      //Cache Miss
       const user = await User.findById(decoded.userId)
-        .select("-password") //don't send password
+        .select("-password")
         .lean();
       if (!user) {
         return res.status(401).json({ message: "User no longer exists" });

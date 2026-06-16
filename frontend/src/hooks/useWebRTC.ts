@@ -76,7 +76,6 @@ export const useWebRTC = ({
     } catch (err) {
       console.warn("[WebRTC] getUserMedia failed:", err);
       mediaReadyRef.current = true;
-      // Continue even if media fails so signaling can still happen (e.g. for chat or seeing others)
       return null;
     }
   }, [setLocalStream]);
@@ -93,7 +92,6 @@ export const useWebRTC = ({
 
       const pc = new RTCPeerConnection(ICE_SERVERS);
 
-      // Add local tracks
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => {
           pc.addTrack(track, localStreamRef.current!);
@@ -143,7 +141,6 @@ export const useWebRTC = ({
           pc.connectionState === "failed" ||
           pc.connectionState === "disconnected"
         ) {
-          // Attempting recovery or cleanup could go here
         }
       };
 
@@ -274,8 +271,6 @@ export const useWebRTC = ({
       dbUserId: string;
       socketId: string;
     }) => {
-      // We don't initiate offers here to avoid glare.
-      // The joiner will receive 'existing-users' and initiate the offer to us.
       console.log(
         "[WebRTC] user-connected | Adding socket mapping for:",
         dbUserId,
@@ -332,7 +327,6 @@ export const useWebRTC = ({
         const pc = createPeerConnection(dbUserId);
         await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
 
-        // Process any queued ICE candidates now that remote description is set
         await processQueuedIceCandidates(dbUserId);
 
         const answer = await pc.createAnswer();
@@ -390,7 +384,6 @@ export const useWebRTC = ({
           console.warn("[WebRTC] Error adding ICE candidate:", e);
         }
       } else {
-        // Queue candidates if remote description is not yet set
         const queue = iceCandidatesQueue.current.get(dbUserId) || [];
         queue.push(incoming.candidate);
         iceCandidatesQueue.current.set(dbUserId, queue);

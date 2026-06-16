@@ -210,7 +210,6 @@ const Homepage = () => {
       <AppNavbar />
 
       <main className="max-w-5xl mx-auto px-6 py-12 space-y-10">
-        {/* Welcome */}
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             Welcome back,{" "}
@@ -222,7 +221,6 @@ const Homepage = () => {
         </div>
 
         <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Quick Join */}
           <div className="rounded-3xl border border-border bg-card p-6 flex flex-col gap-5 hover:border-primary/30 transition-all shadow-sm">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
@@ -261,7 +259,6 @@ const Homepage = () => {
             </div>
           </div>
 
-          {/* Create Meeting */}
           <div className="rounded-3xl border border-border bg-card p-6 flex flex-col gap-5 hover:border-primary/30 transition-all shadow-sm">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
@@ -429,7 +426,6 @@ const Homepage = () => {
           )}
         </section>
 
-        {/* Your Meetings */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-foreground text-base">

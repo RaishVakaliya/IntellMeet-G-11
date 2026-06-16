@@ -16,13 +16,11 @@ import { authLimiter } from "../middleware/rateLimitMiddleware.js";
 
 const router = express.Router();
 
-//Redirect to google
 router.get(
   "/google",
   passport.authenticate("google", { scope: ["profile", "email"] }),
 );
 
-//callback
 router.get(
   "/google/callback",
   passport.authenticate("google", {
@@ -37,7 +35,6 @@ router.post("/login", authLimiter, login);
 router.post("/refresh-token", refreshToken);
 router.post("/logout", logout);
 
-//protected routes
 router.get("/profile", protect, getUserProfile);
 router.patch("/profile", protect, updateUserProfile);
 router.post("/avatar-upload", protect, upload.single("avatar"), uploadAvatar);

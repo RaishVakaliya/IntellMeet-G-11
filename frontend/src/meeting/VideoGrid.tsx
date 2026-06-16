@@ -109,7 +109,6 @@ const PaginatedGridLayout: React.FC<PaginatedGridLayoutProps> = ({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Grid area */}
       <div
         className={cn(
           "flex-1 grid gap-2 sm:gap-3 p-2 sm:p-4 auto-rows-fr",
@@ -169,7 +168,6 @@ const PaginatedGridLayout: React.FC<PaginatedGridLayoutProps> = ({
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          {/* Dot indicators */}
           <div className="flex items-center gap-1.5">
             {Array.from({ length: totalPages }).map((_, i) => (
               <button

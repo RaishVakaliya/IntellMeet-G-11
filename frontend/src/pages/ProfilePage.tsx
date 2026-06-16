@@ -123,7 +123,6 @@ const ProfilePage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate type & size
     if (!file.type.startsWith("image/")) {
       toast.error("Please select an image file");
       return;
@@ -158,7 +157,6 @@ const ProfilePage = () => {
       <AppNavbar />
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
-        {/* Header */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/dashboard")}
@@ -176,7 +174,6 @@ const ProfilePage = () => {
         </div>
 
         <section className="rounded-2xl border border-border bg-card overflow-hidden">
-          {/* Gradient banner */}
           <div className="h-24 sm:h-28 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent relative">
             <div
               className="absolute inset-0 opacity-30"
@@ -188,7 +185,6 @@ const ProfilePage = () => {
           </div>
 
           <div className="px-5 sm:px-8 pb-6 sm:pb-8">
-            {/* Avatar + name row */}
             <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12 sm:-mt-14">
               <div className="relative group w-fit">
                 <Avatar className="w-24 h-24 sm:w-28 sm:h-28 border-4 border-card shadow-lg">
@@ -303,7 +299,6 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          {/* Email (read-only) */}
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-0.5">
               Email Address
@@ -360,7 +355,6 @@ const ProfilePage = () => {
           </div>
 
           <div className="space-y-4">
-            {/* Theme Toggle */}
             <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border">
               <div className="space-y-0.5">
                 <p className="text-sm font-bold text-foreground">Appearance</p>
@@ -371,7 +365,6 @@ const ProfilePage = () => {
               <ThemeToggle />
             </div>
 
-            {/* Logout Button */}
             <Button
               onClick={handleLogout}
               disabled={isLoggingOut}

@@ -32,7 +32,6 @@ export type MeetingState = {
   localStream: MediaStream | null;
   onlineUsers: string[];
 
-  //Actions
   setMeeting: (id: string) => void;
   setRoomId: (id: string) => void;
   setParticipants: (participants: Participant[]) => void;

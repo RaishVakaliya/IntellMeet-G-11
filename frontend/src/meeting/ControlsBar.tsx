@@ -154,7 +154,6 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
       )}
     >
       <div className="w-full flex items-center pointer-events-auto relative">
-        {/* Left: Meeting Details (Hidden on mobile) */}
         <div className="hidden md:flex flex-1 items-center justify-start">
           <div className="flex items-center gap-4 px-4 py-2 rounded-2xl bg-card/40 backdrop-blur-2xl border border-white/10 shadow-2xl min-w-fit">
             <div className="flex flex-col">
@@ -194,12 +193,9 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
           </div>
         </div>
 
-        {/* Mobile Placeholder for Left */}
         <div className="flex md:hidden flex-1" />
 
-        {/* Center: Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-card/60 sm:bg-card/40 backdrop-blur-2xl border border-white/10 shadow-2xl shrink-0">
-          {/* Mic */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -224,7 +220,6 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
             </TooltipContent>
           </Tooltip>
 
-          {/* Camera */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -249,7 +244,6 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
             </TooltipContent>
           </Tooltip>
 
-          {/* Screen share (Hidden on very small mobile) */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -274,7 +268,6 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
             </TooltipContent>
           </Tooltip>
 
-          {/* Recording (Host only) */}
           {isHost && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -308,7 +301,6 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
             </Tooltip>
           )}
 
-          {/* Layout toggle (Hidden on mobile) */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -325,7 +317,6 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
 
           <div className="hidden sm:block w-px h-6 bg-white/10 mx-1" />
 
-          {/* Leave / End */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -347,7 +338,6 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
           </Tooltip>
         </div>
 
-        {/* Right: Sidebar Toggle */}
         <div className="flex flex-1 items-center justify-end">
           <div className="flex items-center px-1.5 sm:px-2 py-1.5 sm:py-2 rounded-2xl bg-card/60 sm:bg-card/40 backdrop-blur-2xl border border-white/10 shadow-2xl">
             <Tooltip>

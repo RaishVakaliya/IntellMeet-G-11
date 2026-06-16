@@ -5,6 +5,8 @@ import { AuthPage } from "./pages/AuthPage";
 import Homepage from "./pages/Homepage";
 import MeetingRoom from "./pages/MeetingRoom";
 import ProfilePage from "./pages/ProfilePage";
+import BoardListPage from "./pages/BoardListPage";
+import KanbanBoard from "./pages/KanbanBoard";
 import { ProtectedRoute, PublicOnlyRoute } from "./components/ProtectedRoute";
 import { Toaster } from "sonner";
 import { useAuthStore } from "./stores/authStore";
@@ -62,6 +64,24 @@ function App() {
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/board"
+          element={
+            <ProtectedRoute>
+              <BoardListPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/board/:boardId"
+          element={
+            <ProtectedRoute>
+              <KanbanBoard />
             </ProtectedRoute>
           }
         />

@@ -8,6 +8,13 @@ export type MeetingParticipantRecord = {
   leftAt?: string | null;
 };
 
+export interface MeetingActionItem {
+  _id: string;
+  text: string;
+  assignedTo: { _id: string; name: string; email: string; avatar?: string } | null;
+  completed: boolean;
+}
+
 export interface MeetingData {
   _id: string;
   title: string;
@@ -16,6 +23,8 @@ export interface MeetingData {
   createdAt: string;
   endTime?: string;
   recordingUrl?: string;
+  summary?: string;
+  actionItems?: MeetingActionItem[];
   createdBy?: { _id: string; name: string; email: string };
   participants: MeetingParticipantRecord[];
 }
@@ -138,4 +147,51 @@ export const uploadMeetingRecording = async (
     recordingUrl: data.recordingUrl,
     meeting: data.meeting,
   };
+};
+
+export const addActionItem = async (
+  code: string,
+  text: string,
+  assignedTo?: string | null,
+): Promise<MeetingDetails> => {
+  const res = await apiFetch(`/api/meetings/${code}/action-items`, {
+    method: "POST",
+    body: JSON.stringify({ text, assignedTo }),
+  });
+  if (!res.ok) throw new Error("Failed to add action item");
+  return res.json();
+};
+
+export const toggleActionItem = async (
+  code: string,
+  itemId: string,
+): Promise<MeetingDetails> => {
+  const res = await apiFetch(`/api/meetings/${code}/action-items/${itemId}`, {
+    method: "PATCH",
+  });
+  if (!res.ok) throw new Error("Failed to toggle action item");
+  return res.json();
+};
+
+export const deleteActionItem = async (
+  code: string,
+  itemId: string,
+): Promise<MeetingDetails> => {
+  const res = await apiFetch(`/api/meetings/${code}/action-items/${itemId}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Failed to delete action item");
+  return res.json();
+};
+
+export const updateMeetingSummary = async (
+  code: string,
+  summary: string,
+): Promise<MeetingDetails> => {
+  const res = await apiFetch(`/api/meetings/${code}/summary`, {
+    method: "PATCH",
+    body: JSON.stringify({ summary }),
+  });
+  if (!res.ok) throw new Error("Failed to update summary");
+  return res.json();
 };

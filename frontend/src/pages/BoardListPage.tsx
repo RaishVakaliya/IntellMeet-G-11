@@ -219,76 +219,78 @@ const BoardListPage = () => {
       </main>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-[24px]">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Layers className="w-3.5 h-3.5 text-primary" />
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold">
+              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Layers className="w-4 h-4 text-primary" />
               </div>
               Create New Board
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-1">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
+          <div className="space-y-5 pt-2">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground">
                 Board Name
               </label>
               <Input
-                placeholder="e.g. Sprint 1, Marketing Tasks..."
+                placeholder="e.g. Project Roadmap, Marketing Campaign..."
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-                className="rounded-xl border-border"
+                className="rounded-xl border-border bg-muted/5 h-11 px-4 placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-primary/20"
                 autoFocus
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground">
                 Description{" "}
-                <span className="text-muted-foreground font-normal">
+                <span className="text-muted-foreground font-normal text-xs">
                   (optional)
                 </span>
               </label>
               <Input
-                placeholder="What is this board for?"
+                placeholder="Describe the goal or scope of this board..."
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
-                className="rounded-xl border-border"
+                className="rounded-xl border-border bg-muted/5 h-11 px-4 placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-primary/20"
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground">
                 Color
               </label>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-3 flex-wrap items-center">
                 {BOARD_COLORS.map((c) => (
                   <button
                     key={c.value}
                     onClick={() => setNewColor(c.value)}
                     title={c.label}
-                    className={`w-7 h-7 rounded-full transition-all ${
-                      newColor === c.value
-                        ? "ring-2 ring-offset-2 ring-offset-background scale-110"
-                        : "hover:scale-105"
+                    type="button"
+                    className={`w-8 h-8 rounded-full transition-all focus:outline-none cursor-pointer ${
+                      newColor === c.value ? "scale-110" : "hover:scale-105"
                     }`}
                     style={{
                       backgroundColor: c.value,
-                      ringColor: c.value,
+                      boxShadow:
+                        newColor === c.value
+                          ? `0 0 0 2px var(--background), 0 0 0 4px #ffffff`
+                          : undefined,
                     }}
                   />
                 ))}
               </div>
             </div>
-            <div className="flex gap-2 pt-1">
+            <div className="flex gap-3 pt-2">
               <Button
                 variant="outline"
-                className="flex-1 border-border rounded-xl"
+                className="flex-1 border-border bg-muted/5 hover:bg-muted/10 text-foreground rounded-full h-11 font-semibold transition-colors"
                 onClick={() => setDialogOpen(false)}
               >
                 Cancel
               </Button>
               <Button
-                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-bold gap-2"
+                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full h-11 font-bold gap-2 transition-all shadow-md"
                 onClick={handleCreate}
                 disabled={createMutation.isPending}
               >
@@ -332,7 +334,9 @@ const BoardListPage = () => {
             </Button>
             <Button
               className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl font-bold"
-              onClick={() => deleteConfirm && deleteMutation.mutate(deleteConfirm)}
+              onClick={() =>
+                deleteConfirm && deleteMutation.mutate(deleteConfirm)
+              }
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? (

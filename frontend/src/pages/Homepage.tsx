@@ -6,8 +6,15 @@ import {
   createMeeting,
   getMyMeetings,
   joinMeeting,
+  getMeetingDetails,
+  addActionItem,
+  toggleActionItem,
+  deleteActionItem,
+  updateMeetingSummary,
   type MeetingData,
+  type MeetingDetails,
 } from "../services/meetingService";
+import { getMyBoards, createTask } from "../services/boardService";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
@@ -32,6 +39,12 @@ import {
   RefreshCw,
   Zap,
   LayoutGrid,
+  CheckSquare,
+  Trash2,
+  Edit3,
+  Layers,
+  FileText,
+  Check,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useSocket } from "@/hooks/useSocket";
@@ -93,6 +106,118 @@ const Homepage = () => {
   const [roomsExpanded, setRoomsExpanded] = useState(true);
   const joinInputRef = useRef<HTMLInputElement>(null);
 
+  const [selectedMeetingCode, setSelectedMeetingCode] = useState<string | null>(
+    null,
+  );
+  const [actionItemInput, setActionItemInput] = useState("");
+  const [actionItemAssignee, setActionItemAssignee] = useState("");
+  const [editingSummary, setEditingSummary] = useState(false);
+  const [summaryInput, setSummaryInput] = useState("");
+
+  const [taskConversionItem, setTaskConversionItem] = useState<{
+    text: string;
+    assignedTo: string | null;
+    itemId: string;
+  } | null>(null);
+
+  const [targetBoardId, setTargetBoardId] = useState("");
+  const [targetColumnId, setTargetColumnId] = useState("");
+  const [targetPriority, setTargetPriority] = useState<
+    "low" | "medium" | "high"
+  >("medium");
+
+  const { data: boards = [] } = useQuery<any[]>({
+    queryKey: ["my-boards"],
+    queryFn: getMyBoards,
+    enabled: !!user,
+  });
+
+  const {
+    data: meetingDetails,
+    refetch: refetchDetails,
+    isLoading: detailsLoading,
+  } = useQuery<MeetingDetails>({
+    queryKey: ["meeting-details", selectedMeetingCode],
+    queryFn: () => getMeetingDetails(selectedMeetingCode!),
+    enabled: !!selectedMeetingCode,
+  });
+
+  const targetBoard = boards.find((b) => b._id === targetBoardId);
+  const targetColumns = targetBoard?.columns || [];
+
+  useEffect(() => {
+    if (targetColumns.length > 0) {
+      setTargetColumnId(targetColumns[0].id);
+    } else {
+      setTargetColumnId("");
+    }
+  }, [targetBoardId, targetColumns]);
+
+  const addActionItemMutation = useMutation({
+    mutationFn: ({
+      code,
+      text,
+      assignedTo,
+    }: {
+      code: string;
+      text: string;
+      assignedTo?: string | null;
+    }) => addActionItem(code, text, assignedTo),
+    onSuccess: () => {
+      toast.success("Action item added!");
+      setActionItemInput("");
+      setActionItemAssignee("");
+      refetchDetails();
+    },
+    onError: (e: any) => toast.error(e.message || "Failed to add action item"),
+  });
+
+  const toggleActionItemMutation = useMutation({
+    mutationFn: ({ code, itemId }: { code: string; itemId: string }) =>
+      toggleActionItem(code, itemId),
+    onSuccess: () => {
+      refetchDetails();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const deleteActionItemMutation = useMutation({
+    mutationFn: ({ code, itemId }: { code: string; itemId: string }) =>
+      deleteActionItem(code, itemId),
+    onSuccess: () => {
+      toast.success("Action item removed");
+      refetchDetails();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const updateSummaryMutation = useMutation({
+    mutationFn: ({ code, summary }: { code: string; summary: string }) =>
+      updateMeetingSummary(code, summary),
+    onSuccess: () => {
+      toast.success("Summary updated!");
+      setEditingSummary(false);
+      refetchDetails();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const createTaskMutation = useMutation({
+    mutationFn: ({ boardId, data }: { boardId: string; data: any }) =>
+      createTask(boardId, data),
+    onSuccess: () => {
+      toast.success("Kanban Task created successfully!");
+      if (taskConversionItem && selectedMeetingCode) {
+        toggleActionItemMutation.mutate({
+          code: selectedMeetingCode,
+          itemId: taskConversionItem.itemId,
+        });
+      }
+      setTaskConversionItem(null);
+    },
+    onError: (e: any) => toast.error(e.message || "Failed to create task"),
+  });
+
   const {
     data: meetings = [],
     isLoading: meetingsLoading,
@@ -119,12 +244,8 @@ const Homepage = () => {
   }, [socket, qc]);
 
   const createMutation = useMutation({
-    mutationFn: ({
-      title,
-    }: {
-      title: string;
-      instant: boolean;
-    }) => createMeeting(title),
+    mutationFn: ({ title }: { title: string; instant: boolean }) =>
+      createMeeting(title),
     onSuccess: (meeting, { instant }) => {
       qc.invalidateQueries({ queryKey: ["my-meetings"] });
       toast.success("Meeting created successfully");
@@ -494,14 +615,21 @@ const Homepage = () => {
                   return (
                     <div
                       key={m._id}
-                      className="flex items-center justify-between px-5 py-3.5 hover:bg-muted/30 transition-colors"
+                      onClick={() => {
+                        setSelectedMeetingCode(m.meetingCode);
+                        setSummaryInput(m.summary || "");
+                        if (boards.length > 0) {
+                          setTargetBoardId(boards[0]._id);
+                        }
+                      }}
+                      className="flex items-center justify-between px-5 py-3.5 hover:bg-muted/30 transition-colors cursor-pointer group/meeting"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
                           <Video className="w-4 h-4 text-primary" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
+                          <p className="text-sm font-medium text-foreground truncate group-hover/meeting:text-primary transition-colors">
                             {m.title}
                           </p>
                           <p className="text-xs text-muted-foreground font-mono mt-0.5">
@@ -553,8 +681,11 @@ const Homepage = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => window.open(m.recordingUrl, "_blank")}
-                            className="h-7 px-3 text-xs border-primary/20 text-primary hover:bg-primary/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(m.recordingUrl, "_blank");
+                            }}
+                            className="h-7 px-3 text-xs border-primary/20 text-primary hover:bg-primary/10 cursor-pointer"
                           >
                             <Video className="w-3 h-3 mr-1" />
                             Recording
@@ -562,9 +693,12 @@ const Homepage = () => {
                         )}
                         <Button
                           size="sm"
-                          onClick={() => handleJoinMeeting(m.meetingCode)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleJoinMeeting(m.meetingCode);
+                          }}
                           disabled={m.status === "ended" || !!joiningCode}
-                          className={`h-7 px-3 text-xs ${
+                          className={`h-7 px-3 text-xs cursor-pointer ${
                             m.status === "ended"
                               ? "bg-muted text-muted-foreground cursor-not-allowed"
                               : "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -664,6 +798,438 @@ const Homepage = () => {
                   <Video className="w-4 h-4" /> Start now
                 </Button>
               </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Post-Meeting Dashboard Dialog */}
+      <Dialog
+        open={!!selectedMeetingCode}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedMeetingCode(null);
+            setEditingSummary(false);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto rounded-[24px] p-6 border-border bg-card">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2.5 text-lg font-bold">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <FileText className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex flex-col items-start leading-tight">
+                <span>Meeting Insights</span>
+                <span className="text-xs text-muted-foreground font-normal mt-0.5">
+                  Code: {selectedMeetingCode}
+                </span>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          {detailsLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : meetingDetails ? (
+            <div className="space-y-6 pt-2">
+              {/* Meeting Info Section */}
+              <div className="grid grid-cols-2 gap-4 bg-muted/20 border border-border/50 rounded-2xl p-4 text-sm">
+                <div>
+                  <p className="text-xs text-muted-foreground">Title</p>
+                  <p className="font-semibold text-foreground mt-0.5">
+                    {meetingDetails.title}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Hosted By</p>
+                  <p className="font-semibold text-foreground mt-0.5">
+                    {meetingDetails.createdBy?.name || "Host"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Date & Time</p>
+                  <p className="font-semibold text-foreground mt-0.5">
+                    {new Date(meetingDetails.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Participants</p>
+                  <p className="font-semibold text-foreground mt-0.5">
+                    {meetingDetails.participants.length} users
+                  </p>
+                </div>
+              </div>
+
+              {/* AI Summary Section */}
+              <div className="space-y-2.5 border-t border-border/30 pt-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                    <FileText className="w-4 h-4 text-primary" /> AI Meeting
+                    Summary
+                  </h3>
+                  {!editingSummary ? (
+                    <button
+                      onClick={() => {
+                        setEditingSummary(true);
+                        setSummaryInput(meetingDetails.summary || "");
+                      }}
+                      className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-semibold cursor-pointer"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" /> Edit
+                    </button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setEditingSummary(false)}
+                        className="text-xs text-muted-foreground hover:underline font-semibold cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() =>
+                          updateSummaryMutation.mutate({
+                            code: meetingDetails.meetingCode,
+                            summary: summaryInput,
+                          })
+                        }
+                        className="text-xs text-primary hover:underline font-semibold cursor-pointer"
+                        disabled={updateSummaryMutation.isPending}
+                      >
+                        {updateSummaryMutation.isPending ? "Saving..." : "Save"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {editingSummary ? (
+                  <textarea
+                    value={summaryInput}
+                    onChange={(e) => setSummaryInput(e.target.value)}
+                    placeholder="Provide a summary of the meeting..."
+                    rows={4}
+                    className="w-full rounded-xl border border-border bg-muted/5 px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground leading-relaxed bg-muted/10 border border-border/20 rounded-xl px-4 py-3 min-h-[60px] whitespace-pre-wrap">
+                    {meetingDetails.summary ||
+                      "No summary generated. Click Edit to add one!"}
+                  </p>
+                )}
+              </div>
+
+              {/* Action Items Section */}
+              <div className="space-y-3 border-t border-border/30 pt-4">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                  <CheckSquare className="w-4 h-4 text-primary" /> Action Items
+                </h3>
+
+                {/* List Action Items */}
+                <div className="space-y-2">
+                  {meetingDetails.actionItems &&
+                  meetingDetails.actionItems.length > 0 ? (
+                    meetingDetails.actionItems.map((item) => (
+                      <div
+                        key={item._id}
+                        className="flex items-center justify-between gap-3 bg-muted/10 border border-border/20 rounded-xl px-4 py-3 hover:bg-muted/15 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <button
+                            onClick={() =>
+                              toggleActionItemMutation.mutate({
+                                code: meetingDetails.meetingCode,
+                                itemId: item._id,
+                              })
+                            }
+                            className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
+                              item.completed
+                                ? "bg-primary border-primary text-white"
+                                : "border-border hover:border-primary/50"
+                            }`}
+                          >
+                            {item.completed && (
+                              <Check className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                          <div className="min-w-0">
+                            <p
+                              className={`text-sm text-foreground font-medium truncate ${
+                                item.completed
+                                  ? "line-through text-muted-foreground"
+                                  : ""
+                              }`}
+                            >
+                              {item.text}
+                            </p>
+                            {item.assignedTo && (
+                              <p className="text-[10px] text-muted-foreground mt-0.5">
+                                Assigned to:{" "}
+                                <span className="font-semibold text-foreground">
+                                  {item.assignedTo.name}
+                                </span>
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {/* Convert to Kanban Task button */}
+                          <button
+                            onClick={() => {
+                              setTaskConversionItem({
+                                text: item.text,
+                                assignedTo: item.assignedTo?._id || null,
+                                itemId: item._id,
+                              });
+                            }}
+                            className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                            title="Convert to Kanban Task"
+                          >
+                            <Layers className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              deleteActionItemMutation.mutate({
+                                code: meetingDetails.meetingCode,
+                                itemId: item._id,
+                              })
+                            }
+                            className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                            title="Remove action item"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic text-center py-4 bg-muted/5 border border-dashed border-border rounded-xl">
+                      No action items captured yet.
+                    </p>
+                  )}
+                </div>
+
+                {/* Add Action Item form */}
+                <div className="flex flex-col sm:flex-row gap-2.5 pt-1.5">
+                  <Input
+                    placeholder="Capture new action item..."
+                    value={actionItemInput}
+                    onChange={(e) => setActionItemInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        if (actionItemInput.trim()) {
+                          addActionItemMutation.mutate({
+                            code: meetingDetails.meetingCode,
+                            text: actionItemInput,
+                            assignedTo: actionItemAssignee || null,
+                          });
+                        }
+                      }
+                    }}
+                    className="flex-1 rounded-xl h-10 border-border bg-muted/5 px-4 placeholder:text-muted-foreground/60 text-sm focus:ring-2 focus:ring-primary/20"
+                  />
+                  <div className="flex gap-2">
+                    <select
+                      value={actionItemAssignee}
+                      onChange={(e) => setActionItemAssignee(e.target.value)}
+                      className="rounded-xl border border-border bg-card text-foreground text-xs px-3 h-10 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer min-w-[130px]"
+                    >
+                      <option value="" className="bg-card text-foreground">
+                        Assignee...
+                      </option>
+                      {meetingDetails.participants.map((p: any) => {
+                        const u = p.user;
+                        if (!u || typeof u === "string") return null;
+                        return (
+                          <option
+                            key={u._id}
+                            value={u._id}
+                            className="bg-card text-foreground"
+                          >
+                            {u.name}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <Button
+                      onClick={() => {
+                        if (actionItemInput.trim()) {
+                          addActionItemMutation.mutate({
+                            code: meetingDetails.meetingCode,
+                            text: actionItemInput,
+                            assignedTo: actionItemAssignee || null,
+                          });
+                        }
+                      }}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-10 px-4 font-bold text-xs cursor-pointer gap-1 shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-center py-10 text-muted-foreground text-sm">
+              Failed to load meeting details
+            </p>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Convert to Kanban Task Dialog */}
+      <Dialog
+        open={!!taskConversionItem}
+        onOpenChange={(open) => {
+          if (!open) setTaskConversionItem(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md rounded-[24px] p-6 border-border bg-card">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2.5 text-lg font-bold">
+              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Layers className="w-4 h-4 text-primary" />
+              </div>
+              Convert to Kanban Task
+            </DialogTitle>
+          </DialogHeader>
+
+          {taskConversionItem && (
+            <div className="space-y-4 pt-2">
+              <div className="space-y-1 bg-muted/20 border border-border/50 rounded-2xl p-4 text-sm">
+                <p className="text-xs text-muted-foreground">
+                  Action Item Text
+                </p>
+                <p className="font-semibold text-foreground mt-0.5 leading-snug">
+                  {taskConversionItem.text}
+                </p>
+              </div>
+
+              {boards.length === 0 ? (
+                <div className="text-center py-6 border border-dashed border-border rounded-xl">
+                  <p className="text-xs text-muted-foreground mb-3">
+                    You have no Kanban boards yet. Create one first!
+                  </p>
+                  <Button
+                    onClick={() => navigate("/board")}
+                    size="sm"
+                    className="h-8 rounded-xl font-bold bg-primary text-primary-foreground text-xs"
+                  >
+                    Go to Boards
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground">
+                      Select Project Board
+                    </label>
+                    <select
+                      value={targetBoardId}
+                      onChange={(e) => setTargetBoardId(e.target.value)}
+                      className="w-full rounded-xl border border-border bg-card text-foreground px-4 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                    >
+                      {boards.map((b) => (
+                        <option
+                          key={b._id}
+                          value={b._id}
+                          className="bg-card text-foreground"
+                        >
+                          {b.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-foreground">
+                        Select Column
+                      </label>
+                      <select
+                        value={targetColumnId}
+                        onChange={(e) => setTargetColumnId(e.target.value)}
+                        className="w-full rounded-xl border border-border bg-card text-foreground px-4 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                      >
+                        {targetColumns.map((col: any) => (
+                          <option
+                            key={col.id}
+                            value={col.id}
+                            className="bg-card text-foreground"
+                          >
+                            {col.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-foreground">
+                        Priority
+                      </label>
+                      <select
+                        value={targetPriority}
+                        onChange={(e) =>
+                          setTargetPriority(e.target.value as any)
+                        }
+                        className="w-full rounded-xl border border-border bg-card text-foreground px-4 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                      >
+                        <option value="low" className="bg-card text-foreground">
+                          🟢 Low
+                        </option>
+                        <option
+                          value="medium"
+                          className="bg-card text-foreground"
+                        >
+                          🟡 Medium
+                        </option>
+                        <option
+                          value="high"
+                          className="bg-card text-foreground"
+                        >
+                          🔴 High
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-3">
+                    <Button
+                      variant="outline"
+                      className="flex-1 border-border bg-muted/5 hover:bg-muted/10 text-foreground rounded-full h-11 font-semibold transition-colors"
+                      onClick={() => setTaskConversionItem(null)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        createTaskMutation.mutate({
+                          boardId: targetBoardId,
+                          data: {
+                            title: taskConversionItem.text.trim(),
+                            description: `Created from meeting action item.`,
+                            priority: targetPriority,
+                            column: targetColumnId,
+                            assignedTo: taskConversionItem.assignedTo,
+                          },
+                        });
+                      }}
+                      className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full h-11 font-bold gap-2 transition-all shadow-md cursor-pointer"
+                      disabled={createTaskMutation.isPending}
+                    >
+                      {createTaskMutation.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4" /> Create Task
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </DialogContent>

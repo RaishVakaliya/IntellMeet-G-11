@@ -30,6 +30,12 @@ export interface Task {
   board: string;
   order: number;
   createdAt: string;
+  assignedTo: {
+    _id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+  } | null;
 }
 
 export interface BoardWithTasks {
@@ -94,6 +100,7 @@ export const createTask = async (
     labels?: string[];
     dueDate?: string | null;
     column: string;
+    assignedTo?: string | null;
   },
 ): Promise<Task> => {
   const res = await apiFetch(`/api/boards/${boardId}/tasks`, {
@@ -110,7 +117,9 @@ export const createTask = async (
 export const updateTask = async (
   boardId: string,
   taskId: string,
-  data: Partial<Omit<Task, "_id" | "board" | "createdAt">>,
+  data: Partial<Omit<Task, "_id" | "board" | "createdAt" | "assignedTo">> & {
+    assignedTo?: string | null;
+  },
 ): Promise<Task> => {
   const res = await apiFetch(`/api/boards/${boardId}/tasks/${taskId}`, {
     method: "PUT",

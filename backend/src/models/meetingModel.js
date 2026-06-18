@@ -44,6 +44,10 @@ const meetingSchema = new mongoose.Schema(
     endTime: Date,
 
     recordingUrl: String,
+    summary: {
+      type: String,
+      default: "",
+    },
 
     actionItems: [
       {

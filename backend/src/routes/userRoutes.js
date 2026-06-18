@@ -9,12 +9,15 @@ import {
   getUserProfile,
   updateUserProfile,
   uploadAvatar,
+  getAllUsers,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { upload } from "../config/cloudinary.js";
 import { authLimiter } from "../middleware/rateLimitMiddleware.js";
 
 const router = express.Router();
+
+router.get("/", protect, getAllUsers);
 
 router.get(
   "/google",

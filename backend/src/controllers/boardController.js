@@ -51,7 +51,9 @@ export const getBoardById = async (req, res) => {
     });
     if (!board) return res.status(404).json({ message: "Board not found" });
 
-    const tasks = await Task.find({ board: board._id }).sort({ order: 1 });
+    const tasks = await Task.find({ board: board._id })
+      .populate("assignedTo", "name email avatar")
+      .sort({ order: 1 });
     res.json({ board, tasks });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -95,7 +97,7 @@ export const createTask = async (req, res) => {
     });
     if (!board) return res.status(404).json({ message: "Board not found" });
 
-    const { title, description, priority, labels, dueDate, column } = req.body;
+    const { title, description, priority, labels, dueDate, column, assignedTo } = req.body;
     if (!title?.trim()) {
       return res.status(400).json({ message: "Task title is required" });
     }
@@ -116,7 +118,9 @@ export const createTask = async (req, res) => {
       board: board._id,
       createdBy: req.user._id,
       order: taskCount,
+      assignedTo: assignedTo || null,
     });
+    await task.populate("assignedTo", "name email avatar");
     res.status(201).json(task);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -131,12 +135,33 @@ export const updateTask = async (req, res) => {
     });
     if (!board) return res.status(404).json({ message: "Board not found" });
 
-    const { title, description, priority, labels, dueDate } = req.body;
+    const { title, description, priority, labels, dueDate, column, assignedTo } = req.body;
+    const updateData = { title, description, priority, labels, dueDate };
+
+    if (assignedTo !== undefined) {
+      updateData.assignedTo = assignedTo || null;
+    }
+
+    if (column) {
+      const existingTask = await Task.findOne({
+        _id: req.params.taskId,
+        board: board._id,
+      });
+      if (existingTask && existingTask.column !== column) {
+        const taskCount = await Task.countDocuments({
+          board: board._id,
+          column: column,
+        });
+        updateData.column = column;
+        updateData.order = taskCount;
+      }
+    }
+
     const task = await Task.findOneAndUpdate(
       { _id: req.params.taskId, board: board._id },
-      { title, description, priority, labels, dueDate },
+      updateData,
       { new: true, runValidators: true },
-    );
+    ).populate("assignedTo", "name email avatar");
     if (!task) return res.status(404).json({ message: "Task not found" });
     res.json(task);
   } catch (err) {

@@ -22,6 +22,11 @@ const taskSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     order: { type: Number, default: 0 },
   },
   { timestamps: true },

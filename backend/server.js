@@ -47,6 +47,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/auth", userRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/meetings", meetingRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/transcribe", transcribeRoutes);

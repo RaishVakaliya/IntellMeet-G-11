@@ -330,7 +330,7 @@ const Homepage = () => {
     <div className="min-h-screen bg-background">
       <AppNavbar />
 
-      <main className="max-w-5xl mx-auto px-6 py-12 space-y-10">
+      <main className="max-w-5xl mx-auto px-6 pt-12 pb-24 sm:py-12 space-y-10">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             Welcome back,{" "}

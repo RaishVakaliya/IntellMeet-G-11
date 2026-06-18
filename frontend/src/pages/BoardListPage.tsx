@@ -94,7 +94,7 @@ const BoardListPage = () => {
     <div className="min-h-screen bg-background">
       <AppNavbar />
 
-      <main className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+      <main className="max-w-5xl mx-auto px-6 pt-10 pb-24 sm:py-10 space-y-8">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">

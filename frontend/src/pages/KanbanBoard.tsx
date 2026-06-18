@@ -435,7 +435,7 @@ const KanbanBoard = () => {
           })}
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-5 px-4 sm:px-6 py-6 h-full min-h-[calc(100vh-8rem)] w-full sm:w-max">
+        <div className="flex flex-col sm:flex-row gap-5 px-4 sm:px-6 pt-6 pb-24 sm:py-6 h-full min-h-[calc(100vh-8rem)] w-full sm:w-max">
           {columns.map((col) => {
             const colTasks = getTasksByColumn(col.id);
             const isOver = dragOverColId === col.id;

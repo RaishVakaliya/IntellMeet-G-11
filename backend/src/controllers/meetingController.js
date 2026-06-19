@@ -6,7 +6,42 @@ import { cloudinary } from "../config/cloudinary.js";
 import { Readable } from "stream";
 
 const CACHE_EXPIRATION = 3600;
-const generateMeetingCode = customAlphabet('123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 10);
+const generateMeetingCode = customAlphabet(
+  "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  10,
+);
+
+// ─── Shared helper: fetch and populate a meeting by code ───────────────────────
+const getMeetingPopulated = (code) =>
+  Meeting.findOne({ meetingCode: code })
+    .populate("participants.user", "name email avatar")
+    .populate("createdBy", "name email avatar")
+    .populate("actionItems.assignedTo", "name email avatar");
+
+// ─── Shared helper: invalidate all cache keys related to a meeting ──────────────
+const invalidateMeetingCache = async (meeting, code) => {
+  if (!redisClient.isOpen) return;
+  const userCacheKeys = new Set([
+    `user-meetings:${meeting.createdBy.toString()}`,
+    ...meeting.participants.map((p) => `user-meetings:${p.user.toString()}`),
+  ]);
+  await redisClient.del(`meeting:${code}`);
+  await Promise.all([...userCacheKeys].map((key) => redisClient.del(key)));
+};
+
+// ─── Shared helper: notify participants via socket ─────────────────────────────
+const notifyMeetingUpdated = (meeting) => {
+  try {
+    const io = getIO();
+    const userIds = new Set([
+      meeting.createdBy.toString(),
+      ...meeting.participants.map((p) => p.user.toString()),
+    ]);
+    userIds.forEach((uid) => io.to(`user:${uid}`).emit("meetings-updated"));
+  } catch {
+    // Socket.io may not be available during tests
+  }
+};
 
 export const createMeeting = async (req, res) => {
   try {
@@ -79,30 +114,11 @@ export const endMeeting = async (req, res) => {
       await meeting.save();
     }
 
-    if (redisClient.isOpen) {
-      const userCacheKeys = new Set([
-        `user-meetings:${meeting.createdBy.toString()}`,
-        ...meeting.participants.map(
-          (p) => `user-meetings:${p.user.toString()}`,
-        ),
-      ]);
-      await redisClient.del(`meeting:${code}`);
-      await Promise.all(
-        [...userCacheKeys].map((cacheKey) => redisClient.del(cacheKey)),
-      );
-    }
+    await invalidateMeetingCache(meeting, code);
 
     try {
       const io = getIO();
-      const userIds = new Set([
-        meeting.createdBy.toString(),
-        ...meeting.participants.map((p) => p.user.toString()),
-      ]);
-      userIds.forEach((uid) => io.to(`user:${uid}`).emit("meetings-updated"));
-    } catch {}
-
-    try {
-      const io = getIO();
+      notifyMeetingUpdated(meeting);
       io.to(code).emit("meeting-ended", {
         meetingCode: code,
         message: "Meeting has ended by host",
@@ -124,7 +140,6 @@ export const getMyMeetings = async (req, res) => {
     if (redisClient.isOpen) {
       const data = await redisClient.get(cacheKey);
       if (data) {
-        console.log(`Cache Hit for user-meetings: ${req.user._id}`);
         return res.status(200).json(JSON.parse(data));
       }
     }
@@ -139,7 +154,6 @@ export const getMyMeetings = async (req, res) => {
         CACHE_EXPIRATION,
         JSON.stringify(meetings),
       );
-      console.log(`Cache Miss - Stored user-meetings: ${req.user._id}`);
     }
 
     res.status(200).json(meetings);
@@ -259,26 +273,11 @@ export const uploadMeetingRecording = async (req, res) => {
     meeting.recordingUrl = uploadedAsset.secure_url;
     await meeting.save();
 
-    if (redisClient.isOpen) {
-      const userCacheKeys = new Set([
-        `user-meetings:${meeting.createdBy.toString()}`,
-        ...meeting.participants.map(
-          (p) => `user-meetings:${p.user.toString()}`,
-        ),
-      ]);
-      await redisClient.del(`meeting:${code}`);
-      await Promise.all(
-        [...userCacheKeys].map((cacheKey) => redisClient.del(cacheKey)),
-      );
-    }
+    await invalidateMeetingCache(meeting, code);
 
     try {
       const io = getIO();
-      const userIds = new Set([
-        meeting.createdBy.toString(),
-        ...meeting.participants.map((p) => p.user.toString()),
-      ]);
-      userIds.forEach((uid) => io.to(`user:${uid}`).emit("meetings-updated"));
+      notifyMeetingUpdated(meeting);
       io.to(code).emit("meeting-recording-ready", {
         meetingCode: code,
         recordingUrl: meeting.recordingUrl,
@@ -301,16 +300,11 @@ export const getMeetingDetails = async (req, res) => {
     if (redisClient.isOpen) {
       const data = await redisClient.get(`meeting:${code}`);
       if (data) {
-        console.log(`Cache Hit for meeting: ${code}`);
         return res.status(200).json(JSON.parse(data));
       }
     }
 
-    const meeting = await Meeting.findOne({ meetingCode: code })
-      .populate("participants.user", "name email avatar")
-      .populate("createdBy", "name email avatar")
-      .populate("actionItems.assignedTo", "name email avatar");
-
+    const meeting = await getMeetingPopulated(code);
     if (!meeting) return res.status(404).json({ message: "Meeting not found" });
 
     if (redisClient.isOpen) {
@@ -319,7 +313,6 @@ export const getMeetingDetails = async (req, res) => {
         CACHE_EXPIRATION,
         JSON.stringify(meeting),
       );
-      console.log(`Cache Miss - Stored meeting: ${code}`);
     }
 
     res.status(200).json(meeting);
@@ -347,10 +340,7 @@ export const addActionItem = async (req, res) => {
     });
     await meeting.save();
 
-    const updatedMeeting = await Meeting.findOne({ meetingCode: code })
-      .populate("actionItems.assignedTo", "name email avatar")
-      .populate("participants.user", "name email avatar")
-      .populate("createdBy", "name email avatar");
+    const updatedMeeting = await getMeetingPopulated(code);
 
     if (redisClient.isOpen) {
       await redisClient.del(`meeting:${code}`);
@@ -375,10 +365,7 @@ export const toggleActionItem = async (req, res) => {
     item.completed = !item.completed;
     await meeting.save();
 
-    const updatedMeeting = await Meeting.findOne({ meetingCode: code })
-      .populate("actionItems.assignedTo", "name email avatar")
-      .populate("participants.user", "name email avatar")
-      .populate("createdBy", "name email avatar");
+    const updatedMeeting = await getMeetingPopulated(code);
 
     if (redisClient.isOpen) {
       await redisClient.del(`meeting:${code}`);
@@ -400,10 +387,7 @@ export const deleteActionItem = async (req, res) => {
     meeting.actionItems.pull({ _id: itemId });
     await meeting.save();
 
-    const updatedMeeting = await Meeting.findOne({ meetingCode: code })
-      .populate("actionItems.assignedTo", "name email avatar")
-      .populate("participants.user", "name email avatar")
-      .populate("createdBy", "name email avatar");
+    const updatedMeeting = await getMeetingPopulated(code);
 
     if (redisClient.isOpen) {
       await redisClient.del(`meeting:${code}`);
@@ -423,7 +407,7 @@ export const updateMeetingSummary = async (req, res) => {
     const meeting = await Meeting.findOneAndUpdate(
       { meetingCode: code },
       { summary: summary || "" },
-      { new: true }
+      { new: true },
     )
       .populate("actionItems.assignedTo", "name email avatar")
       .populate("participants.user", "name email avatar")

@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import type { MeetingState } from "@/types/meeting";
 
+const MAX_MESSAGES = 200;
+
 export const useMeetingStore = create<MeetingState>((set) => ({
   meetingId: null,
   roomId: null,
@@ -16,8 +18,6 @@ export const useMeetingStore = create<MeetingState>((set) => ({
   onlineUsers: [],
 
   setMeeting: (id) => set({ meetingId: id, roomId: id }),
-
-  setRoomId: (id) => set({ roomId: id }),
 
   setParticipants: (participants) => set({ participants }),
 
@@ -47,13 +47,6 @@ export const useMeetingStore = create<MeetingState>((set) => ({
       speakingUsers: { ...s.speakingUsers, [id]: false },
     })),
 
-  updateParticipantSocketId: (dbUserId, socketId) =>
-    set((s) => ({
-      participants: s.participants.map((p) =>
-        p.id === dbUserId ? { ...p, socketId } : p,
-      ),
-    })),
-
   toggleMic: () => set((s) => ({ isMuted: !s.isMuted })),
 
   toggleCamera: () => set((s) => ({ isCameraOff: !s.isCameraOff })),
@@ -64,8 +57,8 @@ export const useMeetingStore = create<MeetingState>((set) => ({
   toggleChat: () => set((s) => ({ isChatOpen: !s.isChatOpen })),
 
   sendMessage: (text: string, senderName: string, senderId?: string) =>
-    set((s) => ({
-      messages: [
+    set((s) => {
+      const newMessages = [
         ...s.messages,
         {
           id: `m${Date.now()}`,
@@ -74,16 +67,15 @@ export const useMeetingStore = create<MeetingState>((set) => ({
           text,
           timestamp: new Date(),
         },
-      ],
-    })),
-
-  setActiveSpeaker: (id) =>
-    set((s) => ({
-      participants: s.participants.map((p) => ({
-        ...p,
-        isActiveSpeaker: p.id === id,
-      })),
-    })),
+      ];
+      // Cap at MAX_MESSAGES to prevent unbounded memory growth
+      return {
+        messages:
+          newMessages.length > MAX_MESSAGES
+            ? newMessages.slice(newMessages.length - MAX_MESSAGES)
+            : newMessages,
+      };
+    }),
 
   setSpeaking: (userId, isSpeaking) =>
     set((s) => {
@@ -145,21 +137,6 @@ export const useMeetingStore = create<MeetingState>((set) => ({
     set({
       meetingId: null,
       roomId: null,
-      isMuted: true,
-      isCameraOff: true,
-      isScreenSharing: false,
-      participants: [],
-      messages: [],
-      typingUsers: [],
-      speakingUsers: {},
-      localStream: null,
-      onlineUsers: [],
-    }),
-
-  leaveRoom: () =>
-    set({
-      roomId: null,
-      meetingId: null,
       isMuted: true,
       isCameraOff: true,
       isScreenSharing: false,

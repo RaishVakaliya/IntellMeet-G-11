@@ -104,7 +104,6 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
     participants,
     toggleMic,
     toggleCamera,
-    toggleScreenShare,
   } = useMeetingStore();
 
   const handleToggleMic = onToggleMic ?? toggleMic;
@@ -113,7 +112,6 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
   const handleScreenShare = async () => {
     if (isScreenSharing) {
       await onStopScreenShare?.();
-      toggleScreenShare();
     } else {
       const isSomeoneElseSharing = participants.some((p) => p.isScreenSharing);
       if (isSomeoneElseSharing) {
@@ -121,10 +119,7 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
         return;
       }
       try {
-        const stream = await onScreenShare();
-        if (stream) {
-          toggleScreenShare();
-        }
+        await onScreenShare();
       } catch (err) {
         console.warn("Screen share cancelled or failed");
       }
@@ -148,10 +143,7 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
 
   return (
     <div
-      className={cn(
-        "w-full px-2 sm:px-4 z-50 pointer-events-none",
-        className,
-      )}
+      className={cn("w-full px-2 sm:px-4 z-50 pointer-events-none", className)}
     >
       <div className="w-full flex items-center pointer-events-auto relative">
         <div className="hidden md:flex flex-1 items-center justify-start">
@@ -285,9 +277,15 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
                   {isUploading ? (
                     <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                   ) : isRecording ? (
-                    <Square className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />
+                    <Square
+                      className="w-4 h-4 sm:w-5 sm:h-5"
+                      fill="currentColor"
+                    />
                   ) : (
-                    <Circle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" fill="currentColor" />
+                    <Circle
+                      className="w-4 h-4 sm:w-5 sm:h-5 text-destructive"
+                      fill="currentColor"
+                    />
                   )}
                 </Button>
               </TooltipTrigger>

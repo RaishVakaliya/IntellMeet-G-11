@@ -3,6 +3,7 @@ import { useMeetingStore } from "@/stores/meetingStore";
 
 interface UseWebRTCOptions {
   meetingCode: string;
+  currentUserId: string;
   socket: import("socket.io-client").Socket;
   onRemoteStream?: (peerId: string, stream: MediaStream) => void;
 }
@@ -26,6 +27,7 @@ const ICE_SERVERS: RTCConfiguration = {
 
 export const useWebRTC = ({
   meetingCode,
+  currentUserId,
   socket,
   onRemoteStream,
 }: UseWebRTCOptions) => {
@@ -42,6 +44,8 @@ export const useWebRTC = ({
   const iceCandidatesQueue = useRef<Map<string, RTCIceCandidateInit[]>>(
     new Map(),
   );
+  // Ref to avoid stale closure in screen-share onended callback
+  const stopScreenShareRef = useRef<() => void>(() => {});
 
   const startLocalMedia = useCallback(async () => {
     try {
@@ -137,10 +141,16 @@ export const useWebRTC = ({
           `[WebRTC] Connection state for ${dbUserId}:`,
           pc.connectionState,
         );
-        if (
-          pc.connectionState === "failed" ||
-          pc.connectionState === "disconnected"
-        ) {
+        if (pc.connectionState === "disconnected") {
+          // Attempt ICE restart before giving up
+          setTimeout(() => {
+            if (pc.connectionState === "disconnected") {
+              pc.restartIce();
+            }
+          }, 2000);
+        } else if (pc.connectionState === "failed") {
+          pc.close();
+          peersRef.current.delete(dbUserId);
         }
       };
 
@@ -221,8 +231,11 @@ export const useWebRTC = ({
         isScreenSharing: true,
       });
 
+      useMeetingStore.setState({ isScreenSharing: true });
+
       videoTrack.onended = () => {
-        stopScreenShare();
+        // Use ref to avoid stale closure over stopScreenShare callback
+        stopScreenShareRef.current();
       };
 
       return screenStream;
@@ -250,6 +263,8 @@ export const useWebRTC = ({
       meetingCode,
       isScreenSharing: false,
     });
+
+    useMeetingStore.setState({ isScreenSharing: false });
   }, [socket, meetingCode]);
 
   const registerRemoteVideoRef = useCallback(
@@ -282,12 +297,8 @@ export const useWebRTC = ({
       console.log("[WebRTC] existing-users received. Count:", users.length);
 
       const doWork = async () => {
-        const { user: currentUser } = await import("@/stores/authStore").then(
-          (m) => m.useAuthStore.getState(),
-        );
-
         for (const u of users) {
-          if (!u.dbUserId || u.dbUserId === currentUser?._id) continue;
+          if (!u.dbUserId || u.dbUserId === currentUserId) continue;
 
           console.log(
             "[WebRTC] Joiner initiating offer to existing user:",
@@ -435,6 +446,11 @@ export const useWebRTC = ({
       iceCandidatesQueue.current.clear();
     };
   }, [startLocalMedia]);
+
+  // Keep stopScreenShareRef in sync so videoTrack.onended always calls the latest version
+  useEffect(() => {
+    stopScreenShareRef.current = stopScreenShare;
+  }, [stopScreenShare]);
 
   return {
     localVideoRef,

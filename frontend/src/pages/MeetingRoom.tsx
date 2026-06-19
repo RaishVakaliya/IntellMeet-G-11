@@ -65,6 +65,7 @@ const MeetingRoom = () => {
     registerRemoteVideoRef,
   } = useWebRTC({
     meetingCode: roomId!,
+    currentUserId: user?._id ?? "",
     socket,
     onRemoteStream: (peerId, stream) => {
       updateParticipantStream(peerId, stream);
@@ -116,7 +117,8 @@ const MeetingRoom = () => {
       queryKey: ["meeting-details", roomId],
       queryFn: () => getMeetingDetails(roomId!),
       enabled: !!roomId && !!user,
-      refetchInterval: 5000,
+      refetchIntervalInBackground: false,
+      staleTime: 30_000,
     });
 
   const isHost =
@@ -128,11 +130,28 @@ const MeetingRoom = () => {
       return participantUserId === user?._id;
     });
 
+  // Handle meeting-ended via socket (host ends meeting) — avoids polling
+  useEffect(() => {
+    const handleMeetingEnded = () => {
+      if (hasHandledMeetingEnd.current) return;
+      hasHandledMeetingEnd.current = true;
+      toast.info("Meeting ended by host");
+      leaveMeeting();
+      navigate("/dashboard");
+    };
+
+    socket.on("meeting-ended", handleMeetingEnded);
+    return () => {
+      socket.off("meeting-ended", handleMeetingEnded);
+    };
+  }, [socket, leaveMeeting, navigate]);
+
+  // Fallback: detect ended status from initial fetch (e.g. on page load)
   useEffect(() => {
     if (!meetingDetails) return;
     if (meetingDetails.status === "ended" && !hasHandledMeetingEnd.current) {
       hasHandledMeetingEnd.current = true;
-      toast.info("Meeting ended by host");
+      toast.info("Meeting has already ended");
       leaveMeeting();
       navigate("/dashboard");
     }

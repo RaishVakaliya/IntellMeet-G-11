@@ -33,17 +33,14 @@ export type MeetingState = {
   onlineUsers: string[];
 
   setMeeting: (id: string) => void;
-  setRoomId: (id: string) => void;
   setParticipants: (participants: Participant[]) => void;
   addParticipant: (participant: Participant) => void;
   removeParticipant: (id: string) => void;
-  updateParticipantSocketId: (dbUserId: string, socketId: string) => void;
   toggleMic: () => void;
   toggleCamera: () => void;
   toggleScreenShare: () => void;
   toggleChat: () => void;
   sendMessage: (text: string, senderName: string, senderId?: string) => void;
-  setActiveSpeaker: (id: string) => void;
   setSpeaking: (userId: string, isSpeaking: boolean) => void;
   updateParticipantStream: (id: string, stream: MediaStream) => void;
   updateParticipantMedia: (
@@ -61,5 +58,4 @@ export type MeetingState = {
   addOnlineUser: (userId: string) => void;
   removeOnlineUser: (userId: string) => void;
   leaveMeeting: () => void;
-  leaveRoom: () => void;
 };

@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { redisClient } from "../config/redis.js";
 import { saveMessage } from "../controllers/chatController.js";
+import jwt from "jsonwebtoken";
 
 let io;
 
@@ -29,6 +30,21 @@ export const initializeSocket = async (httpServer) => {
       error.message,
     );
   }
+
+  // ─── JWT Authentication Middleware ────────────────────────────────────────────
+  io.use((socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if (!token) {
+      return next(new Error("Authentication required"));
+    }
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      socket.data.verifiedUserId = decoded.userId;
+      next();
+    } catch {
+      next(new Error("Invalid or expired token"));
+    }
+  });
 
   io.on("connection", (socket) => {
     console.log(`[Socket] User connected: ${socket.id}`);

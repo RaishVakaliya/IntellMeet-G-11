@@ -1,31 +1,20 @@
-import { Monitor, Sun, Moon } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
-
-const options = [
-  { value: "system", icon: Monitor, label: "System" },
-  { value: "light", icon: Sun, label: "Light" },
-  { value: "dark", icon: Moon, label: "Dark" },
-] as const;
+import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="theme-toggle-pill">
-      {options.map(({ value, icon: Icon, label }) => {
-        const isActive = theme === value;
-        return (
-          <button
-            key={value}
-            onClick={() => setTheme(value)}
-            className={`theme-toggle-btn ${isActive ? "theme-toggle-btn--active" : ""}`}
-            aria-label={label}
-            title={label}
-          >
-            <Icon className="w-4 h-4" />
-          </button>
-        );
-      })}
-    </div>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className="rounded-xl border border-border"
+      aria-label="Toggle theme"
+    >
+      <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+    </Button>
   );
 }

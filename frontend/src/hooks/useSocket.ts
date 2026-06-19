@@ -30,6 +30,10 @@ export const useSocket = (meetingCode?: string) => {
     if (!socket.connected) {
       socket.auth = { token: accessToken };
       socket.connect();
+    } else if (
+      (socket.auth as Record<string, unknown>)?.token !== accessToken
+    ) {
+      socket.auth = { token: accessToken };
     }
 
     const emitJoinRoom = () => {

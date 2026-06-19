@@ -51,7 +51,6 @@ const VideoTile: React.FC<VideoTileProps> = ({
         participant.isActiveSpeaker
           ? "border-primary shadow-[0_0_20px_rgba(var(--primary),0.4)]"
           : "border-border hover:border-border/50",
-        className,
       )}
     >
       <video

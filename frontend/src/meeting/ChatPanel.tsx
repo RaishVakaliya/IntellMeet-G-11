@@ -92,8 +92,8 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
       removeTypingUser(userId);
     };
 
-    const handleUserDisconnected = (userId: string) => {
-      removeTypingUser(userId);
+    const handleUserDisconnected = ({ dbUserId }: { dbUserId: string }) => {
+      removeTypingUser(dbUserId);
     };
 
     socket.on("new-message", handleNewMessage);

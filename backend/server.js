@@ -12,6 +12,7 @@ import meetingRoutes from "./src/routes/meetingRoutes.js";
 import chatRoutes from "./src/routes/chatRoutes.js";
 import transcribeRoutes from "./src/routes/transcribeRoutes.js";
 import boardRoutes from "./src/routes/boardRoutes.js";
+import notificationRoutes from "./src/routes/notificationRoutes.js";
 import passport from "passport";
 import session from "express-session";
 import "./src/config/passport.js";
@@ -52,6 +53,7 @@ app.use("/api/meetings", meetingRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/transcribe", transcribeRoutes);
 app.use("/api/boards", boardRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "IntellMeet API is running..." });

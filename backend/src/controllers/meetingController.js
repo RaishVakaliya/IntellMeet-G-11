@@ -4,6 +4,7 @@ import redisClient from "../config/redis.js";
 import { getIO } from "../sockets/socket.js";
 import { cloudinary } from "../config/cloudinary.js";
 import { Readable } from "stream";
+import { createActionItemNotification } from "../services/notificationService.js";
 
 const CACHE_EXPIRATION = 3600;
 const generateMeetingCode = customAlphabet(
@@ -339,6 +340,10 @@ export const addActionItem = async (req, res) => {
       completed: false,
     });
     await meeting.save();
+
+    if (assignedTo) {
+      createActionItemNotification(code, req.user._id, assignedTo, text.trim());
+    }
 
     const updatedMeeting = await getMeetingPopulated(code);
 

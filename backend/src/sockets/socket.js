@@ -3,6 +3,7 @@ import { createAdapter } from "@socket.io/redis-adapter";
 import { redisClient } from "../config/redis.js";
 import { saveMessage } from "../controllers/chatController.js";
 import jwt from "jsonwebtoken";
+import { handleChatMentions } from "../services/notificationService.js";
 
 let io;
 
@@ -48,6 +49,13 @@ export const initializeSocket = async (httpServer) => {
 
   io.on("connection", (socket) => {
     console.log(`[Socket] User connected: ${socket.id}`);
+
+    // Join user's private notification room
+    const verifiedUserId = socket.data.verifiedUserId;
+    if (verifiedUserId) {
+      socket.join(`user:${verifiedUserId}`);
+      console.log(`[Socket] User ${verifiedUserId} joined room user:${verifiedUserId}`);
+    }
 
     socket.on(
       "join-room",
@@ -184,6 +192,9 @@ export const initializeSocket = async (httpServer) => {
               sender: { _id: senderId, name: senderName, avatar: senderAvatar },
               timestamp: new Date(),
             });
+
+            // Async trigger mentions check
+            handleChatMentions(meetingCode, senderId, message);
           } else {
             console.error(
               `[Socket] saveMessage returned false for room ${meetingCode}`,

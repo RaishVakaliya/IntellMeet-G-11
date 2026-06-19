@@ -216,8 +216,8 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
           {typingUsers.length > 0 && (
             <p className="text-[10px] text-primary font-medium animate-pulse italic">
               {typingUsers.length === 1
-                ? `${typingUsers[0].name} is typing...`
-                : `${typingUsers.map((u) => u.name).join(", ")} are typing...`}
+                ? `${typingUsers[0].id === user?._id ? "You" : typingUsers[0].name} is typing...`
+                : `${typingUsers.map((u) => u.id === user?._id ? "You" : u.name).join(", ")} are typing...`}
             </p>
           )}
         </div>

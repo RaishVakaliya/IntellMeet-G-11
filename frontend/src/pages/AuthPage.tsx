@@ -93,9 +93,17 @@ export const AuthPage = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (mode === "signup" && !fullName.trim()) {
-      toast.error("Please enter your full name");
-      return;
+    if (mode === "signup") {
+      if (!fullName.trim()) {
+        toast.error("Please enter your full name");
+        return;
+      }
+
+      const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+      if (!usernameRegex.test(fullName)) {
+        toast.error("Username can only contain alphanumeric characters, underscores, and hyphens without spaces");
+        return;
+      }
     }
     if (!email.trim() || !password.trim()) {
       toast.error("Email and password are required");

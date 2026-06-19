@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import type { Participant } from "@/types/meeting";
 import { MicOff, VideoOff, Wifi } from "lucide-react";
 import { useAudioDetection } from "@/hooks/useAudioDetection";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface VideoTileProps {
   participant: Participant;
@@ -63,17 +64,17 @@ const VideoTile: React.FC<VideoTileProps> = ({
 
       {!showVideo && (
         <div className="absolute inset-0 flex items-center justify-center bg-background">
-          <div className="w-16 h-16 rounded-full bg-secondary border border-border flex items-center justify-center text-secondary-foreground text-2xl font-bold shadow-lg select-none">
-            {participant.avatar ? (
-              <img
+          <Avatar className="w-16 h-16 border border-border shadow-lg">
+            {participant.avatar && (
+              <AvatarImage
                 src={participant.avatar}
-                alt={participant.name}
-                className="w-full h-full rounded-full object-cover"
+                alt={isLocal ? "You" : participant.name}
               />
-            ) : (
-              initial
             )}
-          </div>
+            <AvatarFallback className="bg-secondary text-secondary-foreground text-2xl font-bold select-none">
+              {initial}
+            </AvatarFallback>
+          </Avatar>
         </div>
       )}
 
@@ -87,8 +88,7 @@ const VideoTile: React.FC<VideoTileProps> = ({
             <Wifi className="w-3 h-3 text-primary animate-pulse" />
           )}
           <span className="text-foreground text-sm font-medium truncate max-w-[120px]">
-            {participant.name}
-            {isLocal ? " (You)" : ""}
+            {isLocal ? "You" : participant.name}
           </span>
         </div>
         <div className="flex items-center gap-1.5">

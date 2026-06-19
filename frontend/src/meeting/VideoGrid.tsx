@@ -58,7 +58,7 @@ const LocalTile: React.FC<LocalTileProps> = ({
       <div className="absolute inset-0 rounded-2xl ring-2 ring-primary animate-pulse pointer-events-none" />
     )}
     <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/80 to-transparent">
-      <span className="text-white text-sm font-medium">{username} (You)</span>
+      <span className="text-white text-sm font-medium">You</span>
     </div>
   </div>
 );
@@ -252,7 +252,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({
           )}
           <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-card/60 backdrop-blur-md border border-border">
             <span className="text-foreground text-sm font-medium">
-              {user?.username} (You)
+              You
             </span>
           </div>
         </div>
@@ -358,7 +358,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({
           )}
           <div className="absolute bottom-0 left-0 right-0 px-3 py-2 sm:px-4 sm:py-3 bg-gradient-to-t from-black/80 to-transparent">
             <span className="text-white text-xs sm:text-sm font-medium">
-              {user?.username} (You)
+              You
             </span>
           </div>
         </div>

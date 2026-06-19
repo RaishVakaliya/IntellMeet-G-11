@@ -44,8 +44,7 @@ const ParticipantRow: React.FC<{
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-1.5 overflow-hidden">
         <p className="text-sm font-medium truncate">
-          {p.name}
-          {isLocal ? " (You)" : ""}
+          {isLocal ? "You" : p.name}
         </p>
         {isHost && (
           <Badge

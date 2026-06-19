@@ -17,12 +17,21 @@ import { AppNavbar } from "../layouts/AppNavbar";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
+import { useAuthStore } from "@/stores/authStore";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   ArrowLeft,
   Plus,
@@ -123,6 +132,7 @@ const KanbanBoard = () => {
   const { boardId } = useParams<{ boardId: string }>();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const authStoreUser = useAuthStore((s) => s.user);
 
   const [taskDialog, setTaskDialog] = useState<{
     open: boolean;
@@ -544,25 +554,20 @@ const KanbanBoard = () => {
                                 )}
                               </div>
                               {task.assignedTo && (
-                                <div
-                                  className="w-6 h-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[10px] font-bold text-primary shrink-0 cursor-help"
-                                  title={`Assigned to ${task.assignedTo.name}`}
+                                <Avatar 
+                                  className="w-6 h-6 border border-primary/30 shrink-0 cursor-help"
+                                  title={`Assigned to ${task.assignedTo._id === authStoreUser?._id ? 'You' : task.assignedTo.name}`}
                                 >
-                                  {task.assignedTo.avatar ? (
-                                    <img
-                                      src={task.assignedTo.avatar}
-                                      alt={task.assignedTo.name}
-                                      className="w-full h-full rounded-full object-cover"
-                                    />
-                                  ) : (
-                                    task.assignedTo.name
+                                  <AvatarImage src={task.assignedTo.avatar} alt={task.assignedTo.name} />
+                                  <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-bold">
+                                    {task.assignedTo.name
                                       .split(" ")
                                       .map((n: string) => n[0])
                                       .join("")
                                       .toUpperCase()
-                                      .slice(0, 2)
-                                  )}
-                                </div>
+                                      .slice(0, 2)}
+                                  </AvatarFallback>
+                                </Avatar>
                               )}
                             </div>
                           </div>
@@ -712,23 +717,23 @@ const KanbanBoard = () => {
                 <label className="text-sm font-semibold text-foreground flex items-center gap-1.5">
                   <Layers className="w-4 h-4 text-muted-foreground" /> Status
                 </label>
-                <select
+                <Select
                   value={form.columnId}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, columnId: e.target.value }))
+                  onValueChange={(value) =>
+                    setForm((f) => ({ ...f, columnId: value }))
                   }
-                  className="w-full rounded-xl border border-border bg-card text-foreground px-4 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
                 >
-                  {columns.map((col) => (
-                    <option
-                      key={col.id}
-                      value={col.id}
-                      className="bg-card text-foreground"
-                    >
-                      {col.title}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-11 text-sm focus:ring-2 focus:ring-primary/20">
+                    <SelectValue placeholder="Select column" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-border bg-card">
+                    {columns.map((col) => (
+                      <SelectItem key={col.id} value={col.id}>
+                        {col.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -751,26 +756,24 @@ const KanbanBoard = () => {
               <label className="text-sm font-semibold text-foreground flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-muted-foreground" /> Assignee
               </label>
-              <select
-                value={form.assignedTo}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, assignedTo: e.target.value }))
+              <Select
+                value={form.assignedTo || "unassigned"}
+                onValueChange={(value) =>
+                  setForm((f) => ({ ...f, assignedTo: value === "unassigned" ? "" : value }))
                 }
-                className="w-full rounded-xl border border-border bg-card text-foreground px-4 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
               >
-                <option value="" className="bg-card text-foreground">
-                  Unassigned
-                </option>
-                {users.map((u) => (
-                  <option
-                    key={u._id}
-                    value={u._id}
-                    className="bg-card text-foreground"
-                  >
-                    {u.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-11 text-sm focus:ring-2 focus:ring-primary/20">
+                  <SelectValue placeholder="Select assignee" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-border bg-card">
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  {users.map((u) => (
+                    <SelectItem key={u._id} value={u._id}>
+                      {u._id === authStoreUser?._id ? "You" : u.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

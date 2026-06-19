@@ -19,6 +19,12 @@ export const googleCallback = (req, res) => {
 
 export const signup = async (req, res) => {
   const { name, email, password } = req.body;
+
+  const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+  if (!usernameRegex.test(name)) {
+    return res.status(400).json({ message: "Username can only contain alphanumeric characters, underscores, and hyphens without spaces" });
+  }
+
   try {
     const userExists = await User.findOne({ email });
     if (userExists)

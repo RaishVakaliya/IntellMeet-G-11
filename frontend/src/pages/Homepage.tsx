@@ -25,6 +25,13 @@ import {
   DialogTitle,
 } from "../components/ui/dialog";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Video,
   Plus,
   Link2,
@@ -119,6 +126,7 @@ const Homepage = () => {
     assignedTo: string | null;
     itemId: string;
   } | null>(null);
+  const [conversionAssignee, setConversionAssignee] = useState<string>("");
 
   const [targetBoardId, setTargetBoardId] = useState("");
   const [targetColumnId, setTargetColumnId] = useState("");
@@ -966,7 +974,7 @@ const Homepage = () => {
                               <p className="text-[10px] text-muted-foreground mt-0.5">
                                 Assigned to:{" "}
                                 <span className="font-semibold text-foreground">
-                                  {item.assignedTo.name}
+                                  {item.assignedTo._id === user?._id ? "You" : item.assignedTo.name}
                                 </span>
                               </p>
                             )}
@@ -982,6 +990,7 @@ const Homepage = () => {
                                 assignedTo: item.assignedTo?._id || null,
                                 itemId: item._id,
                               });
+                              setConversionAssignee(item.assignedTo?._id || "");
                             }}
                             className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                             title="Convert to Kanban Task"
@@ -1031,28 +1040,28 @@ const Homepage = () => {
                     className="flex-1 rounded-xl h-10 border-border bg-muted/5 px-4 placeholder:text-muted-foreground/60 text-sm focus:ring-2 focus:ring-primary/20"
                   />
                   <div className="flex gap-2">
-                    <select
-                      value={actionItemAssignee}
-                      onChange={(e) => setActionItemAssignee(e.target.value)}
-                      className="rounded-xl border border-border bg-card text-foreground text-xs px-3 h-10 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer min-w-[130px]"
+                    <Select
+                      value={actionItemAssignee || "unassigned"}
+                      onValueChange={(value) =>
+                        setActionItemAssignee(value === "unassigned" ? "" : value)
+                      }
                     >
-                      <option value="" className="bg-card text-foreground">
-                        Assignee...
-                      </option>
-                      {meetingDetails.participants.map((p: any) => {
-                        const u = p.user;
-                        if (!u || typeof u === "string") return null;
-                        return (
-                          <option
-                            key={u._id}
-                            value={u._id}
-                            className="bg-card text-foreground"
-                          >
-                            {u.name}
-                          </option>
-                        );
-                      })}
-                    </select>
+                      <SelectTrigger className="rounded-xl border-border bg-card text-foreground text-xs h-10 focus:ring-2 focus:ring-primary/20 min-w-[130px]">
+                        <SelectValue placeholder="Assignee..." />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-border bg-card">
+                        <SelectItem value="unassigned">Assignee...</SelectItem>
+                        {meetingDetails.participants.map((p: any) => {
+                          const u = p.user;
+                          if (!u || typeof u === "string") return null;
+                          return (
+                            <SelectItem key={u._id} value={u._id}>
+                              {u._id === user?._id ? "You" : u.name}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
                     <Button
                       onClick={() => {
                         if (actionItemInput.trim()) {
@@ -1126,21 +1135,21 @@ const Homepage = () => {
                     <label className="text-sm font-semibold text-foreground">
                       Select Project Board
                     </label>
-                    <select
+                    <Select
                       value={targetBoardId}
-                      onChange={(e) => setTargetBoardId(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-card text-foreground px-4 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                      onValueChange={(value) => setTargetBoardId(value)}
                     >
-                      {boards.map((b) => (
-                        <option
-                          key={b._id}
-                          value={b._id}
-                          className="bg-card text-foreground"
-                        >
-                          {b.title}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-11 text-sm focus:ring-2 focus:ring-primary/20">
+                        <SelectValue placeholder="Select Project Board" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-border bg-card">
+                        {boards.map((b) => (
+                          <SelectItem key={b._id} value={b._id}>
+                            {b.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -1148,51 +1157,69 @@ const Homepage = () => {
                       <label className="text-sm font-semibold text-foreground">
                         Select Column
                       </label>
-                      <select
+                      <Select
                         value={targetColumnId}
-                        onChange={(e) => setTargetColumnId(e.target.value)}
-                        className="w-full rounded-xl border border-border bg-card text-foreground px-4 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                        onValueChange={(value) => setTargetColumnId(value)}
                       >
-                        {targetColumns.map((col: any) => (
-                          <option
-                            key={col.id}
-                            value={col.id}
-                            className="bg-card text-foreground"
-                          >
-                            {col.title}
-                          </option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-11 text-sm focus:ring-2 focus:ring-primary/20">
+                          <SelectValue placeholder="Select Column" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-border bg-card">
+                          {targetColumns.map((col: any) => (
+                            <SelectItem key={col.id} value={col.id}>
+                              {col.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-foreground">
                         Priority
                       </label>
-                      <select
+                      <Select
                         value={targetPriority}
-                        onChange={(e) =>
-                          setTargetPriority(e.target.value as any)
-                        }
-                        className="w-full rounded-xl border border-border bg-card text-foreground px-4 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                        onValueChange={(value) => setTargetPriority(value as any)}
                       >
-                        <option value="low" className="bg-card text-foreground">
-                          🟢 Low
-                        </option>
-                        <option
-                          value="medium"
-                          className="bg-card text-foreground"
-                        >
-                          🟡 Medium
-                        </option>
-                        <option
-                          value="high"
-                          className="bg-card text-foreground"
-                        >
-                          🔴 High
-                        </option>
-                      </select>
+                        <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-11 text-sm focus:ring-2 focus:ring-primary/20">
+                          <SelectValue placeholder="Priority" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-border bg-card">
+                          <SelectItem value="low">🟢 Low</SelectItem>
+                          <SelectItem value="medium">🟡 Medium</SelectItem>
+                          <SelectItem value="high">🔴 High</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground">
+                      Assignee
+                    </label>
+                    <Select
+                      value={conversionAssignee || "unassigned"}
+                      onValueChange={(value) =>
+                        setConversionAssignee(value === "unassigned" ? "" : value)
+                      }
+                    >
+                      <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-11 text-sm focus:ring-2 focus:ring-primary/20">
+                        <SelectValue placeholder="Unassigned" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-border bg-card">
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                        {meetingDetails?.participants?.map((p: any) => {
+                          const u = p.user;
+                          if (!u || typeof u === "string") return null;
+                          return (
+                            <SelectItem key={u._id} value={u._id}>
+                              {u._id === user?._id ? "You" : u.name}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="flex gap-3 pt-3">
@@ -1212,7 +1239,7 @@ const Homepage = () => {
                             description: `Created from meeting action item.`,
                             priority: targetPriority,
                             column: targetColumnId,
-                            assignedTo: taskConversionItem.assignedTo,
+                            assignedTo: conversionAssignee || null,
                           },
                         });
                       }}

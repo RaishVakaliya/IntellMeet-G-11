@@ -5,6 +5,8 @@ import { AuthPage } from "./pages/AuthPage";
 import { ProtectedRoute, PublicOnlyRoute } from "./components/ProtectedRoute";
 import { Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const Homepage = lazy(() => import("./pages/Homepage"));
 const MeetingRoom = lazy(() => import("./pages/MeetingRoom"));
@@ -92,6 +94,8 @@ function App() {
           />
         </Routes>
       </Suspense>
+      <Analytics />
+      <SpeedInsights />
     </BrowserRouter>
   );
 }

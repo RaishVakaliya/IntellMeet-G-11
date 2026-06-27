@@ -56,6 +56,7 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 import { useSocket } from "@/hooks/useSocket";
 import { AppNavbar } from "../layouts/AppNavbar";
+import { useDocumentSEO } from "../hooks/useDocumentSEO";
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
@@ -98,6 +99,11 @@ const statusConfig = {
 } as const;
 
 const Homepage = () => {
+  useDocumentSEO({
+    title: "User Dashboard",
+    description: "Manage your meetings, create meeting links, track action items, and access collaborative workspaces.",
+  });
+
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const qc = useQueryClient();

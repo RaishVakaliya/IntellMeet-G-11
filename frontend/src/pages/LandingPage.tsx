@@ -10,6 +10,7 @@ import {
   Puzzle,
   ShieldCheck,
 } from "lucide-react";
+import { useDocumentSEO } from "../hooks/useDocumentSEO";
 
 import heroBg from "../assets/landingImages/hero_abstract_bg.png";
 import AppLogoImg from "../assets/AppLogo.png";
@@ -232,6 +233,12 @@ export const Features = () => {
 };
 
 export const LandingPage = () => {
+  useDocumentSEO({
+    title: "AI-Powered Enterprise Collaboration Workspace",
+    description: "Connect via WebRTC video, chat in real-time, and manage team deliverables using built-in Kanban boards in a single unified workspace.",
+    keywords: "WebRTC video, Kanban boards, collaboration workspace, MERN app, enterprise meetings",
+  });
+
   return (
     <main className="min-h-screen font-sans bg-white">
       <Navbar />

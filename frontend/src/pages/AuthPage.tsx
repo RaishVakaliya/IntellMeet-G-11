@@ -11,6 +11,7 @@ import "./AuthPage.css";
 import { toast } from "sonner";
 import { useAuthStore } from "../stores/authStore";
 import AppLogoImg from "../assets/AppLogo.png";
+import { useDocumentSEO } from "../hooks/useDocumentSEO";
 
 type AuthMode = "signin" | "signup";
 
@@ -23,6 +24,12 @@ export const AuthPage = () => {
   const { mode: modeParam } = useParams<{ mode: AuthMode }>();
   const navigate = useNavigate();
   const mode: AuthMode = modeParam === "signup" ? "signup" : "signin";
+
+  useDocumentSEO({
+    title: mode === "signup" ? "Create Account" : "Sign In",
+    description: mode === "signup" ? "Sign up for a free IntellMeet account to host video meetings, chat with team members, and collaborate using Kanban task boards." : "Sign in to your secure IntellMeet account to join your meetings and manage tasks.",
+  });
+
   const oauthToken = searchParams.get("token");
 
   const [fullName, setFullName] = useState("");

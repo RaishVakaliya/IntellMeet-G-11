@@ -10,6 +10,7 @@ import {
 } from "../services/boardService";
 import { AppNavbar } from "../layouts/AppNavbar";
 import { Button } from "../components/ui/button";
+import { useDocumentSEO } from "../hooks/useDocumentSEO";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
 import {
@@ -40,6 +41,11 @@ const BOARD_COLORS = [
 ];
 
 const BoardListPage = () => {
+  useDocumentSEO({
+    title: "Kanban Project Boards List",
+    description: "Browse and manage your team's project boards, define workspace goals, and coordinate active tasks.",
+  });
+
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);

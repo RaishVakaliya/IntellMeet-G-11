@@ -13,6 +13,7 @@ import {
   type BoardWithTasks,
   type BoardColumn,
 } from "../services/boardService";
+import { useDocumentSEO } from "@/hooks/useDocumentSEO";
 import { AppNavbar } from "../layouts/AppNavbar";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -172,6 +173,14 @@ const KanbanBoard = () => {
   const columns: BoardColumn[] = board?.columns
     ? [...board.columns].sort((a, b) => a.order - b.order)
     : [];
+
+  useDocumentSEO({
+    title: board?.title ? `${board.title} — Kanban Board` : "Kanban Board",
+    description: board?.description
+      ? board.description
+      : "Manage tasks and track team progress on this interactive Kanban board in IntellMeet.",
+    keywords: "Kanban board, task management, team collaboration, IntellMeet",
+  });
 
   const [activeMobileColId, setActiveMobileColId] = useState<string>("");
 
@@ -408,7 +417,6 @@ const KanbanBoard = () => {
       </div>
 
       <div className="flex-1 flex flex-col overflow-x-auto overflow-y-hidden">
-        {/* Mobile Column Switcher */}
         <div className="flex sm:hidden overflow-x-auto gap-2 px-4 py-3 border-b border-border bg-card/40 backdrop-blur-md sticky top-0 z-10 scrollbar-none">
           {columns.map((col) => {
             const colTasks = getTasksByColumn(col.id);
@@ -554,11 +562,14 @@ const KanbanBoard = () => {
                                 )}
                               </div>
                               {task.assignedTo && (
-                                <Avatar 
+                                <Avatar
                                   className="w-6 h-6 border border-primary/30 shrink-0 cursor-help"
-                                  title={`Assigned to ${task.assignedTo._id === authStoreUser?._id ? 'You' : task.assignedTo.name}`}
+                                  title={`Assigned to ${task.assignedTo._id === authStoreUser?._id ? "You" : task.assignedTo.name}`}
                                 >
-                                  <AvatarImage src={task.assignedTo.avatar} alt={task.assignedTo.name} />
+                                  <AvatarImage
+                                    src={task.assignedTo.avatar}
+                                    alt={task.assignedTo.name}
+                                  />
                                   <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-bold">
                                     {task.assignedTo.name
                                       .split(" ")
@@ -759,7 +770,10 @@ const KanbanBoard = () => {
               <Select
                 value={form.assignedTo || "unassigned"}
                 onValueChange={(value) =>
-                  setForm((f) => ({ ...f, assignedTo: value === "unassigned" ? "" : value }))
+                  setForm((f) => ({
+                    ...f,
+                    assignedTo: value === "unassigned" ? "" : value,
+                  }))
                 }
               >
                 <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-11 text-sm focus:ring-2 focus:ring-primary/20">
@@ -805,7 +819,6 @@ const KanbanBoard = () => {
                 </Button>
               </div>
 
-              {/* Suggestions */}
               <div className="flex flex-wrap gap-1.5 items-center mt-2.5">
                 <span className="text-[11px] text-muted-foreground mr-1">
                   Suggestions:

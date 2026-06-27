@@ -27,7 +27,10 @@ export const AuthPage = () => {
 
   useDocumentSEO({
     title: mode === "signup" ? "Create Account" : "Sign In",
-    description: mode === "signup" ? "Sign up for a free IntellMeet account to host video meetings, chat with team members, and collaborate using Kanban task boards." : "Sign in to your secure IntellMeet account to join your meetings and manage tasks.",
+    description:
+      mode === "signup"
+        ? "Sign up for a free IntellMeet account to host video meetings, chat with team members, and collaborate using Kanban task boards."
+        : "Sign in to your secure IntellMeet account to join your meetings and manage tasks.",
   });
 
   const oauthToken = searchParams.get("token");
@@ -108,7 +111,9 @@ export const AuthPage = () => {
 
       const usernameRegex = /^[a-zA-Z0-9_-]+$/;
       if (!usernameRegex.test(fullName)) {
-        toast.error("Username can only contain alphanumeric characters, underscores, and hyphens without spaces");
+        toast.error(
+          "Username can only contain alphanumeric characters, underscores, and hyphens without spaces",
+        );
         return;
       }
     }
@@ -159,7 +164,7 @@ export const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-background">
+    <main className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-background">
       <div className="flex flex-col justify-center px-12 lg:px-24 auth-left-column text-white relative overflow-hidden">
         <div className="auth-orbits-container">
           <div className="orbit-ring orbit-ring-1">
@@ -219,18 +224,13 @@ export const AuthPage = () => {
         </Link>
 
         <div className="max-w-md auth-content-zIndex">
-          <div className="space-y-1 mb-8 slogan-font">
+          <div
+            className="space-y-1 mb-8 slogan-font"
+            aria-label="IntellMeet – Meet smarter. Think together."
+          >
             <h1 className="text-7xl font-extrabold leading-[1.1] tracking-tighter">
-              Meet
-            </h1>
-            <h1 className="text-7xl font-extrabold leading-[1.1] tracking-tighter">
-              smarter.
-            </h1>
-            <h1 className="text-7xl font-extrabold leading-[1.1] tracking-tighter text-[#10b981]">
-              Think
-            </h1>
-            <h1 className="text-7xl font-extrabold leading-[1.1] tracking-tighter text-[#10b981]">
-              together.
+              Meet smarter.{" "}
+              <span className="text-[#10b981]">Think together.</span>
             </h1>
           </div>
           <p className="text-lg text-muted-foreground font-medium leading-relaxed max-w-sm">
@@ -257,15 +257,26 @@ export const AuthPage = () => {
             </button>
           </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form
+            className="space-y-6"
+            onSubmit={handleSubmit}
+            aria-label={
+              mode === "signup" ? "Create account form" : "Sign in form"
+            }
+          >
             {mode === "signup" && (
               <div className="space-y-2">
-                <label className="text-sm font-bold text-muted-foreground block px-1">
+                <label
+                  htmlFor="auth-fullname"
+                  className="text-sm font-bold text-muted-foreground block px-1"
+                >
                   Full Name
                 </label>
                 <input
+                  id="auth-fullname"
                   type="text"
                   placeholder="Enter your name"
+                  autoComplete="name"
                   value={fullName}
                   onChange={(event) => setFullName(event.target.value)}
                   className="w-full px-4 py-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-medium"
@@ -274,32 +285,47 @@ export const AuthPage = () => {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-muted-foreground block px-1">
+              <label
+                htmlFor="auth-email"
+                className="text-sm font-bold text-muted-foreground block px-1"
+              >
                 Email
               </label>
               <div className="relative">
                 <input
+                  id="auth-email"
                   type="email"
                   placeholder="name@example.com"
+                  autoComplete={mode === "signup" ? "email" : "username"}
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   className="w-full px-4 py-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-medium pr-12"
                 />
-                <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Mail
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+                  aria-hidden="true"
+                />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-muted-foreground block px-1">
+              <label
+                htmlFor="auth-password"
+                className="text-sm font-bold text-muted-foreground block px-1"
+              >
                 Password
               </label>
               <div className="relative">
                 <input
+                  id="auth-password"
                   type="password"
                   placeholder={
                     mode === "signin"
                       ? "Enter your password"
                       : "Create a password"
+                  }
+                  autoComplete={
+                    mode === "signup" ? "new-password" : "current-password"
                   }
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
@@ -334,6 +360,7 @@ export const AuthPage = () => {
             variant="outline"
             size="lg"
             onClick={handleGoogleLogin}
+            aria-label="Continue with Google"
             className="w-full h-14 rounded-2xl border-border bg-background hover:bg-muted/50 flex items-center justify-center gap-3 font-bold text-foreground transition-all shadow-sm active:scale-[0.98]"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -358,6 +385,6 @@ export const AuthPage = () => {
           </Button>
         </div>
       </div>
-    </div>
+    </main>
   );
 };

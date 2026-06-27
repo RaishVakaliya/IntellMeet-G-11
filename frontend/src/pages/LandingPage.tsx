@@ -40,6 +40,7 @@ export const Navbar = () => {
             <Button
               size="sm"
               onClick={() => navigate("/auth/signup")}
+              aria-label="Get started with IntellMeet"
               className="rounded-full px-6 bg-gray-900 hover:bg-gray-800 text-white"
             >
               Get Started
@@ -58,7 +59,9 @@ export const Hero = () => {
       <div className="absolute inset-0 -z-10 overflow-hidden select-none">
         <img
           src={heroBg}
-          alt="Background"
+          alt=""
+          role="presentation"
+          aria-hidden="true"
           className="w-full h-full object-cover opacity-60 scale-105"
         />
       </div>
@@ -79,7 +82,8 @@ export const Hero = () => {
           >
             <img
               src={avatar1}
-              alt="Participant"
+              alt="IntellMeet participant avatar"
+              loading="lazy"
               className="w-full h-full object-cover"
             />
           </div>
@@ -89,7 +93,8 @@ export const Hero = () => {
           >
             <img
               src={avatar2}
-              alt="Participant"
+              alt="IntellMeet participant avatar"
+              loading="lazy"
               className="w-full h-full object-cover"
             />
           </div>
@@ -99,7 +104,8 @@ export const Hero = () => {
           >
             <img
               src={avatar5}
-              alt="Participant"
+              alt="IntellMeet participant avatar"
+              loading="lazy"
               className="w-full h-full object-cover"
             />
           </div>
@@ -169,7 +175,8 @@ export const Features = () => {
             <div className="relative z-10 h-20 w-20 overflow-hidden rounded-full border-6 border-white shadow-2xl md:h-24 md:w-24 select-none">
               <img
                 src={avatar3}
-                alt="User"
+                alt="IntellMeet team member avatar"
+                loading="lazy"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -211,7 +218,8 @@ export const Features = () => {
             <div className="relative z-10 h-20 w-20 overflow-hidden rounded-full border-6 border-white shadow-2xl md:h-24 md:w-24 select-none">
               <img
                 src={avatar4}
-                alt="User"
+                alt="IntellMeet team member avatar"
+                loading="lazy"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -235,8 +243,22 @@ export const Features = () => {
 export const LandingPage = () => {
   useDocumentSEO({
     title: "AI-Powered Enterprise Collaboration Workspace",
-    description: "Connect via WebRTC video, chat in real-time, and manage team deliverables using built-in Kanban boards in a single unified workspace.",
-    keywords: "WebRTC video, Kanban boards, collaboration workspace, MERN app, enterprise meetings",
+    description:
+      "Connect via WebRTC video, chat in real-time, and manage team deliverables using built-in Kanban boards in a single unified workspace.",
+    keywords:
+      "WebRTC video, Kanban boards, collaboration workspace, MERN app, enterprise meetings",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: "https://intell-meet-zeta.vercel.app/",
+        },
+      ],
+    },
   });
 
   return (

@@ -2,40 +2,101 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="msapplication-TileColor" content="#0f172a" />
+
+    <title>IntellMeet — AI-Powered Enterprise Collaboration Workspace</title>
     <meta
       name="description"
-      content="IntellMeet is an AI-powered enterprise collaboration platform built to connect teams via WebRTC video, secure persistent chats, and interactive Kanban boards."
+      content="IntellMeet is an AI-powered enterprise collaboration platform. Connect via low-latency WebRTC video, chat in real time, and manage team deliverables using interactive Kanban boards."
     />
     <meta
       name="keywords"
-      content="IntellMeet, WebRTC video conference, team collaboration workspace, MERN web application, live Kanban board"
+      content="IntellMeet, WebRTC video conference, team collaboration, MERN stack, enterprise meetings, Kanban project boards, real-time chat"
     />
     <meta name="robots" content="index, follow" />
+    <meta name="author" content="Raish Vakaliya" />
+
+    <link rel="canonical" href="https://intell-meet-zeta.vercel.app/" />
 
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="IntellMeet" />
     <meta
       property="og:title"
-      content="IntellMeet - AI-Powered Collaboration Workspace"
+      content="IntellMeet — AI-Powered Enterprise Collaboration Workspace"
     />
     <meta
       property="og:description"
       content="Connect via low-latency WebRTC video, chat dynamically, and manage team deliverables on interactive Kanban boards in one workspace."
     />
-    <meta property="og:site_name" content="IntellMeet" />
+    <meta property="og:url" content="https://intell-meet-zeta.vercel.app/" />
+    <meta
+      property="og:image"
+      content="https://intell-meet-zeta.vercel.app/android-chrome-512x512.png"
+    />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:locale" content="en_US" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="IntellMeet - AI-Powered Collaboration Workspace"
+      content="IntellMeet — AI-Powered Enterprise Collaboration Workspace"
     />
     <meta
       name="twitter:description"
-      content="Low-latency WebRTC meetings and team Kanban boards integrated in a single workspace."
+      content="Low-latency WebRTC meetings, real-time chat, and Kanban task boards integrated in a single workspace."
+    />
+    <meta
+      name="twitter:image"
+      content="https://intell-meet-zeta.vercel.app/android-chrome-512x512.png"
     />
 
-    <title>IntellMeet - AI-Powered Collaboration Workspace</title>
+    <link
+      rel="preload"
+      as="image"
+      href="/src/assets/landingImages/hero_abstract_bg.png"
+      fetchpriority="high"
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebApplication",
+            "@id": "https://intell-meet-zeta.vercel.app/#webapp",
+            "name": "IntellMeet",
+            "url": "https://intell-meet-zeta.vercel.app/",
+            "description": "AI-powered enterprise collaboration platform with WebRTC video conferencing, persistent chat, and interactive Kanban task boards.",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web Browser",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "author": {
+              "@type": "Organization",
+              "@id": "https://intell-meet-zeta.vercel.app/#org"
+            }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://intell-meet-zeta.vercel.app/#org",
+            "name": "IntellMeet",
+            "url": "https://intell-meet-zeta.vercel.app/",
+            "logo": "https://intell-meet-zeta.vercel.app/android-chrome-512x512.png"
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

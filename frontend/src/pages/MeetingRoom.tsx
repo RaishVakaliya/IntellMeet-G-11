@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { useMeetingRecording } from "@/hooks/useMeetingRecording";
 import { useLiveTranscription } from "@/hooks/useLiveTranscription";
 import TranscriptionPanel from "@/meeting/TranscriptionPanel";
+import { useDocumentSEO } from "@/hooks/useDocumentSEO";
 
 const MeetingRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -45,12 +46,14 @@ const MeetingRoom = () => {
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
-  const [sidebarTab, setSidebarTab] = useState<"chat" | "participants" | "captions">("chat");
+  const [sidebarTab, setSidebarTab] = useState<
+    "chat" | "participants" | "captions"
+  >("chat");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [layout, setLayout] = useState<CallLayoutType>("grid");
   const { isRecording, isUploading, startRecording, stopRecording } =
     useMeetingRecording(roomId!);
-  
+
   useLiveTranscription(true);
 
   const hasHandledMeetingEnd = useRef(false);
@@ -130,7 +133,16 @@ const MeetingRoom = () => {
       return participantUserId === user?._id;
     });
 
-  // Handle meeting-ended via socket (host ends meeting) — avoids polling
+  useDocumentSEO({
+    title: meetingDetails?.title
+      ? `${meetingDetails.title} — Meeting Room`
+      : roomId
+        ? `Meeting ${roomId}`
+        : "Meeting Room",
+    description:
+      "Active IntellMeet video meeting with real-time chat, live captions, and participant controls.",
+  });
+
   useEffect(() => {
     const handleMeetingEnded = () => {
       if (hasHandledMeetingEnd.current) return;
@@ -146,7 +158,6 @@ const MeetingRoom = () => {
     };
   }, [socket, leaveMeeting, navigate]);
 
-  // Fallback: detect ended status from initial fetch (e.g. on page load)
   useEffect(() => {
     if (!meetingDetails) return;
     if (meetingDetails.status === "ended" && !hasHandledMeetingEnd.current) {
@@ -422,7 +433,10 @@ const MeetingRoom = () => {
 
   return (
     <TooltipProvider>
-      <div className="dark h-screen flex flex-col bg-background/95 text-foreground overflow-hidden">
+      <main
+        aria-label="Meeting room"
+        className="dark h-screen flex flex-col bg-background/95 text-foreground overflow-hidden"
+      >
         <div className="flex flex-1 overflow-hidden">
           <div className="flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 flex overflow-hidden">
@@ -479,6 +493,8 @@ const MeetingRoom = () => {
                     <button
                       key={tab.id}
                       onClick={() => setSidebarTab(tab.id as any)}
+                      aria-label={`Switch to ${tab.label} tab`}
+                      aria-pressed={sidebarTab === tab.id}
                       className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-all ${
                         sidebarTab === tab.id
                           ? "text-primary border-b-2 border-primary bg-primary/5"
@@ -491,6 +507,7 @@ const MeetingRoom = () => {
                 </div>
                 <button
                   onClick={() => setIsSidebarOpen(false)}
+                  aria-label="Close sidebar"
                   className="lg:hidden p-3 border-l border-white/5 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <X className="w-5 h-5" />
@@ -509,7 +526,7 @@ const MeetingRoom = () => {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </TooltipProvider>
   );
 };

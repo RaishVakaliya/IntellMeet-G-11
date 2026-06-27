@@ -101,7 +101,8 @@ const statusConfig = {
 const Homepage = () => {
   useDocumentSEO({
     title: "User Dashboard",
-    description: "Manage your meetings, create meeting links, track action items, and access collaborative workspaces.",
+    description:
+      "Manage your meetings, create meeting links, track action items, and access collaborative workspaces.",
   });
 
   const navigate = useNavigate();
@@ -343,8 +344,11 @@ const Homepage = () => {
   return (
     <div className="min-h-screen bg-background">
       <AppNavbar />
-
-      <main className="max-w-5xl mx-auto px-6 pt-12 pb-24 sm:py-12 space-y-10">
+      <main
+        id="main-content"
+        aria-label="Dashboard"
+        className="max-w-5xl mx-auto px-6 pt-12 pb-24 sm:py-12 space-y-10"
+      >
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             Welcome back,{" "}
@@ -817,7 +821,6 @@ const Homepage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Post-Meeting Dashboard Dialog */}
       <Dialog
         open={!!selectedMeetingCode}
         onOpenChange={(open) => {
@@ -848,7 +851,6 @@ const Homepage = () => {
             </div>
           ) : meetingDetails ? (
             <div className="space-y-6 pt-2">
-              {/* Meeting Info Section */}
               <div className="grid grid-cols-2 gap-4 bg-muted/20 border border-border/50 rounded-2xl p-4 text-sm">
                 <div>
                   <p className="text-xs text-muted-foreground">Title</p>
@@ -876,7 +878,6 @@ const Homepage = () => {
                 </div>
               </div>
 
-              {/* AI Summary Section */}
               <div className="space-y-2.5 border-t border-border/30 pt-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
@@ -933,13 +934,11 @@ const Homepage = () => {
                 )}
               </div>
 
-              {/* Action Items Section */}
               <div className="space-y-3 border-t border-border/30 pt-4">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
                   <CheckSquare className="w-4 h-4 text-primary" /> Action Items
                 </h3>
 
-                {/* List Action Items */}
                 <div className="space-y-2">
                   {meetingDetails.actionItems &&
                   meetingDetails.actionItems.length > 0 ? (
@@ -980,7 +979,9 @@ const Homepage = () => {
                               <p className="text-[10px] text-muted-foreground mt-0.5">
                                 Assigned to:{" "}
                                 <span className="font-semibold text-foreground">
-                                  {item.assignedTo._id === user?._id ? "You" : item.assignedTo.name}
+                                  {item.assignedTo._id === user?._id
+                                    ? "You"
+                                    : item.assignedTo.name}
                                 </span>
                               </p>
                             )}
@@ -988,7 +989,6 @@ const Homepage = () => {
                         </div>
 
                         <div className="flex items-center gap-1.5 shrink-0">
-                          {/* Convert to Kanban Task button */}
                           <button
                             onClick={() => {
                               setTaskConversionItem({
@@ -1025,7 +1025,6 @@ const Homepage = () => {
                   )}
                 </div>
 
-                {/* Add Action Item form */}
                 <div className="flex flex-col sm:flex-row gap-2.5 pt-1.5">
                   <Input
                     placeholder="Capture new action item..."
@@ -1049,7 +1048,9 @@ const Homepage = () => {
                     <Select
                       value={actionItemAssignee || "unassigned"}
                       onValueChange={(value) =>
-                        setActionItemAssignee(value === "unassigned" ? "" : value)
+                        setActionItemAssignee(
+                          value === "unassigned" ? "" : value,
+                        )
                       }
                     >
                       <SelectTrigger className="rounded-xl border-border bg-card text-foreground text-xs h-10 focus:ring-2 focus:ring-primary/20 min-w-[130px]">
@@ -1094,7 +1095,6 @@ const Homepage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Convert to Kanban Task Dialog */}
       <Dialog
         open={!!taskConversionItem}
         onOpenChange={(open) => {
@@ -1186,7 +1186,9 @@ const Homepage = () => {
                       </label>
                       <Select
                         value={targetPriority}
-                        onValueChange={(value) => setTargetPriority(value as any)}
+                        onValueChange={(value) =>
+                          setTargetPriority(value as any)
+                        }
                       >
                         <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-11 text-sm focus:ring-2 focus:ring-primary/20">
                           <SelectValue placeholder="Priority" />
@@ -1207,7 +1209,9 @@ const Homepage = () => {
                     <Select
                       value={conversionAssignee || "unassigned"}
                       onValueChange={(value) =>
-                        setConversionAssignee(value === "unassigned" ? "" : value)
+                        setConversionAssignee(
+                          value === "unassigned" ? "" : value,
+                        )
                       }
                     >
                       <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-11 text-sm focus:ring-2 focus:ring-primary/20">

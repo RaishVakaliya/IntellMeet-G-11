@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/components/theme-provider";
+import { useDocumentSEO } from "@/hooks/useDocumentSEO";
 
 const getInitials = (name: string) =>
   name
@@ -47,6 +48,12 @@ const ProfilePage = () => {
     user?.avatar ?? null,
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useDocumentSEO({
+    title: user?.username ? `${user.username}'s Profile` : "My Profile",
+    description:
+      "Manage your IntellMeet profile, update your display name, avatar, and review your meeting history.",
+  });
 
   const { data: meetings = [], isLoading: meetingsLoading } = useQuery({
     queryKey: ["my-meetings"],

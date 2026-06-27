@@ -63,9 +63,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         method: "POST",
         credentials: "include",
       });
-    } catch {
-      // ignore network errors during logout
-    }
+    } catch {}
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
     set({ user: null, accessToken: null, isAuthenticated: false });

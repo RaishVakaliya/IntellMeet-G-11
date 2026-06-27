@@ -44,7 +44,6 @@ export const useWebRTC = ({
   const iceCandidatesQueue = useRef<Map<string, RTCIceCandidateInit[]>>(
     new Map(),
   );
-  // Ref to avoid stale closure in screen-share onended callback
   const stopScreenShareRef = useRef<() => void>(() => {});
 
   const startLocalMedia = useCallback(async () => {
@@ -142,7 +141,6 @@ export const useWebRTC = ({
           pc.connectionState,
         );
         if (pc.connectionState === "disconnected") {
-          // Attempt ICE restart before giving up
           setTimeout(() => {
             if (pc.connectionState === "disconnected") {
               pc.restartIce();
@@ -234,7 +232,6 @@ export const useWebRTC = ({
       useMeetingStore.setState({ isScreenSharing: true });
 
       videoTrack.onended = () => {
-        // Use ref to avoid stale closure over stopScreenShare callback
         stopScreenShareRef.current();
       };
 
@@ -447,7 +444,6 @@ export const useWebRTC = ({
     };
   }, [startLocalMedia]);
 
-  // Keep stopScreenShareRef in sync so videoTrack.onended always calls the latest version
   useEffect(() => {
     stopScreenShareRef.current = stopScreenShare;
   }, [stopScreenShare]);

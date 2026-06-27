@@ -68,7 +68,6 @@ export const useMeetingStore = create<MeetingState>((set) => ({
           timestamp: new Date(),
         },
       ];
-      // Cap at MAX_MESSAGES to prevent unbounded memory growth
       return {
         messages:
           newMessages.length > MAX_MESSAGES

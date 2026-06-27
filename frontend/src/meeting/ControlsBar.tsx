@@ -193,6 +193,8 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
               <Button
                 onClick={handleToggleMic}
                 size="icon"
+                aria-label={isMuted ? "Unmute microphone" : "Mute microphone"}
+                aria-pressed={isMuted}
                 className={cn(
                   "w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all border border-white/10",
                   isMuted
@@ -201,9 +203,12 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
                 )}
               >
                 {isMuted ? (
-                  <MicOff className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <MicOff
+                    className="w-4 h-4 sm:w-5 sm:h-5"
+                    aria-hidden="true"
+                  />
                 ) : (
-                  <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <Mic className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
                 )}
               </Button>
             </TooltipTrigger>
@@ -217,6 +222,8 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
               <Button
                 onClick={handleToggleCamera}
                 size="icon"
+                aria-label={isCameraOff ? "Turn on camera" : "Turn off camera"}
+                aria-pressed={isCameraOff}
                 className={cn(
                   "w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all border border-white/10",
                   isCameraOff
@@ -225,9 +232,12 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
                 )}
               >
                 {isCameraOff ? (
-                  <VideoOff className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <VideoOff
+                    className="w-4 h-4 sm:w-5 sm:h-5"
+                    aria-hidden="true"
+                  />
                 ) : (
-                  <Video className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <Video className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
                 )}
               </Button>
             </TooltipTrigger>
@@ -241,6 +251,10 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
               <Button
                 onClick={handleScreenShare}
                 size="icon"
+                aria-label={
+                  isScreenSharing ? "Stop screen sharing" : "Share your screen"
+                }
+                aria-pressed={isScreenSharing}
                 className={cn(
                   "flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all border border-white/10",
                   isScreenSharing
@@ -249,9 +263,15 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
                 )}
               >
                 {isScreenSharing ? (
-                  <MonitorOff className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <MonitorOff
+                    className="w-4 h-4 sm:w-5 sm:h-5"
+                    aria-hidden="true"
+                  />
                 ) : (
-                  <Monitor className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <Monitor
+                    className="w-4 h-4 sm:w-5 sm:h-5"
+                    aria-hidden="true"
+                  />
                 )}
               </Button>
             </TooltipTrigger>

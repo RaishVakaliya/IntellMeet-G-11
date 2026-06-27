@@ -4,46 +4,101 @@ interface SEOProps {
   title: string;
   description?: string;
   keywords?: string;
+  jsonLd?: Record<string, unknown>;
 }
 
-export const useDocumentSEO = ({ title, description, keywords }: SEOProps) => {
+const BASE_URL = "https://intell-meet-zeta.vercel.app";
+
+function setMeta(
+  selector: string,
+  attribute: string,
+  value: string,
+  attrName: "name" | "property" = "name",
+) {
+  let el = document.querySelector<HTMLMetaElement>(selector);
+  if (el) {
+    el.setAttribute(attribute, value);
+  } else {
+    el = document.createElement("meta");
+    el.setAttribute(attrName, selector.replace(/.*["']([^"']+)["'].*/, "$1"));
+    el.setAttribute(attribute, value);
+    document.head.appendChild(el);
+  }
+}
+
+function setLink(
+  rel: string,
+  href: string,
+  extraAttrs?: Record<string, string>,
+) {
+  let el = document.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+  if (!el) {
+    el = document.createElement("link");
+    el.rel = rel;
+    document.head.appendChild(el);
+  }
+  el.href = href;
+  if (extraAttrs) {
+    Object.entries(extraAttrs).forEach(([k, v]) => el!.setAttribute(k, v));
+  }
+}
+
+export const useDocumentSEO = ({
+  title,
+  description,
+  keywords,
+  jsonLd,
+}: SEOProps) => {
   useEffect(() => {
-    document.title = `${title} | IntellMeet`;
+    const fullTitle = `${title} | IntellMeet`;
+    const canonical = `${BASE_URL}${window.location.pathname}`;
+
+    document.title = fullTitle;
 
     if (description) {
-      let metaDescription = document.querySelector('meta[name="description"]');
-      if (metaDescription) {
-        metaDescription.setAttribute("content", description);
-      } else {
-        metaDescription = document.createElement("meta");
-        metaDescription.setAttribute("name", "description");
-        metaDescription.setAttribute("content", description);
-        document.head.appendChild(metaDescription);
-      }
-
-      let ogDescription = document.querySelector(
+      setMeta('meta[name="description"]', "content", description, "name");
+      setMeta(
         'meta[property="og:description"]',
+        "content",
+        description,
+        "property",
       );
-      if (ogDescription) {
-        ogDescription.setAttribute("content", description);
-      }
+      setMeta(
+        'meta[name="twitter:description"]',
+        "content",
+        description,
+        "name",
+      );
     }
 
     if (keywords) {
-      let metaKeywords = document.querySelector('meta[name="keywords"]');
-      if (metaKeywords) {
-        metaKeywords.setAttribute("content", keywords);
-      } else {
-        metaKeywords = document.createElement("meta");
-        metaKeywords.setAttribute("name", "keywords");
-        metaKeywords.setAttribute("content", keywords);
-        document.head.appendChild(metaKeywords);
-      }
+      setMeta('meta[name="keywords"]', "content", keywords, "name");
     }
 
-    let ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) {
-      ogTitle.setAttribute("content", `${title} | IntellMeet`);
+    setMeta('meta[property="og:title"]', "content", fullTitle, "property");
+    setMeta('meta[property="og:url"]', "content", canonical, "property");
+
+    setMeta('meta[name="twitter:title"]', "content", fullTitle, "name");
+
+    setLink("canonical", canonical);
+
+    if (jsonLd) {
+      const scriptId = "page-jsonld";
+      let script = document.getElementById(
+        scriptId,
+      ) as HTMLScriptElement | null;
+      if (!script) {
+        script = document.createElement("script");
+        script.id = scriptId;
+        script.type = "application/ld+json";
+        document.head.appendChild(script);
+      }
+      script.textContent = JSON.stringify(jsonLd);
     }
-  }, [title, description, keywords]);
+
+    return () => {
+      const stale = document.getElementById("page-jsonld");
+      if (stale) stale.remove();
+    };
+  }, [title, description, keywords, jsonLd]);
 };

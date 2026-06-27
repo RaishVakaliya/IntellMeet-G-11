@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /auth/signin
+Allow: /auth/signup
+
+# Disallow protected/authenticated pages
+Disallow: /dashboard
+Disallow: /room/
+Disallow: /profile
+Disallow: /board/
+Disallow: /board
+
+# Sitemap location
+Sitemap: https://intell-meet-zeta.vercel.app/sitemap.xml

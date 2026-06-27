@@ -2,7 +2,14 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import AppLogoImg from "@/assets/AppLogo.png";
-import { LayoutDashboard, Video, Bell, Trash2, MessageSquare, ClipboardList } from "lucide-react";
+import {
+  LayoutDashboard,
+  Video,
+  Bell,
+  Trash2,
+  MessageSquare,
+  ClipboardList,
+} from "lucide-react";
 import { useEffect } from "react";
 import { useSocket } from "@/hooks/useSocket";
 import { useNotificationStore } from "@/stores/notificationStore";
@@ -114,13 +121,15 @@ export const AppNavbar = () => {
                 <button
                   key={path}
                   onClick={() => navigate(path)}
+                  aria-label={label}
+                  aria-current={active ? "page" : undefined}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                     active
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-3.5 h-3.5" aria-hidden="true" />
                   {label}
                 </button>
               ))}
@@ -128,21 +137,35 @@ export const AppNavbar = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Notifications Popover */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors cursor-pointer outline-hidden shrink-0">
-                  <Bell className="w-5 h-5" />
+                <button
+                  aria-label={
+                    unreadCount > 0
+                      ? `Notifications, ${unreadCount} unread`
+                      : "Notifications"
+                  }
+                  className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors cursor-pointer outline-hidden shrink-0"
+                >
+                  <Bell className="w-5 h-5" aria-hidden="true" />
                   {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-4 h-4 bg-destructive text-[9px] font-bold text-destructive-foreground rounded-full flex items-center justify-center animate-pulse">
+                    <span
+                      aria-live="polite"
+                      className="absolute top-1 right-1 w-4 h-4 bg-destructive text-[9px] font-bold text-destructive-foreground rounded-full flex items-center justify-center animate-pulse"
+                    >
                       {unreadCount}
                     </span>
                   )}
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-80 sm:w-96 right-0 mt-2 bg-popover text-popover-foreground border border-border shadow-2xl rounded-2xl p-0 flex flex-col overflow-hidden" align="end">
+              <DropdownMenuContent
+                className="w-80 sm:w-96 right-0 mt-2 bg-popover text-popover-foreground border border-border shadow-2xl rounded-2xl p-0 flex flex-col overflow-hidden"
+                align="end"
+              >
                 <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40 shrink-0">
-                  <span className="text-sm font-bold text-foreground">Notifications</span>
+                  <span className="text-sm font-bold text-foreground">
+                    Notifications
+                  </span>
                   {unreadCount > 0 && (
                     <button
                       onClick={(e) => {
@@ -161,8 +184,12 @@ export const AppNavbar = () => {
                       <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center text-muted-foreground mb-3">
                         <Bell className="w-6 h-6" />
                       </div>
-                      <p className="text-sm font-semibold text-foreground">All caught up!</p>
-                      <p className="text-xs text-muted-foreground mt-1 font-medium">You have no new notifications.</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        All caught up!
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1 font-medium">
+                        You have no new notifications.
+                      </p>
                     </div>
                   ) : (
                     <div className="flex flex-col divide-y divide-border">
@@ -179,11 +206,13 @@ export const AppNavbar = () => {
                             !n.isRead ? "bg-primary/5" : ""
                           }`}
                         >
-                          <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${
-                            n.type === "mention" 
-                              ? "bg-blue-500/10 text-blue-500" 
-                              : "bg-amber-500/10 text-amber-500"
-                          }`}>
+                          <div
+                            className={`p-2 rounded-xl shrink-0 mt-0.5 ${
+                              n.type === "mention"
+                                ? "bg-blue-500/10 text-blue-500"
+                                : "bg-amber-500/10 text-amber-500"
+                            }`}
+                          >
                             {n.type === "mention" ? (
                               <MessageSquare className="w-4 h-4" />
                             ) : (
@@ -192,7 +221,9 @@ export const AppNavbar = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
-                              <p className={`text-xs truncate ${!n.isRead ? "font-bold text-foreground" : "font-medium text-muted-foreground"}`}>
+                              <p
+                                className={`text-xs truncate ${!n.isRead ? "font-bold text-foreground" : "font-medium text-muted-foreground"}`}
+                              >
                                 {n.title}
                               </p>
                               <span className="text-[10px] text-muted-foreground shrink-0 font-medium">
@@ -203,9 +234,11 @@ export const AppNavbar = () => {
                               {n.message}
                             </p>
                           </div>
-                          
-                          {/* Hover Controls: Delete */}
-                          <div className="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ml-1" onClick={(e) => e.stopPropagation()}>
+
+                          <div
+                            className="flex items-center gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ml-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -250,7 +283,6 @@ export const AppNavbar = () => {
         </div>
       </nav>
 
-      {/* Mobile Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-md border-t border-border z-50 flex items-center justify-around sm:hidden px-6 pb-safe shadow-lg">
         {navLinks.map(({ label, path, icon: Icon, active }) => (
           <button

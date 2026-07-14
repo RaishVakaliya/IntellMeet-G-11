@@ -18,11 +18,22 @@ export const googleCallback = (req, res) => {
 };
 
 export const signup = async (req, res) => {
-  const { name, email, password } = req.body;
+  const name = req.body.name ? String(req.body.name).trim() : "";
+  const email = req.body.email ? String(req.body.email).trim() : "";
+  const password = req.body.password ? String(req.body.password) : "";
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
 
   const usernameRegex = /^[a-zA-Z0-9_-]+$/;
   if (!usernameRegex.test(name)) {
-    return res.status(400).json({ message: "Username can only contain alphanumeric characters, underscores, and hyphens without spaces" });
+    return res
+      .status(400)
+      .json({
+        message:
+          "Username can only contain alphanumeric characters, underscores, and hyphens without spaces",
+      });
   }
 
   try {
@@ -47,7 +58,13 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  const { email, password } = req.body;
+  const email = req.body.email ? String(req.body.email).trim() : "";
+  const password = req.body.password ? String(req.body.password) : "";
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
   try {
     const user = await User.findOne({ email });
     if (user && (await user.matchPassword(password))) {

@@ -10,3 +10,14 @@ export const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+export const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300, // 300 requests per 15 minutes per IP
+  message: {
+    message:
+      "Too many requests from this IP, please try again after 15 minutes",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});

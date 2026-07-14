@@ -16,8 +16,24 @@ import notificationRoutes from "./src/routes/notificationRoutes.js";
 import passport from "passport";
 import session from "express-session";
 import "./src/config/passport.js";
+import { globalLimiter } from "./src/middleware/rateLimitMiddleware.js";
 
 dotenv.config();
+
+// Assert presence of crucial environment variables
+const REQUIRED_ENV_VARS = [
+  "MONGO_URI",
+  "JWT_SECRET",
+  "JWT_REFRESH_SECRET",
+  "REDIS_URL"
+];
+for (const envVar of REQUIRED_ENV_VARS) {
+  if (!process.env[envVar]) {
+    console.error(`FATAL ERROR: Environment variable "${envVar}" is not defined.`);
+    process.exit(1);
+  }
+}
+
 
 await connectDB();
 await connectRedis();
@@ -29,6 +45,7 @@ const httpServer = createServer(app);
 await initializeSocket(httpServer);
 
 app.use(helmet());
+app.use(globalLimiter);
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
@@ -40,6 +57,11 @@ app.use(
     secret: process.env.SESSION_SECRET || "secret",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    },
   }),
 );
 app.use(passport.initialize());

@@ -71,21 +71,6 @@ export const getBoardById = async (id: string): Promise<BoardWithTasks> => {
   return res.json();
 };
 
-export const updateBoard = async (
-  id: string,
-  data: Partial<Pick<Board, "title" | "description" | "color" | "columns">>,
-): Promise<Board> => {
-  const res = await apiFetch(`/api/boards/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Failed to update board");
-  }
-  return res.json();
-};
-
 export const deleteBoard = async (id: string): Promise<void> => {
   const res = await apiFetch(`/api/boards/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error("Failed to delete board");

@@ -11,7 +11,12 @@ export type MeetingParticipantRecord = {
 export interface MeetingActionItem {
   _id: string;
   text: string;
-  assignedTo: { _id: string; name: string; email: string; avatar?: string } | null;
+  assignedTo: {
+    _id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+  } | null;
   completed: boolean;
 }
 
@@ -30,15 +35,6 @@ export interface MeetingData {
 }
 
 export interface MeetingDetails extends MeetingData {}
-
-export const countActiveMeetingParticipants = (
-  participants: MeetingParticipantRecord[] | undefined,
-): number => {
-  if (!participants?.length) return 0;
-  const trackingLeave = participants.some((p) => p.leftAt != null);
-  if (!trackingLeave) return participants.length;
-  return participants.filter((p) => p.leftAt == null).length;
-};
 
 const createApiError = (status: number, message: string) => {
   const error = new Error(message) as ApiError;

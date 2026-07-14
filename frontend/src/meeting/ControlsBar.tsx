@@ -120,7 +120,7 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
       }
       try {
         await onScreenShare();
-      } catch (err) {
+      } catch {
         console.warn("Screen share cancelled or failed");
       }
     }

@@ -17,10 +17,6 @@ export const useMeetingStore = create<MeetingState>((set) => ({
   localStream: null,
   onlineUsers: [],
 
-  setMeeting: (id) => set({ meetingId: id, roomId: id }),
-
-  setParticipants: (participants) => set({ participants }),
-
   addParticipant: (participant) =>
     set((s) => {
       const existingIdx = s.participants.findIndex(
@@ -50,9 +46,6 @@ export const useMeetingStore = create<MeetingState>((set) => ({
   toggleMic: () => set((s) => ({ isMuted: !s.isMuted })),
 
   toggleCamera: () => set((s) => ({ isCameraOff: !s.isCameraOff })),
-
-  toggleScreenShare: () =>
-    set((s) => ({ isScreenSharing: !s.isScreenSharing })),
 
   toggleChat: () => set((s) => ({ isChatOpen: !s.isChatOpen })),
 
@@ -117,8 +110,6 @@ export const useMeetingStore = create<MeetingState>((set) => ({
     set((s) => ({
       typingUsers: s.typingUsers.filter((u) => u.id !== id),
     })),
-
-  setOnlineUsers: (userIds) => set({ onlineUsers: userIds }),
 
   addOnlineUser: (userId) =>
     set((s) => ({

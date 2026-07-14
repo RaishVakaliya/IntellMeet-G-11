@@ -32,13 +32,10 @@ export type MeetingState = {
   localStream: MediaStream | null;
   onlineUsers: string[];
 
-  setMeeting: (id: string) => void;
-  setParticipants: (participants: Participant[]) => void;
   addParticipant: (participant: Participant) => void;
   removeParticipant: (id: string) => void;
   toggleMic: () => void;
   toggleCamera: () => void;
-  toggleScreenShare: () => void;
   toggleChat: () => void;
   sendMessage: (text: string, senderName: string, senderId?: string) => void;
   setSpeaking: (userId: string, isSpeaking: boolean) => void;
@@ -54,7 +51,6 @@ export type MeetingState = {
   setLocalStream: (stream: MediaStream | null) => void;
   setTypingUser: (user: { id: string; name: string }) => void;
   removeTypingUser: (id: string) => void;
-  setOnlineUsers: (userIds: string[]) => void;
   addOnlineUser: (userId: string) => void;
   removeOnlineUser: (userId: string) => void;
   leaveMeeting: () => void;

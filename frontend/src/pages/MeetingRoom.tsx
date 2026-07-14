@@ -375,7 +375,9 @@ const MeetingRoom = () => {
       try {
         await endMeeting(roomId);
         toast.success("Meeting ended for everyone");
-      } catch {}
+      } catch (err) {
+        console.warn("[MeetingRoom] Failed to end meeting on leave:", err);
+      }
     }
     leaveMeeting();
     navigate("/dashboard");

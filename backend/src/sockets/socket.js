@@ -32,7 +32,6 @@ export const initializeSocket = async (httpServer) => {
     );
   }
 
-  // ─── JWT Authentication Middleware ────────────────────────────────────────────
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
     if (!token) {
@@ -50,11 +49,12 @@ export const initializeSocket = async (httpServer) => {
   io.on("connection", (socket) => {
     console.log(`[Socket] User connected: ${socket.id}`);
 
-    // Join user's private notification room
     const verifiedUserId = socket.data.verifiedUserId;
     if (verifiedUserId) {
       socket.join(`user:${verifiedUserId}`);
-      console.log(`[Socket] User ${verifiedUserId} joined room user:${verifiedUserId}`);
+      console.log(
+        `[Socket] User ${verifiedUserId} joined room user:${verifiedUserId}`,
+      );
     }
 
     socket.on(
@@ -193,7 +193,6 @@ export const initializeSocket = async (httpServer) => {
               timestamp: new Date(),
             });
 
-            // Async trigger mentions check
             handleChatMentions(meetingCode, senderId, message);
           } else {
             console.error(

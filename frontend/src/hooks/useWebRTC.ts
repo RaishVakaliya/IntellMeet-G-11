@@ -48,7 +48,6 @@ export const useWebRTC = ({
 
   const startLocalMedia = useCallback(async () => {
     try {
-      console.log("[WebRTC] Starting local media...");
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true,
@@ -65,10 +64,6 @@ export const useWebRTC = ({
       stream.getVideoTracks().forEach((t) => (t.enabled = !initCameraOff));
 
       mediaReadyRef.current = true;
-      console.log(
-        "[WebRTC] Local media ready, processing pending signals:",
-        pendingSignals.current.length,
-      );
 
       for (const fn of pendingSignals.current) {
         await fn();
@@ -85,10 +80,8 @@ export const useWebRTC = ({
 
   const createPeerConnection = useCallback(
     (dbUserId: string): RTCPeerConnection => {
-      console.log("[WebRTC] Creating PeerConnection for:", dbUserId);
       const existing = peersRef.current.get(dbUserId);
       if (existing) {
-        console.log("[WebRTC] Closing existing PC for:", dbUserId);
         existing.close();
         peersRef.current.delete(dbUserId);
       }
@@ -114,7 +107,6 @@ export const useWebRTC = ({
       };
 
       pc.ontrack = (event) => {
-        console.log("[WebRTC] Received remote track from:", dbUserId);
         const remoteStream = event.streams[0] || new MediaStream([event.track]);
 
         const existingEl = remoteVideoRefs.current.get(dbUserId);
@@ -126,20 +118,12 @@ export const useWebRTC = ({
       };
 
       pc.oniceconnectionstatechange = () => {
-        console.log(
-          `[WebRTC] ICE state for ${dbUserId}:`,
-          pc.iceConnectionState,
-        );
         if (pc.iceConnectionState === "failed") {
           pc.restartIce();
         }
       };
 
       pc.onconnectionstatechange = () => {
-        console.log(
-          `[WebRTC] Connection state for ${dbUserId}:`,
-          pc.connectionState,
-        );
         if (pc.connectionState === "disconnected") {
           setTimeout(() => {
             if (pc.connectionState === "disconnected") {
@@ -162,10 +146,6 @@ export const useWebRTC = ({
     const pc = peersRef.current.get(dbUserId);
     const queue = iceCandidatesQueue.current.get(dbUserId);
     if (pc && pc.remoteDescription && queue) {
-      console.log(
-        `[WebRTC] Processing ${queue.length} queued ICE candidates for:`,
-        dbUserId,
-      );
       while (queue.length > 0) {
         const candidate = queue.shift();
         if (candidate) {
@@ -283,24 +263,14 @@ export const useWebRTC = ({
       dbUserId: string;
       socketId: string;
     }) => {
-      console.log(
-        "[WebRTC] user-connected | Adding socket mapping for:",
-        dbUserId,
-      );
       peerSocketIdMap.current.set(dbUserId, socketId);
     };
 
     const handleExistingUsers = async (users: ExistingUser[]) => {
-      console.log("[WebRTC] existing-users received. Count:", users.length);
-
       const doWork = async () => {
         for (const u of users) {
           if (!u.dbUserId || u.dbUserId === currentUserId) continue;
 
-          console.log(
-            "[WebRTC] Joiner initiating offer to existing user:",
-            u.dbUserId,
-          );
           peerSocketIdMap.current.set(u.dbUserId, u.socketId);
           const pc = createPeerConnection(u.dbUserId);
           const offer = await pc.createOffer();
@@ -329,7 +299,6 @@ export const useWebRTC = ({
       const doWork = async () => {
         const dbUserId = payload.callerDbUserId;
         const socketId = payload.callerSocketId || payload.caller;
-        console.log("[WebRTC] Received offer from:", dbUserId);
 
         peerSocketIdMap.current.set(dbUserId, socketId);
         const pc = createPeerConnection(dbUserId);
@@ -360,7 +329,6 @@ export const useWebRTC = ({
       sdp: RTCSessionDescriptionInit;
     }) => {
       const dbUserId = payload.callerDbUserId;
-      console.log("[WebRTC] Received answer from:", dbUserId);
 
       const pc = peersRef.current.get(dbUserId);
       if (pc) {
@@ -399,7 +367,6 @@ export const useWebRTC = ({
     };
 
     const handleUserDisconnected = ({ dbUserId }: { dbUserId: string }) => {
-      console.log("[WebRTC] user-disconnected:", dbUserId);
       const pc = peersRef.current.get(dbUserId);
       if (pc) {
         pc.close();
@@ -431,7 +398,6 @@ export const useWebRTC = ({
     startLocalMedia();
 
     return () => {
-      console.log("[WebRTC] Component unmounting, cleaning up...");
       localStreamRef.current?.getTracks().forEach((t) => t.stop());
       screenStreamRef.current?.getTracks().forEach((t) => t.stop());
       peersRef.current.forEach((pc) => pc.close());

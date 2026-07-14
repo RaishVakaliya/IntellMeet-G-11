@@ -12,14 +12,12 @@ const generateMeetingCode = customAlphabet(
   10,
 );
 
-// ─── Shared helper: fetch and populate a meeting by code ───────────────────────
 const getMeetingPopulated = (code) =>
   Meeting.findOne({ meetingCode: code })
     .populate("participants.user", "name email avatar")
     .populate("createdBy", "name email avatar")
     .populate("actionItems.assignedTo", "name email avatar");
 
-// ─── Shared helper: invalidate all cache keys related to a meeting ──────────────
 const invalidateMeetingCache = async (meeting, code) => {
   if (!redisClient.isOpen) return;
   const userCacheKeys = new Set([
@@ -30,7 +28,6 @@ const invalidateMeetingCache = async (meeting, code) => {
   await Promise.all([...userCacheKeys].map((key) => redisClient.del(key)));
 };
 
-// ─── Shared helper: notify participants via socket ─────────────────────────────
 const notifyMeetingUpdated = (meeting) => {
   try {
     const io = getIO();
@@ -39,9 +36,7 @@ const notifyMeetingUpdated = (meeting) => {
       ...meeting.participants.map((p) => p.user.toString()),
     ]);
     userIds.forEach((uid) => io.to(`user:${uid}`).emit("meetings-updated"));
-  } catch {
-    // Socket.io may not be available during tests
-  }
+  } catch {}
 };
 
 export const createMeeting = async (req, res) => {
@@ -365,7 +360,8 @@ export const toggleActionItem = async (req, res) => {
     if (!meeting) return res.status(404).json({ message: "Meeting not found" });
 
     const item = meeting.actionItems.id(itemId);
-    if (!item) return res.status(404).json({ message: "Action item not found" });
+    if (!item)
+      return res.status(404).json({ message: "Action item not found" });
 
     item.completed = !item.completed;
     await meeting.save();

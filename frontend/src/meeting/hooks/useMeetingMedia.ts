@@ -1,9 +1,10 @@
 import { toast } from "sonner";
+import type { Socket } from "socket.io-client";
 import { useMeetingStore } from "@/stores/meetingStore";
 
 export const useMeetingMedia = (
   roomId: string | undefined,
-  socket: any,
+  socket: Socket,
   toggleMicTrack: (enabled: boolean) => void,
   toggleCameraTrack: (enabled: boolean) => void,
   startScreenShare: () => Promise<MediaStream | null>,

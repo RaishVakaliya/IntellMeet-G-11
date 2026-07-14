@@ -2,11 +2,13 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useMeetingStore } from "@/stores/meetingStore";
+import type { Socket } from "socket.io-client";
+import type { User } from "@/types/auth";
 
 export const useMeetingSocketEvents = (
-  socket: any,
+  socket: Socket,
   roomId: string | undefined,
-  user: any,
+  user: User | null,
 ) => {
   const navigate = useNavigate();
   const {

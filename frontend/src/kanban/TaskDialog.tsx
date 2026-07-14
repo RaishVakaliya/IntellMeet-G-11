@@ -25,7 +25,7 @@ import {
   SelectItem,
 } from "../components/ui/select";
 import { PrioritySelector } from "./PrioritySelector";
-import { AssigneeSelector } from "./AssigneeSelector";
+import { AssigneeSelector, type AssigneeUser } from "./AssigneeSelector";
 import { LabelsInput } from "./LabelsInput";
 import type { TaskFormData } from "./utils";
 import type { BoardColumn } from "../services/boardService";
@@ -37,7 +37,7 @@ interface TaskDialogProps {
   columns: BoardColumn[];
   form: TaskFormData;
   setForm: React.Dispatch<React.SetStateAction<TaskFormData>>;
-  users: any[];
+  users: AssigneeUser[];
   currentUserId: string;
   onSubmit: () => void;
   isMutating: boolean;

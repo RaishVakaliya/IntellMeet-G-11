@@ -5,6 +5,7 @@ import ChatPanel from "@/meeting/ChatPanel";
 import TranscriptionPanel from "@/meeting/TranscriptionPanel";
 import ParticipantList from "@/meeting/ParticipantList";
 import { MeetingSidebarTabs } from "./MeetingSidebarTabs";
+import type { Socket } from "socket.io-client";
 
 interface MeetingSidebarProps {
   isOpen: boolean;
@@ -12,7 +13,7 @@ interface MeetingSidebarProps {
   sidebarTab: "chat" | "participants" | "captions";
   setSidebarTab: (tab: "chat" | "participants" | "captions") => void;
   participantsCount: number;
-  socket: any;
+  socket: Socket;
   roomId: string;
   hostId?: string;
 }

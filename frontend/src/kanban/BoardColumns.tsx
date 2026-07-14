@@ -1,6 +1,7 @@
 import React from "react";
 import type { BoardColumn, Task } from "../services/boardService";
 import { KanbanColumn } from "./KanbanColumn";
+import type { User } from "../types/auth";
 
 interface BoardColumnsProps {
   columns: BoardColumn[];
@@ -13,7 +14,7 @@ interface BoardColumnsProps {
   onDragStart: (task: Task) => void;
   onDragEnd: () => void;
   draggingId: string | null;
-  authStoreUser: any;
+  authStoreUser: User | null;
   openCreate: (colId: string) => void;
   openEdit: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;

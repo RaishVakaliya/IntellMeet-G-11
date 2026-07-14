@@ -19,10 +19,10 @@ import { Button } from "../components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 
-// Extracted Kanban modular components
 import { BoardHeader } from "../kanban/BoardHeader";
 import { MobileColumnTabs } from "../kanban/MobileColumnTabs";
 import { BoardColumns } from "../kanban/BoardColumns";
+import type { AssigneeUser } from "../kanban/AssigneeSelector";
 import { TaskDialog } from "../kanban/TaskDialog";
 import { DeleteTaskDialog } from "../kanban/DeleteTaskDialog";
 import { useTaskDialog } from "../kanban/hooks/useTaskDialog";
@@ -33,7 +33,6 @@ const KanbanBoard = () => {
   const qc = useQueryClient();
   const authStoreUser = useAuthStore((s) => s.user);
 
-  // Hook managing dialogs state and form parameters
   const taskDialogHook = useTaskDialog();
   const {
     taskDialog,
@@ -51,13 +50,11 @@ const KanbanBoard = () => {
     null,
   );
 
-  // Drag and Drop Ref tracking
   const dragTask = useRef<Task | null>(null);
   const dragOverCol = useRef<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverColId, setDragOverColId] = useState<string | null>(null);
 
-  // Fetch Board Details
   const { data, isLoading, isError } = useQuery<BoardWithTasks>({
     queryKey: ["board", boardId],
     queryFn: () => getBoardById(boardId!),
@@ -65,7 +62,7 @@ const KanbanBoard = () => {
     staleTime: 10_000,
   });
 
-  const { data: users = [] } = useQuery<any[]>({
+  const { data: users = [] } = useQuery<AssigneeUser[]>({
     queryKey: ["users"],
     queryFn: async () => {
       const res = await apiFetch("/api/users");

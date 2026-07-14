@@ -22,7 +22,11 @@ export const useAudioDetection = (
 
     try {
       const AudioContextClass =
-        window.AudioContext || (window as any).webkitAudioContext;
+        window.AudioContext ||
+        (
+          window as Window &
+            typeof globalThis & { webkitAudioContext?: typeof AudioContext }
+        ).webkitAudioContext;
       const audioContext = new AudioContextClass();
       audioContextRef.current = audioContext;
 

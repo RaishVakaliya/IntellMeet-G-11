@@ -13,6 +13,7 @@ import {
 import { useEffect } from "react";
 import { useSocket } from "@/hooks/useSocket";
 import { useNotificationStore } from "@/stores/notificationStore";
+import type { NotificationType } from "@/types/notification";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -69,7 +70,7 @@ export const AppNavbar = () => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleNewNotification = (notification: any) => {
+    const handleNewNotification = (notification: NotificationType) => {
       addNotification(notification);
       toast.info(notification.title, {
         description: notification.message,

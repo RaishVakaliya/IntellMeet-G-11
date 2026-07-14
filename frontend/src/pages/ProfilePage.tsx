@@ -119,7 +119,8 @@ const ProfilePage = () => {
     try {
       await updateUsername(trimmed);
       toast.success("Username updated successfully");
-    } catch (e: any) {
+    } catch (error) {
+      const e = error as Error;
       toast.error(e.message || "Failed to update username");
     } finally {
       setIsSavingUsername(false);
@@ -147,7 +148,8 @@ const ProfilePage = () => {
       const url = await uploadAvatar(file);
       setAvatarPreview(url);
       toast.success("Profile picture updated!");
-    } catch (e: any) {
+    } catch (error) {
+      const e = error as Error;
       setAvatarPreview(user.avatar ?? null);
       toast.error(e.message || "Failed to upload picture");
     } finally {

@@ -9,7 +9,10 @@ import {
   SelectContent,
   SelectItem,
 } from "../components/ui/select";
-import type { MeetingDetails } from "../services/meetingService";
+import type {
+  MeetingDetails,
+  MeetingParticipantRecord,
+} from "../services/meetingService";
 
 interface ActionItemsSectionProps {
   actionItems?: MeetingDetails["actionItems"];
@@ -145,7 +148,7 @@ export const ActionItemsSection: React.FC<ActionItemsSectionProps> = ({
             </SelectTrigger>
             <SelectContent className="rounded-xl border-border bg-card">
               <SelectItem value="unassigned">Assignee...</SelectItem>
-              {participants.map((p: any) => {
+              {participants.map((p: MeetingParticipantRecord) => {
                 const u = p.user;
                 if (!u || typeof u === "string") return null;
                 return (

@@ -2,6 +2,7 @@ import React from "react";
 import { Plus } from "lucide-react";
 import type { BoardColumn, Task } from "../services/boardService";
 import { TaskCard } from "./TaskCard";
+import type { User } from "../types/auth";
 import { EmptyColumn } from "./EmptyColumn";
 
 interface KanbanColumnProps {
@@ -15,7 +16,7 @@ interface KanbanColumnProps {
   onDragStart: (task: Task) => void;
   onDragEnd: () => void;
   draggingId: string | null;
-  authStoreUser: any;
+  authStoreUser: User | null;
   openCreate: (colId: string) => void;
   openEdit: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;

@@ -8,13 +8,12 @@ import {
   joinMeeting,
   type MeetingData,
 } from "../services/meetingService";
-import { getMyBoards } from "../services/boardService";
+import { getMyBoards, type Board } from "../services/boardService";
 import { useAuthStore } from "@/stores/authStore";
 import { useSocket } from "@/hooks/useSocket";
 import { AppNavbar } from "../layouts/AppNavbar";
 import { useDocumentSEO } from "../hooks/useDocumentSEO";
 
-// Extracted dashboard components
 import { DashboardHeader } from "../dashboard/DashboardHeader";
 import { QuickJoinCard } from "../dashboard/QuickJoinCard";
 import { CreateMeetingCard } from "../dashboard/CreateMeetingCard";
@@ -44,14 +43,12 @@ const Homepage = () => {
     null,
   );
 
-  // TanStack Query for boards (needed for task conversion inside dialog)
-  const { data: boards = [] } = useQuery<any[]>({
+  const { data: boards = [] } = useQuery<Board[]>({
     queryKey: ["my-boards"],
     queryFn: getMyBoards,
     enabled: !!user,
   });
 
-  // TanStack Query for meetings
   const {
     data: meetings = [],
     isLoading: meetingsLoading,
@@ -97,7 +94,6 @@ const Homepage = () => {
     createMutation.mutate({ title, instant });
   };
 
-  // Join meeting handler
   const handleJoinMeeting = async (code: string) => {
     let sanitizedCode = code.trim();
 
@@ -117,14 +113,15 @@ const Homepage = () => {
     try {
       await joinMeeting(sanitizedCode);
       navigate(`/room/${sanitizedCode}`);
-    } catch (e: any) {
+    } catch (error) {
+      const e = error as Error & { activeCode?: string };
       setJoiningCode(null);
       if (e.activeCode) {
         toast.error(e.message, {
           action: {
             label: "Copy Own Code",
             onClick: () => {
-              navigator.clipboard.writeText(e.activeCode);
+              navigator.clipboard.writeText(e.activeCode!);
               toast.success("Code copied!");
             },
           },

@@ -7,10 +7,16 @@ import {
   SelectItem,
 } from "../components/ui/select";
 
+export interface AssigneeUser {
+  _id: string;
+  name: string;
+  avatar?: string;
+}
+
 interface AssigneeSelectorProps {
   value: string;
   onChange: (val: string) => void;
-  users: any[];
+  users: AssigneeUser[];
   currentUserId: string;
 }
 

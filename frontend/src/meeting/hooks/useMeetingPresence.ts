@@ -1,7 +1,8 @@
 import { useEffect } from "react";
+import type { Socket } from "socket.io-client";
 import { useMeetingStore } from "@/stores/meetingStore";
 
-export const useMeetingPresence = (socket: any) => {
+export const useMeetingPresence = (socket: Socket) => {
   const { addOnlineUser, removeOnlineUser } = useMeetingStore();
 
   useEffect(() => {

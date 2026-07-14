@@ -16,7 +16,11 @@ import {
   updateMeetingSummary,
   type MeetingDetails,
 } from "../services/meetingService";
-import { createTask } from "../services/boardService";
+import {
+  createTask,
+  type Board,
+  type CreateTaskData,
+} from "../services/boardService";
 import { SummarySection } from "./SummarySection";
 import { ActionItemsSection } from "./ActionItemsSection";
 import { ConvertTaskDialog } from "./ConvertTaskDialog";
@@ -25,7 +29,7 @@ interface MeetingInsightsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   meetingCode: string | null;
-  boards: any[];
+  boards: Board[];
   currentUserId: string;
 }
 
@@ -66,7 +70,8 @@ export const MeetingInsightsDialog: React.FC<MeetingInsightsDialogProps> = ({
       toast.success("Action item added!");
       refetchDetails();
     },
-    onError: (e: any) => toast.error(e.message || "Failed to add action item"),
+    onError: (e: Error) =>
+      toast.error(e.message || "Failed to add action item"),
   });
 
   const toggleActionItemMutation = useMutation({
@@ -75,7 +80,7 @@ export const MeetingInsightsDialog: React.FC<MeetingInsightsDialogProps> = ({
     onSuccess: () => {
       refetchDetails();
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const deleteActionItemMutation = useMutation({
@@ -85,7 +90,7 @@ export const MeetingInsightsDialog: React.FC<MeetingInsightsDialogProps> = ({
       toast.success("Action item removed");
       refetchDetails();
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const updateSummaryMutation = useMutation({
@@ -95,12 +100,17 @@ export const MeetingInsightsDialog: React.FC<MeetingInsightsDialogProps> = ({
       toast.success("Summary updated!");
       refetchDetails();
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const createTaskMutation = useMutation({
-    mutationFn: ({ boardId, data }: { boardId: string; data: any }) =>
-      createTask(boardId, data),
+    mutationFn: ({
+      boardId,
+      data,
+    }: {
+      boardId: string;
+      data: CreateTaskData;
+    }) => createTask(boardId, data),
     onSuccess: () => {
       toast.success("Kanban Task created successfully!");
       if (taskConversionItem && meetingCode) {
@@ -111,7 +121,7 @@ export const MeetingInsightsDialog: React.FC<MeetingInsightsDialogProps> = ({
       }
       setTaskConversionItem(null);
     },
-    onError: (e: any) => toast.error(e.message || "Failed to create task"),
+    onError: (e: Error) => toast.error(e.message || "Failed to create task"),
   });
 
   return (

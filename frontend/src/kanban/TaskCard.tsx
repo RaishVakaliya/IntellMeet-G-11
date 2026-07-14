@@ -4,9 +4,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import type { Task } from "../services/boardService";
 import { PRIORITY_CONFIG, getLabelColor, formatDueDate } from "./utils";
 
+import type { User } from "../types/auth";
+
 interface TaskCardProps {
   task: Task;
-  authStoreUser: any;
+  authStoreUser: User | null;
   onDragStart: (task: Task) => void;
   onDragEnd: () => void;
   draggingId: string | null;
@@ -77,7 +79,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   className={`inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md border font-medium ${
                     due.overdue
                       ? "text-red-500 bg-red-500/10 border-red-500/30"
-                      : (due as any).urgent
+                      : due.urgent
                         ? "text-amber-500 bg-amber-500/10 border-amber-500/30"
                         : "text-muted-foreground bg-muted border-border"
                   }`}

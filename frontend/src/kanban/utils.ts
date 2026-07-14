@@ -41,7 +41,9 @@ export const getLabelColor = (label: string) => {
   return LABEL_COLORS[Math.abs(hash) % LABEL_COLORS.length];
 };
 
-export const formatDueDate = (date: string | null) => {
+export const formatDueDate = (
+  date: string | null,
+): { str: string; overdue: boolean; urgent?: boolean } | null => {
   if (!date) return null;
   const d = new Date(date);
   const now = new Date();

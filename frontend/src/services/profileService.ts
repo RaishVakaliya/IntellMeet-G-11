@@ -26,7 +26,7 @@ export const uploadAvatar = async (
   const formData = new FormData();
   formData.append("avatar", file);
 
-  const xhrRequest = (t: string | null): Promise<any> => {
+  const xhrRequest = (t: string | null): Promise<{ avatar: string }> => {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open("POST", `${API_BASE}/api/auth/avatar-upload`);
@@ -61,8 +61,13 @@ export const uploadAvatar = async (
     let data;
     try {
       data = await xhrRequest(token);
-    } catch (err: any) {
-      if (err.status === 401) {
+    } catch (err: unknown) {
+      const error = err as {
+        status?: number;
+        response?: string;
+        message?: string;
+      };
+      if (error.status === 401) {
         const newToken = await store.refreshAccessToken();
         if (newToken) {
           data = await xhrRequest(newToken);
@@ -70,14 +75,14 @@ export const uploadAvatar = async (
           throw new Error("Session expired. Please login again.");
         }
       } else {
-        const parsed = JSON.parse(err.response || "{}");
+        const parsed = JSON.parse(error.response || "{}");
         throw new Error(parsed.message || "Failed to upload avatar");
       }
     }
 
     useAuthStore.getState().updateUser({ avatar: data.avatar });
     return data.avatar;
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw error;
   }
 };

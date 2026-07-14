@@ -70,8 +70,9 @@ export const useMeetingRecording = (meetingCode: string) => {
         try {
           await uploadMeetingRecording(meetingCode, blob);
           toast.success("Recording uploaded successfully!", { id: toastId });
-        } catch (error: any) {
-          toast.error(error.message || "Failed to upload recording", {
+        } catch (error) {
+          const e = error as Error;
+          toast.error(e.message || "Failed to upload recording", {
             id: toastId,
           });
         } finally {
@@ -91,9 +92,10 @@ export const useMeetingRecording = (meetingCode: string) => {
       mediaRecorder.start(1000);
       setIsRecording(true);
       toast.success("Recording started");
-    } catch (error: any) {
-      if (error.name !== "NotAllowedError") {
-        toast.error(error.message || "Failed to start recording");
+    } catch (error) {
+      const e = error as Error;
+      if (e.name !== "NotAllowedError") {
+        toast.error(e.message || "Failed to start recording");
       }
       setIsRecording(false);
     }

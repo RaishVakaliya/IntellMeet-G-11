@@ -15,15 +15,21 @@ import {
   SelectItem,
 } from "../components/ui/select";
 import { Button } from "../components/ui/button";
+import type {
+  Board,
+  BoardColumn,
+  CreateTaskData,
+} from "../services/boardService";
+import type { MeetingParticipantRecord } from "../services/meetingService";
 
 interface ConvertTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   item: { text: string; assignedTo: string | null; itemId: string } | null;
-  boards: any[];
-  participants?: any[];
+  boards: Board[];
+  participants?: MeetingParticipantRecord[];
   currentUserId: string;
-  onCreateTask: (boardId: string, data: any) => void;
+  onCreateTask: (boardId: string, data: CreateTaskData) => void;
   isCreating: boolean;
 }
 
@@ -152,7 +158,7 @@ export const ConvertTaskDialog: React.FC<ConvertTaskDialogProps> = ({
                         <SelectValue placeholder="Select Column" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-border bg-card">
-                        {targetColumns.map((col: any) => (
+                        {targetColumns.map((col: BoardColumn) => (
                           <SelectItem key={col.id} value={col.id}>
                             {col.title}
                           </SelectItem>
@@ -167,7 +173,9 @@ export const ConvertTaskDialog: React.FC<ConvertTaskDialogProps> = ({
                     </label>
                     <Select
                       value={targetPriority}
-                      onValueChange={(value) => setTargetPriority(value as any)}
+                      onValueChange={(value) =>
+                        setTargetPriority(value as "low" | "medium" | "high")
+                      }
                     >
                       <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground h-11 text-sm focus:ring-2 focus:ring-primary/20">
                         <SelectValue placeholder="Priority" />
@@ -196,7 +204,7 @@ export const ConvertTaskDialog: React.FC<ConvertTaskDialogProps> = ({
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-border bg-card">
                       <SelectItem value="unassigned">Unassigned</SelectItem>
-                      {participants.map((p: any) => {
+                      {participants.map((p: MeetingParticipantRecord) => {
                         const u = p.user;
                         if (!u || typeof u === "string") return null;
                         return (

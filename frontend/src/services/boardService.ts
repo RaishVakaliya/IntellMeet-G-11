@@ -76,17 +76,19 @@ export const deleteBoard = async (id: string): Promise<void> => {
   if (!res.ok) throw new Error("Failed to delete board");
 };
 
+export interface CreateTaskData {
+  title: string;
+  description?: string;
+  priority?: "low" | "medium" | "high";
+  labels?: string[];
+  dueDate?: string | null;
+  column: string;
+  assignedTo?: string | null;
+}
+
 export const createTask = async (
   boardId: string,
-  data: {
-    title: string;
-    description?: string;
-    priority?: "low" | "medium" | "high";
-    labels?: string[];
-    dueDate?: string | null;
-    column: string;
-    assignedTo?: string | null;
-  },
+  data: CreateTaskData,
 ): Promise<Task> => {
   const res = await apiFetch(`/api/boards/${boardId}/tasks`, {
     method: "POST",

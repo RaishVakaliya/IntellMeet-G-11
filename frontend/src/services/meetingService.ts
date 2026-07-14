@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/apiFetch";
 
-type ApiError = Error & { status?: number };
+type ApiError = Error & { status?: number; activeCode?: string };
 
 export type MeetingParticipantRecord = {
   user: string | { _id: string; name: string; email: string; avatar?: string };
@@ -54,7 +54,7 @@ export const createMeeting = async (title: string): Promise<MeetingData> => {
     ) as ApiError;
     error.status = res.status;
     if (err.activeCode) {
-      (error as any).activeCode = err.activeCode;
+      error.activeCode = err.activeCode;
     }
     throw error;
   }
@@ -73,7 +73,7 @@ export const joinMeeting = async (
     const error = new Error(err.message || "Meeting not found") as ApiError;
     error.status = res.status;
     if (err.activeCode) {
-      (error as any).activeCode = err.activeCode;
+      error.activeCode = err.activeCode;
     }
     throw error;
   }

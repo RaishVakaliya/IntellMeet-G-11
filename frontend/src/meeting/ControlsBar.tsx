@@ -33,7 +33,7 @@ import { Separator } from "@/components/ui/separator";
 
 interface ControlsBarProps {
   onLeave: () => void;
-  onScreenShare: () => Promise<any>;
+  onScreenShare: () => Promise<unknown>;
   onStopScreenShare?: () => void;
   onToggleMic?: () => void;
   onToggleCamera?: () => void;

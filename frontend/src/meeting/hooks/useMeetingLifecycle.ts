@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useMeetingStore } from "@/stores/meetingStore";
 import { endMeeting, joinMeeting } from "@/services/meetingService";
+import type { Socket } from "socket.io-client";
+import type { QueryClient } from "@tanstack/react-query";
 
 export const useMeetingLifecycle = (
   roomId: string | undefined,
-  socket: any,
-  queryClient: any,
+  socket: Socket,
+  queryClient: QueryClient,
   isHost: boolean,
 ) => {
   const navigate = useNavigate();

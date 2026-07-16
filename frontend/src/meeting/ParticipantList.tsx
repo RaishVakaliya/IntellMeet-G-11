@@ -1,5 +1,6 @@
 import React from "react";
 import { useMeetingStore } from "@/stores/meetingStore";
+import { useShallow } from "zustand/react/shallow";
 import type { Participant } from "@/types/meeting";
 import { useAuthStore } from "@/stores/authStore";
 import {
@@ -97,8 +98,17 @@ const ParticipantList: React.FC<ParticipantListProps> = ({ hostId }) => {
     isScreenSharing,
     speakingUsers,
     onlineUsers,
-  } = useMeetingStore();
-  const { user } = useAuthStore();
+  } = useMeetingStore(
+    useShallow((s) => ({
+      participants: s.participants,
+      isMuted: s.isMuted,
+      isCameraOff: s.isCameraOff,
+      isScreenSharing: s.isScreenSharing,
+      speakingUsers: s.speakingUsers,
+      onlineUsers: s.onlineUsers,
+    })),
+  );
+  const user = useAuthStore((s) => s.user);
 
   const isLocalSpeaking = speakingUsers[user?._id || ""] ?? false;
 

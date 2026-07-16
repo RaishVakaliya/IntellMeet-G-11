@@ -4,8 +4,6 @@ import type { MeetingState } from "@/types/meeting";
 const MAX_MESSAGES = 200;
 
 export const useMeetingStore = create<MeetingState>((set) => ({
-  meetingId: null,
-  roomId: null,
   isMuted: true,
   isCameraOff: true,
   isScreenSharing: false,
@@ -125,8 +123,6 @@ export const useMeetingStore = create<MeetingState>((set) => ({
 
   leaveMeeting: () =>
     set({
-      meetingId: null,
-      roomId: null,
       isMuted: true,
       isCameraOff: true,
       isScreenSharing: false,

@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useShallow } from "zustand/react/shallow";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
 import { uploadAvatar, updateUsername } from "@/services/profileService";
@@ -37,7 +38,9 @@ const getInitials = (name: string) =>
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user, logout } = useAuthStore(
+    useShallow((s) => ({ user: s.user, logout: s.logout })),
+  );
   const { theme } = useTheme();
 
   const [usernameInput, setUsernameInput] = useState(user?.username ?? "");

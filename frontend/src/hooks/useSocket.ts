@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuthStore } from "@/stores/authStore";
+import { useShallow } from "zustand/react/shallow";
 
 const SOCKET_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
@@ -20,7 +21,9 @@ export const getSocket = (): Socket => {
 };
 
 export const useSocket = (meetingCode?: string) => {
-  const { user, accessToken } = useAuthStore();
+  const { user, accessToken } = useAuthStore(
+    useShallow((s) => ({ user: s.user, accessToken: s.accessToken })),
+  );
   const socketRef = useRef<Socket>(getSocket());
   const joinedRef = useRef<string | null>(null);
 

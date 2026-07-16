@@ -13,6 +13,7 @@ import {
 import { useEffect } from "react";
 import { useSocket } from "@/hooks/useSocket";
 import { useNotificationStore } from "@/stores/notificationStore";
+import { useShallow } from "zustand/react/shallow";
 import type { NotificationType } from "@/types/notification";
 import {
   DropdownMenu,
@@ -48,7 +49,7 @@ const formatRelativeTime = (dateStr: string) => {
 export const AppNavbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   const socket = useSocket();
   const {
@@ -59,7 +60,17 @@ export const AppNavbar = () => {
     markAsRead,
     markAllAsRead,
     deleteNotification,
-  } = useNotificationStore();
+  } = useNotificationStore(
+    useShallow((s) => ({
+      notifications: s.notifications,
+      unreadCount: s.unreadCount,
+      fetchNotifications: s.fetchNotifications,
+      addNotification: s.addNotification,
+      markAsRead: s.markAsRead,
+      markAllAsRead: s.markAllAsRead,
+      deleteNotification: s.deleteNotification,
+    })),
+  );
 
   useEffect(() => {
     if (user) {

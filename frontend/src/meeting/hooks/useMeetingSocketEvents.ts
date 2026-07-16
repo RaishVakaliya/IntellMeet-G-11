@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useMeetingStore } from "@/stores/meetingStore";
+import { useShallow } from "zustand/react/shallow";
 import type { Socket } from "socket.io-client";
 import type { User } from "@/types/auth";
 
@@ -17,7 +18,15 @@ export const useMeetingSocketEvents = (
     updateParticipantMedia,
     addOnlineUser,
     removeOnlineUser,
-  } = useMeetingStore();
+  } = useMeetingStore(
+    useShallow((s) => ({
+      addParticipant: s.addParticipant,
+      removeParticipant: s.removeParticipant,
+      updateParticipantMedia: s.updateParticipantMedia,
+      addOnlineUser: s.addOnlineUser,
+      removeOnlineUser: s.removeOnlineUser,
+    })),
+  );
 
   useEffect(() => {
     const handleExistingUsers = (

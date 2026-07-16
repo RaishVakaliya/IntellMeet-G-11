@@ -4,8 +4,8 @@ import { useMeetingStore } from "@/stores/meetingStore";
 import { apiFetch } from "@/lib/apiFetch";
 
 export const useLiveTranscription = (isActive: boolean) => {
-  const { localStream } = useMeetingStore();
-  const { addTranscript } = useTranscriptionStore();
+  const localStream = useMeetingStore((s) => s.localStream);
+  const addTranscript = useTranscriptionStore((s) => s.addTranscript);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isRecordingRef = useRef(false);
@@ -51,13 +51,12 @@ export const useLiveTranscription = (isActive: boolean) => {
       };
 
       recorder.start();
-      
+
       setTimeout(() => {
         if (recorder.state === "recording") {
           recorder.stop();
         }
       }, 7000);
-      
     } catch (err) {
       console.error("Failed to start transcription MediaRecorder", err);
     }
@@ -67,7 +66,7 @@ export const useLiveTranscription = (isActive: boolean) => {
     if (isActive && localStream) {
       isRecordingRef.current = true;
       recordChunk();
-      
+
       intervalRef.current = setInterval(() => {
         if (isRecordingRef.current) {
           recordChunk();
@@ -78,7 +77,10 @@ export const useLiveTranscription = (isActive: boolean) => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      if (
+        mediaRecorderRef.current &&
+        mediaRecorderRef.current.state === "recording"
+      ) {
         mediaRecorderRef.current.stop();
       }
     }
@@ -86,7 +88,10 @@ export const useLiveTranscription = (isActive: boolean) => {
     return () => {
       isRecordingRef.current = false;
       if (intervalRef.current) clearInterval(intervalRef.current);
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      if (
+        mediaRecorderRef.current &&
+        mediaRecorderRef.current.state === "recording"
+      ) {
         mediaRecorderRef.current.stop();
       }
     };

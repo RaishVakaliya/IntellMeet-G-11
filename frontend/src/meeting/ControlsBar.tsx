@@ -1,5 +1,6 @@
 import React from "react";
 import { useMeetingStore } from "@/stores/meetingStore";
+import { useShallow } from "zustand/react/shallow";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -104,7 +105,16 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
     participants,
     toggleMic,
     toggleCamera,
-  } = useMeetingStore();
+  } = useMeetingStore(
+    useShallow((s) => ({
+      isMuted: s.isMuted,
+      isCameraOff: s.isCameraOff,
+      isScreenSharing: s.isScreenSharing,
+      participants: s.participants,
+      toggleMic: s.toggleMic,
+      toggleCamera: s.toggleCamera,
+    })),
+  );
 
   const handleToggleMic = onToggleMic ?? toggleMic;
   const handleToggleCamera = onToggleCamera ?? toggleCamera;

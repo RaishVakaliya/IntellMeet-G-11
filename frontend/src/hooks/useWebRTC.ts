@@ -31,7 +31,7 @@ export const useWebRTC = ({
   socket,
   onRemoteStream,
 }: UseWebRTCOptions) => {
-  const { setLocalStream } = useMeetingStore();
+  const setLocalStream = useMeetingStore((s) => s.setLocalStream);
 
   const localStreamRef = useRef<MediaStream | null>(null);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);

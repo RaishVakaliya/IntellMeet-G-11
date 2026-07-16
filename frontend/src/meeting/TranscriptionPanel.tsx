@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { BotMessageSquare } from "lucide-react";
 
 const TranscriptionPanel = () => {
-  const { transcripts } = useTranscriptionStore();
+  const transcripts = useTranscriptionStore((s) => s.transcripts);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

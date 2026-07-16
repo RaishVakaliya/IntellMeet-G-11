@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useMeetingStore } from "@/stores/meetingStore";
 import { useAuthStore } from "@/stores/authStore";
+import { useShallow } from "zustand/react/shallow";
 import {
   getChatHistory,
   type ChatMessage as ApiChatMessage,
@@ -24,7 +25,7 @@ const formatTime = (d: Date | string) => {
 };
 
 const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
   const {
     messages,
     sendMessage,
@@ -32,7 +33,16 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
     typingUsers,
     setTypingUser,
     removeTypingUser,
-  } = useMeetingStore();
+  } = useMeetingStore(
+    useShallow((s) => ({
+      messages: s.messages,
+      sendMessage: s.sendMessage,
+      isChatOpen: s.isChatOpen,
+      typingUsers: s.typingUsers,
+      setTypingUser: s.setTypingUser,
+      removeTypingUser: s.removeTypingUser,
+    })),
+  );
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -217,7 +227,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
             <p className="text-[10px] text-primary font-medium animate-pulse italic">
               {typingUsers.length === 1
                 ? `${typingUsers[0].id === user?._id ? "You" : typingUsers[0].name} is typing...`
-                : `${typingUsers.map((u) => u.id === user?._id ? "You" : u.name).join(", ")} are typing...`}
+                : `${typingUsers.map((u) => (u.id === user?._id ? "You" : u.name)).join(", ")} are typing...`}
             </p>
           )}
         </div>

@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import type { Socket } from "socket.io-client";
 import { useMeetingStore } from "@/stores/meetingStore";
+import { useShallow } from "zustand/react/shallow";
 
 export const useMeetingMedia = (
   roomId: string | undefined,
@@ -11,7 +12,14 @@ export const useMeetingMedia = (
   stopScreenShare: () => void,
   startLocalMedia: () => Promise<MediaStream | null>,
 ) => {
-  const { isMuted, isCameraOff, toggleMic, toggleCamera } = useMeetingStore();
+  const { isMuted, isCameraOff, toggleMic, toggleCamera } = useMeetingStore(
+    useShallow((s) => ({
+      isMuted: s.isMuted,
+      isCameraOff: s.isCameraOff,
+      toggleMic: s.toggleMic,
+      toggleCamera: s.toggleCamera,
+    })),
+  );
 
   const handleToggleMic = async () => {
     if (!useMeetingStore.getState().localStream) {

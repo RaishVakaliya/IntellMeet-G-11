@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMeetingStore } from "@/stores/meetingStore";
+import { useShallow } from "zustand/react/shallow";
 import VideoTile from "./VideoTile";
 import { useAuthStore } from "@/stores/authStore";
 import { useAudioDetection } from "@/hooks/useAudioDetection";
@@ -80,8 +81,15 @@ const PaginatedGridLayout: React.FC<PaginatedGridLayoutProps> = ({
   registerRemoteVideoRef,
 }) => {
   const { participants, isCameraOff, isScreenSharing, speakingUsers } =
-    useMeetingStore();
-  const { user } = useAuthStore();
+    useMeetingStore(
+      useShallow((s) => ({
+        participants: s.participants,
+        isCameraOff: s.isCameraOff,
+        isScreenSharing: s.isScreenSharing,
+        speakingUsers: s.speakingUsers,
+      })),
+    );
+  const user = useAuthStore((s) => s.user);
   const isLocalSpeaking = speakingUsers[user?._id || "local"];
 
   type TileItem = { kind: "local" } | { kind: "remote"; participantId: string };
@@ -214,8 +222,16 @@ const VideoGrid: React.FC<VideoGridProps> = ({
     isScreenSharing,
     localStream,
     speakingUsers,
-  } = useMeetingStore();
-  const { user } = useAuthStore();
+  } = useMeetingStore(
+    useShallow((s) => ({
+      participants: s.participants,
+      isCameraOff: s.isCameraOff,
+      isScreenSharing: s.isScreenSharing,
+      localStream: s.localStream,
+      speakingUsers: s.speakingUsers,
+    })),
+  );
+  const user = useAuthStore((s) => s.user);
 
   const localUserId = user?._id || "local";
   useAudioDetection(localUserId, localStream || undefined);
@@ -251,9 +267,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({
             <div className="absolute inset-0 rounded-2xl ring-2 ring-primary animate-pulse pointer-events-none" />
           )}
           <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-card/60 backdrop-blur-md border border-border">
-            <span className="text-foreground text-sm font-medium">
-              You
-            </span>
+            <span className="text-foreground text-sm font-medium">You</span>
           </div>
         </div>
 

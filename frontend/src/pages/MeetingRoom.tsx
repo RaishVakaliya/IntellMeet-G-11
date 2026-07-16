@@ -26,14 +26,21 @@ import { useMeetingLifecycle } from "../meeting/hooks/useMeetingLifecycle";
 import { useMeetingPresence } from "../meeting/hooks/useMeetingPresence";
 import { useMeetingMedia } from "../meeting/hooks/useMeetingMedia";
 import { useMeetingSocketEvents } from "../meeting/hooks/useMeetingSocketEvents";
+import { useShallow } from "zustand/react/shallow";
 
 const MeetingRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
   const { participants, updateParticipantStream, leaveMeeting } =
-    useMeetingStore();
+    useMeetingStore(
+      useShallow((s) => ({
+        participants: s.participants,
+        updateParticipantStream: s.updateParticipantStream,
+        leaveMeeting: s.leaveMeeting,
+      })),
+    );
 
   const [copied, setCopied] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<

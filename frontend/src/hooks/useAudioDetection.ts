@@ -5,7 +5,7 @@ export const useAudioDetection = (
   userId: string,
   stream: MediaStream | undefined,
 ) => {
-  const { setSpeaking } = useMeetingStore();
+  const setSpeaking = useMeetingStore((s) => s.setSpeaking);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);

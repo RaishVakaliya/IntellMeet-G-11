@@ -1,9 +1,15 @@
 import { useEffect } from "react";
 import type { Socket } from "socket.io-client";
 import { useMeetingStore } from "@/stores/meetingStore";
+import { useShallow } from "zustand/react/shallow";
 
 export const useMeetingPresence = (socket: Socket) => {
-  const { addOnlineUser, removeOnlineUser } = useMeetingStore();
+  const { addOnlineUser, removeOnlineUser } = useMeetingStore(
+    useShallow((s) => ({
+      addOnlineUser: s.addOnlineUser,
+      removeOnlineUser: s.removeOnlineUser,
+    })),
+  );
 
   useEffect(() => {
     const handleOnline = ({ dbUserId }: { dbUserId: string }) => {

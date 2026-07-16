@@ -31,7 +31,7 @@ const Homepage = () => {
   });
 
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
   const qc = useQueryClient();
 
   const [joiningCode, setJoiningCode] = useState<string | null>(null);

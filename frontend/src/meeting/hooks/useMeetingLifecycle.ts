@@ -13,7 +13,7 @@ export const useMeetingLifecycle = (
   isHost: boolean,
 ) => {
   const navigate = useNavigate();
-  const { leaveMeeting } = useMeetingStore();
+  const leaveMeeting = useMeetingStore((s) => s.leaveMeeting);
   const [isLeaving, setIsLeaving] = useState(false);
   const hasHandledMeetingEnd = useRef(false);
 

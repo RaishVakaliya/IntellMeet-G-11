@@ -19,8 +19,6 @@ export type ChatMessage = {
 };
 
 export type MeetingState = {
-  meetingId: string | null;
-  roomId: string | null;
   isMuted: boolean;
   isCameraOff: boolean;
   isScreenSharing: boolean;

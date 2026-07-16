@@ -16,6 +16,15 @@ export const updateUsername = async (username: string): Promise<void> => {
   useAuthStore.getState().updateUser({ username: data.username });
 };
 
+export const getAllUsers = async () => {
+  const res = await apiFetch("/api/users");
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Failed to fetch users");
+  }
+  return res.json();
+};
+
 export const uploadAvatar = async (
   file: File,
   onProgress?: (percent: number) => void,

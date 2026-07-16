@@ -47,6 +47,7 @@ const Homepage = () => {
     queryKey: ["my-boards"],
     queryFn: getMyBoards,
     enabled: !!user,
+    staleTime: 30_000,
   });
 
   const {
@@ -94,7 +95,30 @@ const Homepage = () => {
     createMutation.mutate({ title, instant });
   };
 
-  const handleJoinMeeting = async (code: string) => {
+  const joinMutation = useMutation({
+    mutationFn: joinMeeting,
+    onSuccess: (_, code) => {
+      navigate(`/room/${code}`);
+    },
+    onError: (error: Error & { activeCode?: string }) => {
+      setJoiningCode(null);
+      if (error.activeCode) {
+        toast.error(error.message, {
+          action: {
+            label: "Copy Own Code",
+            onClick: () => {
+              navigator.clipboard.writeText(error.activeCode!);
+              toast.success("Code copied!");
+            },
+          },
+        });
+      } else {
+        toast.error(error.message || "Failed to join meeting");
+      }
+    },
+  });
+
+  const handleJoinMeeting = (code: string) => {
     let sanitizedCode = code.trim();
 
     if (sanitizedCode.includes("/room/")) {
@@ -110,26 +134,7 @@ const Homepage = () => {
     }
 
     setJoiningCode(sanitizedCode);
-    try {
-      await joinMeeting(sanitizedCode);
-      navigate(`/room/${sanitizedCode}`);
-    } catch (error) {
-      const e = error as Error & { activeCode?: string };
-      setJoiningCode(null);
-      if (e.activeCode) {
-        toast.error(e.message, {
-          action: {
-            label: "Copy Own Code",
-            onClick: () => {
-              navigator.clipboard.writeText(e.activeCode!);
-              toast.success("Code copied!");
-            },
-          },
-        });
-      } else {
-        toast.error(e.message || "Failed to join meeting");
-      }
-    }
+    joinMutation.mutate(sanitizedCode);
   };
 
   const activeRooms = meetings.filter((m) => m.status !== "ended");

@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { apiFetch } from "@/lib/apiFetch";
+import { getAllUsers } from "@/services/profileService";
 import {
   getBoardById,
   createTask,
@@ -64,11 +64,7 @@ const KanbanBoard = () => {
 
   const { data: users = [] } = useQuery<AssigneeUser[]>({
     queryKey: ["users"],
-    queryFn: async () => {
-      const res = await apiFetch("/api/users");
-      if (!res.ok) throw new Error("Failed to fetch users");
-      return res.json();
-    },
+    queryFn: getAllUsers,
   });
 
   const board = data?.board;
@@ -119,12 +115,30 @@ const KanbanBoard = () => {
       taskId: string;
       data: Parameters<typeof updateTask>[2];
     }) => updateTask(boardId!, taskId, data),
-    onSuccess: () => {
+    onMutate: async ({ taskId, data }) => {
+      await qc.cancelQueries({ queryKey: ["board", boardId] });
+      const prev = qc.getQueryData<BoardWithTasks>(["board", boardId]);
+      if (prev) {
+        qc.setQueryData<BoardWithTasks>(["board", boardId], {
+          ...prev,
+          tasks: prev.tasks.map((t) =>
+            t._id === taskId ? ({ ...t, ...data } as unknown as Task) : t,
+          ),
+        });
+      }
+      return { prev };
+    },
+    onError: (e: Error, _vars, ctx) => {
+      toast.error(e.message);
+      if (ctx?.prev) qc.setQueryData(["board", boardId], ctx.prev);
+    },
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ["board", boardId] });
+    },
+    onSuccess: () => {
       toast.success("Task updated!");
       closeDialog();
     },
-    onError: (e: Error) => toast.error(e.message),
   });
 
   const moveMutation = useMutation({
@@ -160,13 +174,29 @@ const KanbanBoard = () => {
 
   const deleteMutation = useMutation({
     mutationFn: (taskId: string) => deleteTask(boardId!, taskId),
-    onSuccess: () => {
+    onMutate: async (taskId) => {
+      await qc.cancelQueries({ queryKey: ["board", boardId] });
+      const prev = qc.getQueryData<BoardWithTasks>(["board", boardId]);
+      if (prev) {
+        qc.setQueryData<BoardWithTasks>(["board", boardId], {
+          ...prev,
+          tasks: prev.tasks.filter((t) => t._id !== taskId),
+        });
+      }
+      return { prev };
+    },
+    onError: (e: Error, _vars, ctx) => {
+      toast.error(e.message);
+      if (ctx?.prev) qc.setQueryData(["board", boardId], ctx.prev);
+    },
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ["board", boardId] });
       qc.invalidateQueries({ queryKey: ["my-boards"] });
+    },
+    onSuccess: () => {
       toast.success("Task deleted");
       setDeleteTaskConfirm(null);
     },
-    onError: (e: Error) => toast.error(e.message),
   });
 
   const handleSubmit = () => {

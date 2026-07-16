@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Loader2, FileText } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -40,21 +40,19 @@ export const MeetingInsightsDialog: React.FC<MeetingInsightsDialogProps> = ({
   boards,
   currentUserId,
 }) => {
+  const qc = useQueryClient();
   const [taskConversionItem, setTaskConversionItem] = useState<{
     text: string;
     assignedTo: string | null;
     itemId: string;
   } | null>(null);
 
-  const {
-    data: meetingDetails,
-    refetch: refetchDetails,
-    isLoading: detailsLoading,
-  } = useQuery<MeetingDetails>({
-    queryKey: ["meeting-details", meetingCode],
-    queryFn: () => getMeetingDetails(meetingCode!),
-    enabled: !!meetingCode && open,
-  });
+  const { data: meetingDetails, isLoading: detailsLoading } =
+    useQuery<MeetingDetails>({
+      queryKey: ["meeting-details", meetingCode],
+      queryFn: () => getMeetingDetails(meetingCode!),
+      enabled: !!meetingCode && open,
+    });
 
   const addActionItemMutation = useMutation({
     mutationFn: ({
@@ -66,9 +64,9 @@ export const MeetingInsightsDialog: React.FC<MeetingInsightsDialogProps> = ({
       text: string;
       assignedTo?: string | null;
     }) => addActionItem(code, text, assignedTo),
-    onSuccess: () => {
+    onSuccess: (_, { code }) => {
       toast.success("Action item added!");
-      refetchDetails();
+      qc.invalidateQueries({ queryKey: ["meeting-details", code] });
     },
     onError: (e: Error) =>
       toast.error(e.message || "Failed to add action item"),
@@ -77,18 +75,36 @@ export const MeetingInsightsDialog: React.FC<MeetingInsightsDialogProps> = ({
   const toggleActionItemMutation = useMutation({
     mutationFn: ({ code, itemId }: { code: string; itemId: string }) =>
       toggleActionItem(code, itemId),
-    onSuccess: () => {
-      refetchDetails();
+    onMutate: async ({ code, itemId }) => {
+      await qc.cancelQueries({ queryKey: ["meeting-details", code] });
+      const prev = qc.getQueryData<MeetingDetails>(["meeting-details", code]);
+      if (prev) {
+        qc.setQueryData<MeetingDetails>(["meeting-details", code], {
+          ...prev,
+          actionItems: (prev.actionItems || []).map((item) =>
+            item._id === itemId
+              ? { ...item, completed: !item.completed }
+              : item,
+          ),
+        });
+      }
+      return { prev };
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error, { code }, ctx) => {
+      toast.error(e.message);
+      if (ctx?.prev) qc.setQueryData(["meeting-details", code], ctx.prev);
+    },
+    onSettled: (_, __, { code }) => {
+      qc.invalidateQueries({ queryKey: ["meeting-details", code] });
+    },
   });
 
   const deleteActionItemMutation = useMutation({
     mutationFn: ({ code, itemId }: { code: string; itemId: string }) =>
       deleteActionItem(code, itemId),
-    onSuccess: () => {
+    onSuccess: (_, { code }) => {
       toast.success("Action item removed");
-      refetchDetails();
+      qc.invalidateQueries({ queryKey: ["meeting-details", code] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -96,9 +112,9 @@ export const MeetingInsightsDialog: React.FC<MeetingInsightsDialogProps> = ({
   const updateSummaryMutation = useMutation({
     mutationFn: ({ code, summary }: { code: string; summary: string }) =>
       updateMeetingSummary(code, summary),
-    onSuccess: () => {
+    onSuccess: (_, { code }) => {
       toast.success("Summary updated!");
-      refetchDetails();
+      qc.invalidateQueries({ queryKey: ["meeting-details", code] });
     },
     onError: (e: Error) => toast.error(e.message),
   });

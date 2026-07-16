@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Button } from "../components/ui/button";
+import { Button } from "../../components/ui/button";
 import {
   Phone,
   Users,
@@ -10,16 +10,16 @@ import {
   Puzzle,
   ShieldCheck,
 } from "lucide-react";
-import { useDocumentSEO } from "../hooks/useDocumentSEO";
+import { useDocumentSEO } from "../../hooks/useDocumentSEO";
 
-import heroBg from "../assets/landingImages/hero_abstract_bg.png";
-import AppLogoImg from "../assets/AppLogo.png";
-import mainAvatar from "../assets/landingImages/professional_avatar_main.png";
-import avatar1 from "../assets/landingImages/diverse_avatar_1.png";
-import avatar2 from "../assets/landingImages/diverse_avatar_2.png";
-import avatar3 from "../assets/landingImages/diverse_avatar_3.png";
-import avatar4 from "../assets/landingImages/diverse_avatar_4.png";
-import avatar5 from "../assets/landingImages/diverse_avatar_5.jpg";
+import heroBg from "../../assets/landingImages/hero_abstract_bg.png";
+import AppLogoImg from "../../assets/AppLogo.png";
+import mainAvatar from "../../assets/landingImages/professional_avatar_main.png";
+import avatar1 from "../../assets/landingImages/diverse_avatar_1.png";
+import avatar2 from "../../assets/landingImages/diverse_avatar_2.png";
+import avatar3 from "../../assets/landingImages/diverse_avatar_3.png";
+import avatar4 from "../../assets/landingImages/diverse_avatar_4.png";
+import avatar5 from "../../assets/landingImages/diverse_avatar_5.jpg";
 
 export const Navbar = () => {
   const navigate = useNavigate();

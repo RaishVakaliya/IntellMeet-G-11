@@ -18,14 +18,14 @@ import { useLiveTranscription } from "@/hooks/useLiveTranscription";
 import { useDocumentSEO } from "@/hooks/useDocumentSEO";
 
 // Extracted meeting hooks and components
-import { MeetingHeader } from "../meeting/components/MeetingHeader";
-import { MeetingSidebar } from "../meeting/components/MeetingSidebar";
-import { MeetingLoading } from "../meeting/components/MeetingLoading";
-import { MeetingEnded } from "../meeting/components/MeetingEnded";
-import { useMeetingLifecycle } from "../meeting/hooks/useMeetingLifecycle";
-import { useMeetingPresence } from "../meeting/hooks/useMeetingPresence";
-import { useMeetingMedia } from "../meeting/hooks/useMeetingMedia";
-import { useMeetingSocketEvents } from "../meeting/hooks/useMeetingSocketEvents";
+import { MeetingHeader } from "../../meeting/components/MeetingHeader";
+import { MeetingSidebar } from "../../meeting/components/MeetingSidebar";
+import { MeetingLoading } from "../../meeting/components/MeetingLoading";
+import { MeetingEnded } from "../../meeting/components/MeetingEnded";
+import { useMeetingLifecycle } from "../../meeting/hooks/useMeetingLifecycle";
+import { useMeetingPresence } from "../../meeting/hooks/useMeetingPresence";
+import { useMeetingMedia } from "../../meeting/hooks/useMeetingMedia";
+import { useMeetingSocketEvents } from "../../meeting/hooks/useMeetingSocketEvents";
 import { useShallow } from "zustand/react/shallow";
 
 const MeetingRoom = () => {

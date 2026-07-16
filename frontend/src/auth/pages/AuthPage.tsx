@@ -5,13 +5,13 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { Button } from "../components/ui/button";
+import { Button } from "../../components/ui/button";
 import { ArrowRight, Mail } from "lucide-react";
 import "./AuthPage.css";
 import { toast } from "sonner";
-import { useAuthStore } from "../stores/authStore";
-import AppLogoImg from "../assets/AppLogo.png";
-import { useDocumentSEO } from "../hooks/useDocumentSEO";
+import { useAuthStore } from "../../stores/authStore";
+import AppLogoImg from "../../assets/AppLogo.png";
+import { useDocumentSEO } from "../../hooks/useDocumentSEO";
 
 type AuthMode = "signin" | "signup";
 

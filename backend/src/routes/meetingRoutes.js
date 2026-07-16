@@ -6,11 +6,13 @@ import {
   joinMeeting,
   getMeetingDetails,
   uploadMeetingRecording,
+} from "../controllers/meetingController.js";
+import {
   addActionItem,
   toggleActionItem,
   deleteActionItem,
   updateMeetingSummary,
-} from "../controllers/meetingController.js";
+} from "../controllers/meetingActionController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { recordingUpload } from "../config/cloudinary.js";
 

@@ -7,18 +7,18 @@ import {
   createBoard,
   deleteBoard,
   type Board,
-} from "../services/boardService";
-import { AppNavbar } from "../layouts/AppNavbar";
-import { Button } from "../components/ui/button";
-import { useDocumentSEO } from "../hooks/useDocumentSEO";
-import { Input } from "../components/ui/input";
-import { Badge } from "../components/ui/badge";
+} from "../../services/boardService";
+import { AppNavbar } from "../../layouts/AppNavbar";
+import { Button } from "../../components/ui/button";
+import { useDocumentSEO } from "../../hooks/useDocumentSEO";
+import { Input } from "../../components/ui/input";
+import { Badge } from "../../components/ui/badge";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "../components/ui/dialog";
+} from "../../components/ui/dialog";
 import {
   Plus,
   Layers,

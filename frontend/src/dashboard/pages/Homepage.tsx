@@ -7,21 +7,21 @@ import {
   getMyMeetings,
   joinMeeting,
   type MeetingData,
-} from "../services/meetingService";
-import { getMyBoards, type Board } from "../services/boardService";
+} from "../../services/meetingService";
+import { getMyBoards, type Board } from "../../services/boardService";
 import { useAuthStore } from "@/stores/authStore";
 import { useSocket } from "@/hooks/useSocket";
-import { AppNavbar } from "../layouts/AppNavbar";
-import { useDocumentSEO } from "../hooks/useDocumentSEO";
+import { AppNavbar } from "../../layouts/AppNavbar";
+import { useDocumentSEO } from "../../hooks/useDocumentSEO";
 
-import { DashboardHeader } from "../dashboard/DashboardHeader";
-import { QuickJoinCard } from "../dashboard/QuickJoinCard";
-import { CreateMeetingCard } from "../dashboard/CreateMeetingCard";
-import { MeetingRoomsSection } from "../dashboard/MeetingRoomsSection";
-import { MeetingHistorySection } from "../dashboard/MeetingHistorySection";
-import { DashboardStats } from "../dashboard/DashboardStats";
-import { CreateMeetingDialog } from "../dashboard/CreateMeetingDialog";
-import { MeetingInsightsDialog } from "../dashboard/MeetingInsightsDialog";
+import { DashboardHeader } from "../../dashboard/DashboardHeader";
+import { QuickJoinCard } from "../../dashboard/QuickJoinCard";
+import { CreateMeetingCard } from "../../dashboard/CreateMeetingCard";
+import { MeetingRoomsSection } from "../../dashboard/MeetingRoomsSection";
+import { MeetingHistorySection } from "../../dashboard/MeetingHistorySection";
+import { DashboardStats } from "../../dashboard/DashboardStats";
+import { CreateMeetingDialog } from "../../dashboard/CreateMeetingDialog";
+import { MeetingInsightsDialog } from "../../dashboard/MeetingInsightsDialog";
 
 const Homepage = () => {
   useDocumentSEO({

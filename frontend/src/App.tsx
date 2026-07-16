@@ -1,18 +1,21 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { LandingPage } from "./pages/LandingPage";
-import { AuthPage } from "./pages/AuthPage";
-import { ProtectedRoute, PublicOnlyRoute } from "./components/ProtectedRoute";
+import { LandingPage } from "./home/pages/LandingPage";
+import { AuthPage } from "./auth/pages/AuthPage";
+import {
+  ProtectedRoute,
+  PublicOnlyRoute,
+} from "./auth/components/ProtectedRoute";
 import { Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 
-const Homepage = lazy(() => import("./pages/Homepage"));
-const MeetingRoom = lazy(() => import("./pages/MeetingRoom"));
-const ProfilePage = lazy(() => import("./pages/ProfilePage"));
-const BoardListPage = lazy(() => import("./pages/BoardListPage"));
-const KanbanBoard = lazy(() => import("./pages/KanbanBoard"));
+const Homepage = lazy(() => import("./dashboard/pages/Homepage"));
+const MeetingRoom = lazy(() => import("./meeting/pages/MeetingRoom"));
+const ProfilePage = lazy(() => import("./profile/pages/ProfilePage"));
+const BoardListPage = lazy(() => import("./kanban/pages/BoardListPage"));
+const KanbanBoard = lazy(() => import("./kanban/pages/KanbanBoard"));
 
 const PageLoader = () => (
   <div className="h-screen flex items-center justify-center bg-background">

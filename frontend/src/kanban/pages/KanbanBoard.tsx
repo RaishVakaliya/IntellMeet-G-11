@@ -12,20 +12,20 @@ import {
   type Task,
   type BoardWithTasks,
   type BoardColumn,
-} from "../services/boardService";
+} from "../../services/boardService";
 import { useDocumentSEO } from "@/hooks/useDocumentSEO";
-import { AppNavbar } from "../layouts/AppNavbar";
-import { Button } from "../components/ui/button";
+import { AppNavbar } from "../../layouts/AppNavbar";
+import { Button } from "../../components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 
-import { BoardHeader } from "../kanban/BoardHeader";
-import { MobileColumnTabs } from "../kanban/MobileColumnTabs";
-import { BoardColumns } from "../kanban/BoardColumns";
-import type { AssigneeUser } from "../kanban/AssigneeSelector";
-import { TaskDialog } from "../kanban/TaskDialog";
-import { DeleteTaskDialog } from "../kanban/DeleteTaskDialog";
-import { useTaskDialog } from "../kanban/hooks/useTaskDialog";
+import { BoardHeader } from "../../kanban/BoardHeader";
+import { MobileColumnTabs } from "../../kanban/MobileColumnTabs";
+import { BoardColumns } from "../../kanban/BoardColumns";
+import type { AssigneeUser } from "../../kanban/AssigneeSelector";
+import { TaskDialog } from "../../kanban/TaskDialog";
+import { DeleteTaskDialog } from "../../kanban/DeleteTaskDialog";
+import { useTaskDialog } from "../../kanban/hooks/useTaskDialog";
 
 const KanbanBoard = () => {
   const { boardId } = useParams<{ boardId: string }>();

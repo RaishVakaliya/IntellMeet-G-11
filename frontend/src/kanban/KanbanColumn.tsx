@@ -22,7 +22,7 @@ interface KanbanColumnProps {
   onDeleteTask: (taskId: string) => void;
 }
 
-export const KanbanColumn: React.FC<KanbanColumnProps> = ({
+const KanbanColumnComponent: React.FC<KanbanColumnProps> = ({
   col,
   colTasks,
   isOver,
@@ -100,3 +100,5 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
     </div>
   );
 };
+
+export const KanbanColumn = React.memo(KanbanColumnComponent);

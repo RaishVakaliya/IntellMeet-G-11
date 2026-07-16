@@ -16,7 +16,7 @@ interface TaskCardProps {
   onDeleteTask: (taskId: string) => void;
 }
 
-export const TaskCard: React.FC<TaskCardProps> = ({
+const TaskCardComponent: React.FC<TaskCardProps> = ({
   task,
   authStoreUser,
   onDragStart,
@@ -129,3 +129,5 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     </div>
   );
 };
+
+export const TaskCard = React.memo(TaskCardComponent);

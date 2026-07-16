@@ -151,9 +151,7 @@ const PaginatedGridLayout: React.FC<PaginatedGridLayoutProps> = ({
             <VideoTile
               key={participant.id}
               participant={participant}
-              registerVideoRef={(el) =>
-                registerRemoteVideoRef(participant.id, el)
-              }
+              registerVideoRef={registerRemoteVideoRef}
               className="w-full h-full"
             />
           );
@@ -337,7 +335,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({
         <VideoTile
           key={p.id}
           participant={p}
-          registerVideoRef={(el) => registerRemoteVideoRef(p.id, el)}
+          registerVideoRef={registerRemoteVideoRef}
           className="shrink-0 w-48 lg:w-full aspect-[7/4.5]"
         />
       ))}
@@ -349,9 +347,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({
       {spotlightParticipant ? (
         <VideoTile
           participant={spotlightParticipant}
-          registerVideoRef={(el) =>
-            registerRemoteVideoRef(spotlightParticipant.id, el)
-          }
+          registerVideoRef={registerRemoteVideoRef}
           className="w-full h-full"
         />
       ) : (

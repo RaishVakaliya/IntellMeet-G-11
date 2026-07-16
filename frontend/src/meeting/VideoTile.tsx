@@ -9,7 +9,7 @@ interface VideoTileProps {
   participant: Participant;
   isLocal?: boolean;
   className?: string;
-  registerVideoRef?: (el: HTMLVideoElement | null) => void;
+  registerVideoRef?: (peerId: string, el: HTMLVideoElement | null) => void;
 }
 
 const VideoTile: React.FC<VideoTileProps> = ({
@@ -25,7 +25,7 @@ const VideoTile: React.FC<VideoTileProps> = ({
   const setRef = React.useCallback(
     (el: HTMLVideoElement | null) => {
       videoRef.current = el;
-      registerVideoRef?.(el);
+      registerVideoRef?.(participant.id, el);
       if (el && participant.stream) {
         el.srcObject = participant.stream;
       }
@@ -108,4 +108,4 @@ const VideoTile: React.FC<VideoTileProps> = ({
   );
 };
 
-export default VideoTile;
+export default React.memo(VideoTile);

@@ -20,7 +20,7 @@ interface BoardColumnsProps {
   onDeleteTask: (taskId: string) => void;
 }
 
-export const BoardColumns: React.FC<BoardColumnsProps> = ({
+const BoardColumnsComponent: React.FC<BoardColumnsProps> = ({
   columns,
   activeMobileColId,
   getTasksByColumn,
@@ -65,3 +65,5 @@ export const BoardColumns: React.FC<BoardColumnsProps> = ({
     </div>
   );
 };
+
+export const BoardColumns = React.memo(BoardColumnsComponent);

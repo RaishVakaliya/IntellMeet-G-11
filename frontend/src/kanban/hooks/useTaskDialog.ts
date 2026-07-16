@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import type { Task } from "../../services/boardService";
 import { defaultForm, type TaskFormData } from "../utils";
 
@@ -12,12 +12,12 @@ export const useTaskDialog = () => {
 
   const [form, setForm] = useState<TaskFormData>(defaultForm());
 
-  const openCreate = (colId: string) => {
+  const openCreate = useCallback((colId: string) => {
     setForm(defaultForm(colId));
     setTaskDialog({ open: true, mode: "create", column: colId });
-  };
+  }, []);
 
-  const openEdit = (task: Task) => {
+  const openEdit = useCallback((task: Task) => {
     setForm({
       title: task.title,
       description: task.description,
@@ -35,7 +35,7 @@ export const useTaskDialog = () => {
         : "",
     });
     setTaskDialog({ open: true, mode: "edit", task });
-  };
+  }, []);
 
   const closeDialog = () => {
     setTaskDialog({ open: false, mode: "create" });

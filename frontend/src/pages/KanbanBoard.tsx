@@ -220,39 +220,48 @@ const KanbanBoard = () => {
     }
   };
 
-  const onDragStart = (task: Task) => {
+  const onDragStart = useCallback((task: Task) => {
     dragTask.current = task;
     setDraggingId(task._id);
-  };
+  }, []);
 
-  const onDragEnd = () => {
+  const onDragEnd = useCallback(() => {
     setDraggingId(null);
     setDragOverColId(null);
     dragTask.current = null;
     dragOverCol.current = null;
-  };
+  }, []);
 
-  const onDragOverColumn = (e: React.DragEvent, colId: string) => {
+  const onDragOverColumn = useCallback((e: React.DragEvent, colId: string) => {
     e.preventDefault();
     dragOverCol.current = colId;
     setDragOverColId(colId);
-  };
+  }, []);
 
-  const onDropColumn = (e: React.DragEvent, colId: string) => {
-    e.preventDefault();
-    const task = dragTask.current;
-    if (!task || task.column === colId) {
+  const onDropColumn = useCallback(
+    (e: React.DragEvent, colId: string) => {
+      e.preventDefault();
+      const task = dragTask.current;
+      if (!task || task.column === colId) {
+        onDragEnd();
+        return;
+      }
+      const colTasks = getTasksByColumn(colId);
+      moveMutation.mutate({
+        taskId: task._id,
+        column: colId,
+        order: colTasks.length,
+      });
       onDragEnd();
-      return;
-    }
-    const colTasks = getTasksByColumn(colId);
-    moveMutation.mutate({
-      taskId: task._id,
-      column: colId,
-      order: colTasks.length,
-    });
-    onDragEnd();
-  };
+    },
+    [getTasksByColumn, moveMutation, onDragEnd],
+  );
+
+  const onDragLeave = useCallback(() => setDragOverColId(null), []);
+  const onDeleteTask = useCallback(
+    (id: string) => setDeleteTaskConfirm(id),
+    [],
+  );
 
   const isMutating = createMutation.isPending || updateMutation.isPending;
 
@@ -305,7 +314,7 @@ const KanbanBoard = () => {
           getTasksByColumn={getTasksByColumn}
           dragOverColId={dragOverColId}
           onDragOverColumn={onDragOverColumn}
-          onDragLeave={() => setDragOverColId(null)}
+          onDragLeave={onDragLeave}
           onDropColumn={onDropColumn}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
@@ -313,7 +322,7 @@ const KanbanBoard = () => {
           authStoreUser={authStoreUser}
           openCreate={openCreate}
           openEdit={openEdit}
-          onDeleteTask={(id) => setDeleteTaskConfirm(id)}
+          onDeleteTask={onDeleteTask}
         />
       </div>
 

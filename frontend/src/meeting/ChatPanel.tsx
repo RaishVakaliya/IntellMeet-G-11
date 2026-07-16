@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
 
 interface ChatPanelProps {
   socket: Socket;
@@ -127,13 +128,21 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ socket, meetingCode }) => {
     const text = input.trim();
     if (!text || !user) return;
 
-    socket.emit("send-message", {
-      meetingCode,
-      message: text,
-      senderId: user._id,
-      senderName: user.username,
-      senderAvatar: "",
-    });
+    socket.emit(
+      "send-message",
+      {
+        meetingCode,
+        message: text,
+        senderId: user._id,
+        senderName: user.username,
+        senderAvatar: "",
+      },
+      (response: { success: boolean; error?: string }) => {
+        if (!response?.success) {
+          toast.error(response?.error || "Failed to send message");
+        }
+      },
+    );
 
     socket.emit("stop-typing", { meetingCode, userId: user._id });
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);

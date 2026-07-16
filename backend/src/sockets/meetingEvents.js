@@ -82,23 +82,17 @@ export const registerMeetingEvents = (io, socket, roomScreenSharer) => {
         isScreenSharing: socket.data.isScreenSharing,
       });
 
-      io.to(meetingCode).emit("user-online", { dbUserId });
-
       socket
         .to(meetingCode)
         .emit("notification", `${userName} joined the meeting`);
     },
   );
 
-  socket.on("disconnect", () => {
-    const { currentRoom, dbUserId, userName } = socket.data ?? {};
-    console.log(
-      `[Socket] User disconnected: ${socket.id} (db=${dbUserId})${currentRoom ? ` from room: ${currentRoom}` : ""}`,
-    );
+  const handleLeave = (currentRoom, dbUserId, userName) => {
     if (currentRoom && dbUserId) {
+      socket.leave(currentRoom);
+      socket.data.currentRoom = null;
       socket.to(currentRoom).emit("user-disconnected", { dbUserId });
-
-      socket.to(currentRoom).emit("user-offline", { dbUserId });
 
       if (roomScreenSharer.get(currentRoom) === dbUserId) {
         roomScreenSharer.delete(currentRoom);
@@ -113,6 +107,24 @@ export const registerMeetingEvents = (io, socket, roomScreenSharer) => {
         `${userName ?? "A user"} left the meeting`,
       );
     }
+  };
+
+  socket.on("leave-room", ({ meetingCode }) => {
+    const { currentRoom, dbUserId, userName } = socket.data ?? {};
+    if (currentRoom === meetingCode) {
+      console.log(
+        `[Socket] User left room: ${socket.id} (db=${dbUserId}) from room: ${currentRoom}`,
+      );
+      handleLeave(currentRoom, dbUserId, userName);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    const { currentRoom, dbUserId, userName } = socket.data ?? {};
+    console.log(
+      `[Socket] User disconnected: ${socket.id} (db=${dbUserId})${currentRoom ? ` from room: ${currentRoom}` : ""}`,
+    );
+    handleLeave(currentRoom, dbUserId, userName);
   });
 
   socket.on("offer", (payload) => {

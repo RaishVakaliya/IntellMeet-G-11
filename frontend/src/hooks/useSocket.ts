@@ -71,8 +71,11 @@ export const useSocket = (meetingCode?: string) => {
       }
     };
 
+    const emitLobby = () => {
+      if (user) socket.emit("join-lobby", user._id);
+    };
+
     if (!meetingCode && user) {
-      const emitLobby = () => socket.emit("join-lobby", user._id);
       if (socket.connected) emitLobby();
       else socket.once("connect", emitLobby);
     }
@@ -85,8 +88,15 @@ export const useSocket = (meetingCode?: string) => {
     socket.on("connect_error", handleError);
 
     return () => {
+      socket.off("connect", emitJoinRoom);
+      socket.off("connect", emitLobby);
       socket.off("connect", handleConnect);
       socket.off("connect_error", handleError);
+
+      if (meetingCode) {
+        socket.emit("leave-room", { meetingCode });
+        joinedRef.current = null;
+      }
     };
   }, [meetingCode, user, accessToken]);
 

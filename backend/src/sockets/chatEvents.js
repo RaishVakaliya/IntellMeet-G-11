@@ -4,7 +4,10 @@ import { handleChatMentions } from "../services/notificationService.js";
 export const registerChatEvents = (io, socket) => {
   socket.on(
     "send-message",
-    async ({ meetingCode, message, senderId, senderName, senderAvatar }) => {
+    async (
+      { meetingCode, message, senderId, senderName, senderAvatar },
+      ack,
+    ) => {
       console.log(
         `[Socket] Message from ${senderName} in room ${meetingCode}: ${message.substring(0, 20)}...`,
       );
@@ -23,16 +26,21 @@ export const registerChatEvents = (io, socket) => {
           });
 
           handleChatMentions(meetingCode, senderId, message);
+          if (typeof ack === "function") ack({ success: true });
         } else {
           console.error(
             `[Socket] saveMessage returned false for room ${meetingCode}`,
           );
+          if (typeof ack === "function")
+            ack({ success: false, error: "Failed to save message" });
         }
       } catch (error) {
         console.error(
           `[Socket] Error saving/emitting message for room ${meetingCode}:`,
           error,
         );
+        if (typeof ack === "function")
+          ack({ success: false, error: "Server error" });
       }
     },
   );

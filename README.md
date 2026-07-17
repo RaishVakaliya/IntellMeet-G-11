@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./frontend/src/assets/AppLogo.png" alt="IntellMeet Logo" width="220" />
+</p>
+
 # IntellMeet
 
 AI-Powered Enterprise Meeting & Collaboration Platform built with the MERN stack.
@@ -32,11 +36,14 @@ AI-Powered Enterprise Meeting & Collaboration Platform built with the MERN stack
 
 ## Features
 
-- **Participants List**: Real-time list of all users in the meeting with host identification.
-- **Meeting History**: Track and view previous meeting data and codes from your dashboard.
-- **Persistent Chat**: In-meeting chat with history powered by Redis and MongoDB.
-- **Secure Auth**: JWT-based authentication with secure cookie-based refresh tokens.
-- **Responsive Grid**: Adaptive video gallery that adjusts to participant count.
+- **Domain-Driven Feature-Sliced Architecture**: Codebase structured cleanly into domain directories (Auth, Kanban, Meeting, Dashboard, Profile) for production-grade maintainability.
+- **Stabilized Socket.IO Signaling**: Ghost-participant prevention through clean `leave-room` unmount flows and consolidated presence event states.
+- **Reliable In-Meeting Messaging**: Bidirectional chat with full history, typing indicator alerts, and reliable server database write acknowledgements.
+- **Participants Management**: Real-time participants list highlighting the room host and active speaker presence states.
+- **Collaborative Workspaces**: Kanban task board integration to track tasks and meeting action items interactively.
+- **Meeting History & Analytics**: Dashboard section displaying detailed metrics, summary outputs, and recording playback assets.
+- **Secure Authentication**: Cookie-supported JWT token refresh strategy combined with Passport Google OAuth2 integration.
+- **Responsive P2P Video Grid**: Custom adaptive WebRTC media grid adjusting cleanly to the active caller count.
 
 ## Setup
 

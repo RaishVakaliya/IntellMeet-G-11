@@ -34,7 +34,7 @@ export interface MeetingData {
   participants: MeetingParticipantRecord[];
 }
 
-export interface MeetingDetails extends MeetingData {}
+export type MeetingDetails = MeetingData;
 
 const createApiError = (status: number, message: string) => {
   const error = new Error(message) as ApiError;

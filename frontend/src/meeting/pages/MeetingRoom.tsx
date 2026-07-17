@@ -17,14 +17,13 @@ import { useMeetingRecording } from "@/hooks/useMeetingRecording";
 import { useLiveTranscription } from "@/hooks/useLiveTranscription";
 import { useDocumentSEO } from "@/hooks/useDocumentSEO";
 
-// Extracted meeting hooks and components
-import { MeetingHeader } from "../../meeting/components/MeetingHeader";
-import { MeetingSidebar } from "../../meeting/components/MeetingSidebar";
-import { MeetingLoading } from "../../meeting/components/MeetingLoading";
-import { MeetingEnded } from "../../meeting/components/MeetingEnded";
-import { useMeetingLifecycle } from "../../meeting/hooks/useMeetingLifecycle";
-import { useMeetingMedia } from "../../meeting/hooks/useMeetingMedia";
-import { useMeetingSocketEvents } from "../../meeting/hooks/useMeetingSocketEvents";
+import { MeetingHeader } from "../components/MeetingHeader";
+import { MeetingSidebar } from "../components/MeetingSidebar";
+import { MeetingLoading } from "../components/MeetingLoading";
+import { MeetingEnded } from "../components/MeetingEnded";
+import { useMeetingLifecycle } from "../hooks/useMeetingLifecycle";
+import { useMeetingMedia } from "../hooks/useMeetingMedia";
+import { useMeetingSocketEvents } from "../hooks/useMeetingSocketEvents";
 import { useShallow } from "zustand/react/shallow";
 
 const MeetingRoom = () => {

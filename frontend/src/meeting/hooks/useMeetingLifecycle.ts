@@ -25,7 +25,9 @@ export const useMeetingLifecycle = (
           queryKey: ["meeting-details", roomId],
         });
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.warn("[useMeetingLifecycle] joinMeeting REST call failed:", err);
+      });
   }, [roomId, queryClient]);
 
   useEffect(() => {

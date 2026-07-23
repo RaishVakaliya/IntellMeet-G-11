@@ -14,7 +14,6 @@ import VideoGrid, { type CallLayoutType } from "@/meeting/VideoGrid";
 import ControlsBar from "@/meeting/ControlsBar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useMeetingRecording } from "@/hooks/useMeetingRecording";
-import { useLiveTranscription } from "@/hooks/useLiveTranscription";
 import { useDocumentSEO } from "@/hooks/useDocumentSEO";
 
 import { MeetingHeader } from "../components/MeetingHeader";
@@ -41,15 +40,12 @@ const MeetingRoom = () => {
     );
 
   const [copied, setCopied] = useState(false);
-  const [sidebarTab, setSidebarTab] = useState<
-    "chat" | "participants" | "captions"
-  >("chat");
+  const [sidebarTab, setSidebarTab] = useState<"chat" | "participants">("chat");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [layout, setLayout] = useState<CallLayoutType>("grid");
 
   const { isRecording, isUploading, startRecording, stopRecording } =
     useMeetingRecording(roomId!);
-  useLiveTranscription(true);
 
   const socket = useSocket(roomId);
   const {

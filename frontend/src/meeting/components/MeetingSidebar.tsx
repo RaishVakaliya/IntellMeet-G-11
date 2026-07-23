@@ -2,7 +2,6 @@ import React from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ChatPanel from "@/meeting/ChatPanel";
-import TranscriptionPanel from "@/meeting/TranscriptionPanel";
 import ParticipantList from "@/meeting/ParticipantList";
 import { MeetingSidebarTabs } from "./MeetingSidebarTabs";
 import type { Socket } from "socket.io-client";
@@ -10,8 +9,8 @@ import type { Socket } from "socket.io-client";
 interface MeetingSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  sidebarTab: "chat" | "participants" | "captions";
-  setSidebarTab: (tab: "chat" | "participants" | "captions") => void;
+  sidebarTab: "chat" | "participants";
+  setSidebarTab: (tab: "chat" | "participants") => void;
   participantsCount: number;
   socket: Socket;
   roomId: string;
@@ -56,8 +55,6 @@ export const MeetingSidebar: React.FC<MeetingSidebarProps> = ({
         <div className="flex-1 overflow-hidden flex flex-col">
           {sidebarTab === "chat" ? (
             <ChatPanel socket={socket} meetingCode={roomId} />
-          ) : sidebarTab === "captions" ? (
-            <TranscriptionPanel />
           ) : (
             <ParticipantList hostId={hostId} />
           )}

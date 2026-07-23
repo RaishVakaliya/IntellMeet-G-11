@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { uploadMeetingRecording } from "@/services/meetingService";
+import { isDisplayMediaSupported } from "@/lib/device";
 import { toast } from "sonner";
 
 export const useMeetingRecording = (meetingCode: string) => {
@@ -9,6 +10,10 @@ export const useMeetingRecording = (meetingCode: string) => {
   const chunksRef = useRef<Blob[]>([]);
 
   const startRecording = useCallback(async () => {
+    if (!isDisplayMediaSupported()) {
+      toast.error("Meeting recording is only supported on desktop browsers.");
+      return;
+    }
     try {
       const displayStream = await navigator.mediaDevices.getDisplayMedia({
         video: true,

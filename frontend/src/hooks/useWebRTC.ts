@@ -1,5 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useMeetingStore } from "@/stores/meetingStore";
+import { isDisplayMediaSupported } from "@/lib/device";
+import { toast } from "sonner";
 
 interface UseWebRTCOptions {
   meetingCode: string;
@@ -173,6 +175,10 @@ export const useWebRTC = ({
   }, []);
 
   const startScreenShare = useCallback(async () => {
+    if (!isDisplayMediaSupported()) {
+      toast.error("Screen sharing is only supported on desktop browsers.");
+      return null;
+    }
     try {
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
         video: { frameRate: 30 },

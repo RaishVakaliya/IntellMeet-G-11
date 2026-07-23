@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { CallLayoutType } from "./VideoGrid";
 import { MeetingInfoBox } from "./components/MeetingInfoBox";
+import { isDisplayMediaSupported } from "@/lib/device";
 
 interface ControlsBarProps {
   onLeave: () => void;
@@ -117,6 +118,10 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
   const handleToggleCamera = onToggleCamera ?? toggleCamera;
 
   const handleScreenShare = async () => {
+    if (!isDisplayMediaSupported()) {
+      toast.error("Screen sharing is only supported on desktop browsers.");
+      return;
+    }
     if (isScreenSharing) {
       await onStopScreenShare?.();
     } else {
@@ -139,6 +144,10 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
   };
 
   const handleRecordToggle = async () => {
+    if (!isDisplayMediaSupported()) {
+      toast.error("Meeting recording is only supported on desktop browsers.");
+      return;
+    }
     if (isRecording) {
       if (onStopRecording) await onStopRecording();
     } else {
@@ -232,7 +241,7 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
                 }
                 aria-pressed={isScreenSharing}
                 className={cn(
-                  "flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all border border-white/10",
+                  "hidden sm:flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all border border-white/10",
                   isScreenSharing
                     ? "bg-primary/80 hover:bg-primary text-primary-foreground"
                     : "bg-muted/50 hover:bg-muted text-foreground",
@@ -264,7 +273,7 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
                   disabled={isUploading}
                   size="icon"
                   className={cn(
-                    "flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all border border-white/10",
+                    "hidden sm:flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all border border-white/10",
                     isRecording
                       ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                       : "bg-muted/50 hover:bg-muted text-foreground",
@@ -309,17 +318,20 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
             <TooltipContent side="top">{currentMeta.label}</TooltipContent>
           </Tooltip>
 
-          <div className="hidden sm:block w-px h-6 bg-white/10 mx-1" />
+          <div className="w-px h-6 bg-white/20 mx-1 sm:mx-1.5" />
 
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 onClick={onLeave}
-                className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground px-3 sm:px-4 h-10 sm:h-12 border border-white/10"
+                className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground px-4 sm:px-5 h-10 sm:h-12 border border-white/10 shadow-md shadow-destructive/20"
               >
-                <PhoneOff className="w-4 h-4 sm:mr-1.5" />
-                <span className="hidden sm:inline font-bold text-xs uppercase tracking-tight">
+                <PhoneOff className="w-4 h-4 mr-1.5" />
+                <span className="font-bold text-xs uppercase tracking-tight hidden sm:inline">
                   {isHost ? "End Meeting" : "Leave"}
+                </span>
+                <span className="font-bold text-xs uppercase tracking-tight sm:hidden">
+                  {isHost ? "End" : "Leave"}
                 </span>
               </Button>
             </TooltipTrigger>

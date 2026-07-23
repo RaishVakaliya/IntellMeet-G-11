@@ -1,9 +1,7 @@
-# Python Virtual Environments
 **/venv/
 **/.venv/
 venv/
 .venv/
-backend/python/venv/
 
 # Dependency directories
 node_modules/

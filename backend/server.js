@@ -16,7 +16,6 @@ import { initializeSocket } from "./src/sockets/socket.js";
 import userRoutes from "./src/routes/userRoutes.js";
 import meetingRoutes from "./src/routes/meetingRoutes.js";
 import chatRoutes from "./src/routes/chatRoutes.js";
-import transcribeRoutes from "./src/routes/transcribeRoutes.js";
 import boardRoutes from "./src/routes/boardRoutes.js";
 import notificationRoutes from "./src/routes/notificationRoutes.js";
 import passport from "passport";
@@ -82,7 +81,6 @@ app.use("/api/auth", userRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/meetings", meetingRoutes);
 app.use("/api/chats", chatRoutes);
-app.use("/api/transcribe", transcribeRoutes);
 app.use("/api/boards", boardRoutes);
 app.use("/api/notifications", notificationRoutes);
 

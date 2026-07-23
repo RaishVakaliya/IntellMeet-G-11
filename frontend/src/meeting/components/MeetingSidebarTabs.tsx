@@ -1,8 +1,8 @@
 import React from "react";
 
 interface MeetingSidebarTabsProps {
-  sidebarTab: "chat" | "participants" | "captions";
-  setSidebarTab: (tab: "chat" | "participants" | "captions") => void;
+  sidebarTab: "chat" | "participants";
+  setSidebarTab: (tab: "chat" | "participants") => void;
   participantsCount: number;
 }
 
@@ -13,7 +13,6 @@ export const MeetingSidebarTabs: React.FC<MeetingSidebarTabsProps> = ({
 }) => {
   const tabs = [
     { id: "chat", label: "chat" },
-    { id: "captions", label: "captions" },
     {
       id: "participants",
       label: `participants (${participantsCount})`,

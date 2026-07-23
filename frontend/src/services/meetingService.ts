@@ -1,6 +1,4 @@
-import { apiFetch } from "@/lib/apiFetch";
-
-type ApiError = Error & { status?: number; activeCode?: string };
+import { apiFetch, handleJsonResponse } from "@/lib/apiFetch";
 
 export type MeetingParticipantRecord = {
   user: string | { _id: string; name: string; email: string; avatar?: string };
@@ -36,29 +34,12 @@ export interface MeetingData {
 
 export type MeetingDetails = MeetingData;
 
-const createApiError = (status: number, message: string) => {
-  const error = new Error(message) as ApiError;
-  error.status = status;
-  return error;
-};
-
 export const createMeeting = async (title: string): Promise<MeetingData> => {
   const res = await apiFetch("/api/meetings/create", {
     method: "POST",
     body: JSON.stringify({ title, startTime: new Date() }),
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    const error = new Error(
-      err.message || "Failed to create meeting",
-    ) as ApiError;
-    error.status = res.status;
-    if (err.activeCode) {
-      error.activeCode = err.activeCode;
-    }
-    throw error;
-  }
-  return res.json();
+  return handleJsonResponse<MeetingData>(res);
 };
 
 export const joinMeeting = async (
@@ -68,36 +49,19 @@ export const joinMeeting = async (
     method: "POST",
     body: JSON.stringify({ meetingCode }),
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    const error = new Error(err.message || "Meeting not found") as ApiError;
-    error.status = res.status;
-    if (err.activeCode) {
-      error.activeCode = err.activeCode;
-    }
-    throw error;
-  }
-  return res.json();
+  return handleJsonResponse<MeetingData>(res);
 };
 
 export const getMyMeetings = async (): Promise<MeetingData[]> => {
   const res = await apiFetch("/api/meetings/my-meetings");
-  if (!res.ok) throw new Error("Failed to fetch meetings");
-  return res.json();
+  return handleJsonResponse<MeetingData[]>(res);
 };
 
 export const getMeetingDetails = async (
   meetingCode: string,
 ): Promise<MeetingDetails> => {
   const res = await apiFetch(`/api/meetings/${meetingCode}`);
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw createApiError(
-      res.status,
-      err.message || "Failed to fetch meeting details",
-    );
-  }
-  return res.json();
+  return handleJsonResponse<MeetingDetails>(res);
 };
 
 export const endMeeting = async (
@@ -106,11 +70,7 @@ export const endMeeting = async (
   const res = await apiFetch(`/api/meetings/${meetingCode}/end`, {
     method: "PATCH",
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw createApiError(res.status, err.message || "Failed to end meeting");
-  }
-  const data = await res.json();
+  const data = await handleJsonResponse<{ meeting: MeetingDetails }>(res);
   return data.meeting;
 };
 
@@ -130,15 +90,11 @@ export const uploadMeetingRecording = async (
     body: formData,
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw createApiError(
-      res.status,
-      err.message || "Failed to upload meeting recording",
-    );
-  }
+  const data = await handleJsonResponse<{
+    recordingUrl: string;
+    meeting: MeetingDetails;
+  }>(res);
 
-  const data = await res.json();
   return {
     recordingUrl: data.recordingUrl,
     meeting: data.meeting,
@@ -154,8 +110,7 @@ export const addActionItem = async (
     method: "POST",
     body: JSON.stringify({ text, assignedTo }),
   });
-  if (!res.ok) throw new Error("Failed to add action item");
-  return res.json();
+  return handleJsonResponse<MeetingDetails>(res);
 };
 
 export const toggleActionItem = async (
@@ -165,8 +120,7 @@ export const toggleActionItem = async (
   const res = await apiFetch(`/api/meetings/${code}/action-items/${itemId}`, {
     method: "PATCH",
   });
-  if (!res.ok) throw new Error("Failed to toggle action item");
-  return res.json();
+  return handleJsonResponse<MeetingDetails>(res);
 };
 
 export const deleteActionItem = async (
@@ -176,8 +130,7 @@ export const deleteActionItem = async (
   const res = await apiFetch(`/api/meetings/${code}/action-items/${itemId}`, {
     method: "DELETE",
   });
-  if (!res.ok) throw new Error("Failed to delete action item");
-  return res.json();
+  return handleJsonResponse<MeetingDetails>(res);
 };
 
 export const updateMeetingSummary = async (
@@ -188,6 +141,5 @@ export const updateMeetingSummary = async (
     method: "PATCH",
     body: JSON.stringify({ summary }),
   });
-  if (!res.ok) throw new Error("Failed to update summary");
-  return res.json();
+  return handleJsonResponse<MeetingDetails>(res);
 };

@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/apiFetch";
+import { apiFetch, handleJsonResponse } from "@/lib/apiFetch";
 
 export interface ChatMessage {
   _id: string;
@@ -11,8 +11,9 @@ export interface ChatMessage {
   timestamp: string;
 }
 
-export const getChatHistory = async (meetingCode: string): Promise<ChatMessage[]> => {
+export const getChatHistory = async (
+  meetingCode: string,
+): Promise<ChatMessage[]> => {
   const res = await apiFetch(`/api/chats/${meetingCode}`);
-  if (!res.ok) throw new Error("Failed to fetch chat history");
-  return res.json();
+  return handleJsonResponse<ChatMessage[]>(res);
 };

@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/apiFetch";
+import { apiFetch, handleJsonResponse } from "@/lib/apiFetch";
 import { useAuthStore } from "@/stores/authStore";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
@@ -8,21 +8,13 @@ export const updateUsername = async (username: string): Promise<void> => {
     method: "PATCH",
     body: JSON.stringify({ username }),
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Failed to update username");
-  }
-  const data = await res.json();
+  const data = await handleJsonResponse<{ username: string }>(res);
   useAuthStore.getState().updateUser({ username: data.username });
 };
 
 export const getAllUsers = async () => {
   const res = await apiFetch("/api/users");
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Failed to fetch users");
-  }
-  return res.json();
+  return handleJsonResponse(res);
 };
 
 export const uploadAvatar = async (
@@ -54,7 +46,11 @@ export const uploadAvatar = async (
 
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(JSON.parse(xhr.responseText));
+          try {
+            resolve(JSON.parse(xhr.responseText));
+          } catch {
+            reject({ status: xhr.status, message: "Invalid JSON response" });
+          }
         } else {
           reject({ status: xhr.status, response: xhr.responseText });
         }
@@ -84,8 +80,14 @@ export const uploadAvatar = async (
           throw new Error("Session expired. Please login again.");
         }
       } else {
-        const parsed = JSON.parse(error.response || "{}");
-        throw new Error(parsed.message || "Failed to upload avatar");
+        let msg = "Failed to upload avatar";
+        if (error.response) {
+          try {
+            const parsed = JSON.parse(error.response);
+            if (parsed.message) msg = parsed.message;
+          } catch {}
+        }
+        throw new Error(msg);
       }
     }
 

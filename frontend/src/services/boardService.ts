@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/apiFetch";
+import { apiFetch, handleJsonResponse } from "@/lib/apiFetch";
 
 export interface BoardColumn {
   id: string;
@@ -45,8 +45,7 @@ export interface BoardWithTasks {
 
 export const getMyBoards = async (): Promise<Board[]> => {
   const res = await apiFetch("/api/boards");
-  if (!res.ok) throw new Error("Failed to fetch boards");
-  return res.json();
+  return handleJsonResponse<Board[]>(res);
 };
 
 export const createBoard = async (data: {
@@ -58,17 +57,12 @@ export const createBoard = async (data: {
     method: "POST",
     body: JSON.stringify(data),
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Failed to create board");
-  }
-  return res.json();
+  return handleJsonResponse<Board>(res);
 };
 
 export const getBoardById = async (id: string): Promise<BoardWithTasks> => {
   const res = await apiFetch(`/api/boards/${id}`);
-  if (!res.ok) throw new Error("Failed to fetch board");
-  return res.json();
+  return handleJsonResponse<BoardWithTasks>(res);
 };
 
 export const deleteBoard = async (id: string): Promise<void> => {
@@ -94,11 +88,7 @@ export const createTask = async (
     method: "POST",
     body: JSON.stringify(data),
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Failed to create task");
-  }
-  return res.json();
+  return handleJsonResponse<Task>(res);
 };
 
 export const updateTask = async (
@@ -112,11 +102,7 @@ export const updateTask = async (
     method: "PUT",
     body: JSON.stringify(data),
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Failed to update task");
-  }
-  return res.json();
+  return handleJsonResponse<Task>(res);
 };
 
 export const moveTask = async (
@@ -129,8 +115,7 @@ export const moveTask = async (
     method: "PATCH",
     body: JSON.stringify({ column, order }),
   });
-  if (!res.ok) throw new Error("Failed to move task");
-  return res.json();
+  return handleJsonResponse<Task>(res);
 };
 
 export const deleteTask = async (

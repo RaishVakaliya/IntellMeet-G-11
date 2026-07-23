@@ -33,3 +33,54 @@ export async function apiFetch(
 
   return res;
 }
+
+export async function handleJsonResponse<T = any>(res: Response): Promise<T> {
+  const contentType = res.headers.get("content-type");
+  const isJson = Boolean(
+    contentType && contentType.includes("application/json"),
+  );
+
+  if (!res.ok) {
+    let errorMessage = `Request failed with status ${res.status}`;
+    let activeCode: string | undefined;
+
+    if (isJson) {
+      try {
+        const errData = await res.json();
+        if (errData.message) errorMessage = errData.message;
+        if (errData.activeCode) activeCode = errData.activeCode;
+      } catch {}
+    } else {
+      try {
+        const text = await res.text();
+        if (text && text.length < 150 && !text.includes("<")) {
+          errorMessage = text;
+        }
+      } catch {}
+    }
+
+    const error = new Error(errorMessage) as Error & {
+      status?: number;
+      activeCode?: string;
+    };
+    error.status = res.status;
+    if (activeCode) error.activeCode = activeCode;
+    throw error;
+  }
+
+  if (!isJson) {
+    const text = await res.text().catch(() => "");
+    if (!text.trim()) {
+      return {} as T;
+    }
+    throw new Error(
+      `Expected JSON from server, but received non-JSON response (${res.status})`,
+    );
+  }
+
+  try {
+    return (await res.json()) as T;
+  } catch {
+    throw new Error("Failed to parse JSON response from server");
+  }
+}

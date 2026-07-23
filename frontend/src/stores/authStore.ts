@@ -45,6 +45,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         get().logout();
         return null;
       }
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        get().logout();
+        return null;
+      }
       const { accessToken } = await res.json();
       const user = get().user;
       if (user) {

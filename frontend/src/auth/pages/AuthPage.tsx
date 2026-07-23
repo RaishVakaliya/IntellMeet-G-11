@@ -137,9 +137,21 @@ export const AuthPage = () => {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get("content-type");
+      const isJson = Boolean(
+        contentType && contentType.includes("application/json"),
+      );
+      let data: any = {};
+      if (isJson) {
+        try {
+          data = await response.json();
+        } catch {}
+      }
+
       if (!response.ok) {
-        throw new Error(data.message || "Authentication failed");
+        throw new Error(
+          data.message || `Authentication failed (${response.status})`,
+        );
       }
 
       setAuth(

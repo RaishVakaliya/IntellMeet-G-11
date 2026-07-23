@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { apiFetch } from "@/lib/apiFetch";
+import { apiFetch, handleJsonResponse } from "@/lib/apiFetch";
 import type { NotificationState, NotificationType } from "@/types/notification";
 
 export const useNotificationStore = create<NotificationState>((set) => ({
@@ -12,7 +12,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     try {
       const res = await apiFetch("/api/notifications");
       if (res.ok) {
-        const data = await res.json();
+        const data = await handleJsonResponse<NotificationType[]>(res);
         const unread = data.filter((n: NotificationType) => !n.isRead).length;
         set({ notifications: data, unreadCount: unread });
       }
@@ -29,10 +29,11 @@ export const useNotificationStore = create<NotificationState>((set) => ({
         method: "PATCH",
       });
       if (res.ok) {
-        const updatedNotification = await res.json();
+        const updatedNotification =
+          await handleJsonResponse<NotificationType>(res);
         set((state) => {
           const updatedNotifications = state.notifications.map((n) =>
-            n._id === id ? updatedNotification : n
+            n._id === id ? updatedNotification : n,
           );
           const unread = updatedNotifications.filter((n) => !n.isRead).length;
           return { notifications: updatedNotifications, unreadCount: unread };
@@ -69,7 +70,9 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       });
       if (res.ok) {
         set((state) => {
-          const updatedNotifications = state.notifications.filter((n) => n._id !== id);
+          const updatedNotifications = state.notifications.filter(
+            (n) => n._id !== id,
+          );
           const unread = updatedNotifications.filter((n) => !n.isRead).length;
           return { notifications: updatedNotifications, unreadCount: unread };
         });

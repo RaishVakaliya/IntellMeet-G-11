@@ -1,3 +1,6 @@
+import "./src/config/sentry.js";
+import { Sentry } from "./src/config/sentry.js";
+
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -25,15 +28,16 @@ const REQUIRED_ENV_VARS = [
   "MONGO_URI",
   "JWT_SECRET",
   "JWT_REFRESH_SECRET",
-  "REDIS_URL"
+  "REDIS_URL",
 ];
 for (const envVar of REQUIRED_ENV_VARS) {
   if (!process.env[envVar]) {
-    console.error(`FATAL ERROR: Environment variable "${envVar}" is not defined.`);
+    console.error(
+      `FATAL ERROR: Environment variable "${envVar}" is not defined.`,
+    );
     process.exit(1);
   }
 }
-
 
 await connectDB();
 await connectRedis();
@@ -88,6 +92,10 @@ app.get("/api/health", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
+}
 
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {

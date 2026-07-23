@@ -4,7 +4,7 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
+    "start": "node --import ./src/config/sentry.js server.js",
     "dev": "node --watch server.js",
     "docker:build": "docker build -t intellmeet-backend .",
     "docker:run": "docker run -d -p 5000:5000 --env-file .env --name intellmeet-backend-container intellmeet-backend",

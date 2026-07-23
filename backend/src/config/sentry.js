@@ -8,11 +8,9 @@ if (dsn) {
   Sentry.init({
     dsn,
     environment,
+    tracesSampleRate: environment === "production" ? 0.1 : 0,
 
-    // Performance monitoring: 100% in dev, 10% in production
-    tracesSampleRate: environment === "production" ? 0.1 : 1.0,
-
-    includeLocalVariables: true,
+    includeLocalVariables: environment === "production",
   });
 }
 

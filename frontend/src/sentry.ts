@@ -17,7 +17,7 @@ if (dsn) {
       }),
     ],
 
-    tracesSampleRate: environment === "production" ? 0.1 : 1.0,
+    tracesSampleRate: environment === "production" ? 0.1 : 0,
 
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,

@@ -28,12 +28,10 @@ export const signup = async (req, res) => {
 
   const usernameRegex = /^[a-zA-Z0-9_-]+$/;
   if (!usernameRegex.test(name)) {
-    return res
-      .status(400)
-      .json({
-        message:
-          "Username can only contain alphanumeric characters, underscores, and hyphens without spaces",
-      });
+    return res.status(400).json({
+      message:
+        "Username can only contain alphanumeric characters, underscores, and hyphens without spaces",
+    });
   }
 
   try {
@@ -150,7 +148,19 @@ export const uploadAvatar = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({}).select("name email avatar");
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(req.query.limit, 10) || 50),
+    );
+    const skip = (page - 1) * limit;
+
+    const users = await User.find({})
+      .select("name email avatar")
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });

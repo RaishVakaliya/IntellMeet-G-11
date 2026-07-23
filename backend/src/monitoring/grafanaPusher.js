@@ -39,7 +39,9 @@ export async function pushMetricsToGrafana() {
       url,
       auth: { username, password },
     });
-  } catch (err) {}
+  } catch (err) {
+    console.warn("[GrafanaPusher] Push failed:", err.message);
+  }
 }
 
 export function startGrafanaPusher(intervalMs = 15000) {

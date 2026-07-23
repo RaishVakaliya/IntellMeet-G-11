@@ -115,7 +115,7 @@ const MeetingRoom = () => {
         ? `Meeting ${roomId}`
         : "Meeting Room",
     description:
-      "Active IntellMeet video meeting with real-time chat, live captions, and participant controls.",
+      "Active IntellMeet video meeting with real-time chat and participant controls.",
   });
 
   // Redirect if ended

@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
-import redisClient from "../config/redis.js";
+import { redisClient } from "../config/redis.js";
 
 const USER_CACHE_EXPIRATION = 3600;
 

@@ -8,8 +8,6 @@ import {
 } from "./auth/components/ProtectedRoute";
 import { Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const Homepage = lazy(() => import("./dashboard/pages/Homepage"));
 const MeetingRoom = lazy(() => import("./meeting/pages/MeetingRoom"));
@@ -97,8 +95,6 @@ function App() {
           />
         </Routes>
       </Suspense>
-      <Analytics />
-      <SpeedInsights />
     </BrowserRouter>
   );
 }

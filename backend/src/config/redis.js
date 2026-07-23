@@ -1,7 +1,4 @@
 import { createClient } from "redis";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const redisClient = createClient({
   url: process.env.REDIS_URL || "redis://localhost:6379",
@@ -16,7 +13,9 @@ const redisClient = createClient({
 
 redisClient.on("error", (err) => {
   if (err.message.includes("Socket closed unexpectedly")) {
-    console.log("Redis socket closed unexpectedly, waiting for auto-reconnect...");
+    console.log(
+      "Redis socket closed unexpectedly, waiting for auto-reconnect...",
+    );
   } else {
     console.error("Redis Client Error:", err);
   }

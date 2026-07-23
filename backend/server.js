@@ -1,11 +1,12 @@
-import "./src/config/sentry.js";
+import dotenv from "dotenv";
+dotenv.config();
+
 import { Sentry } from "./src/config/sentry.js";
 import { register } from "./src/monitoring/metrics.js";
 import { httpMetricsMiddleware } from "./src/monitoring/httpMiddleware.js";
 import { startGrafanaPusher } from "./src/monitoring/grafanaPusher.js";
 
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
@@ -23,14 +24,13 @@ import session from "express-session";
 import "./src/config/passport.js";
 import { globalLimiter } from "./src/middleware/rateLimitMiddleware.js";
 
-dotenv.config();
-
 // Assert presence of crucial environment variables
 const REQUIRED_ENV_VARS = [
   "MONGO_URI",
   "JWT_SECRET",
   "JWT_REFRESH_SECRET",
   "REDIS_URL",
+  "SESSION_SECRET",
 ];
 for (const envVar of REQUIRED_ENV_VARS) {
   if (!process.env[envVar]) {
@@ -62,7 +62,7 @@ app.use(
 );
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "secret",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -97,6 +97,12 @@ app.get("/api/health", (req, res) => {
 });
 
 app.get("/metrics", async (req, res) => {
+  if (
+    process.env.METRICS_SECRET &&
+    req.headers.authorization !== `Bearer ${process.env.METRICS_SECRET}`
+  ) {
+    return res.status(401).json({ message: "Unauthorized access to metrics" });
+  }
   try {
     res.set("Content-Type", register.contentType);
     res.end(await register.metrics());
@@ -108,6 +114,16 @@ app.get("/metrics", async (req, res) => {
 if (process.env.SENTRY_DSN) {
   Sentry.setupExpressErrorHandler(app);
 }
+
+// Global Express Error Handler
+app.use((err, req, res, next) => {
+  console.error("[Unhandled Error]:", err);
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  res.status(statusCode).json({
+    message: err.message || "Internal Server Error",
+    stack: process.env.NODE_ENV === "production" ? undefined : err.stack,
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {

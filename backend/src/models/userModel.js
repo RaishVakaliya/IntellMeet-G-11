@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema(
     },
     googleId: {
       type: String,
+      index: true,
     },
     avatar: {
       type: String,

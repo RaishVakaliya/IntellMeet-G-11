@@ -33,3 +33,13 @@ services:
         sync: false
       - key: GOOGLE_CALLBACK_URL
         sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: GRAFANA_CLOUD_URL
+        sync: false
+      - key: GRAFANA_CLOUD_USERNAME
+        sync: false
+      - key: GRAFANA_CLOUD_PASSWORD
+        sync: false
+      - key: METRICS_SECRET
+        sync: false

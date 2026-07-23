@@ -4,75 +4,107 @@
 
 # IntellMeet
 
-AI-Powered Enterprise Meeting & Collaboration Platform built with the MERN stack.
+Enterprise Real-Time Video Collaboration & Meeting Platform built with the MERN stack.
 
-## Backend Dependencies
+## Technologies & Dependencies
 
-- **express**: Web framework for Node.js.
+### Backend Dependencies
+
+- **express**: Core web framework for Node.js.
 - **mongoose**: MongoDB object modeling tool.
-- **dotenv**: Loads environment variables from a .env file.
-- **cors**: Enables Cross-Origin Resource Sharing.
+- **dotenv**: Loads environment variables from a `.env` file.
+- **cors**: Cross-Origin Resource Sharing middleware.
 - **helmet**: Secures Express apps by setting various HTTP headers.
-- **socket.io**: Enables real-time, bi-directional communication, chat functionality, and notifications.
-- **bcryptjs**: Used for password hashing.
-- **jsonwebtoken**: For secure stateless authentication.
-- **cookie-parser**: Parses cookie headers to handle refresh tokens.
-- **cloudinary**: Cloud-based image and video management service.
-- **multer**: Middleware for handling multipart/form-data for file uploads.
-- **multer-storage-cloudinary**: Custom storage engine for multer to upload directly to Cloudinary.
-- **express-rate-limit**: Basic rate-limiting middleware for Express.
-- **nanoid**: Generates short, unique meeting codes.
-- **redis**: In-memory data structures store used for ultra-fast caching.
-- **@socket.io/redis-adapter**: Allows real-time events to work across multiple server instances.
+- **socket.io**: Enables real-time, bi-directional WebRTC signaling and meeting events.
+- **@socket.io/redis-adapter**: Allows real-time socket events to scale horizontally across multiple instances.
+- **bcryptjs**: Used for secure password hashing.
+- **jsonwebtoken**: Handles secure JWT authentication (Access & Refresh tokens).
+- **cookie-parser**: Parses HTTP cookie headers for secure refresh token handling.
+- **cloudinary** & **multer-storage-cloudinary**: Handles meeting recording uploads directly to Cloudinary.
+- **express-rate-limit**: API rate-limiting middleware.
+- **nanoid**: Generates short, unique meeting room codes.
+- **redis**: In-memory data store for caching and pub/sub adapter.
+- **prom-client**: Exposes system & application metrics for Prometheus monitoring.
+- **prometheus-remote-write**: Automatically streams backend metrics directly to Grafana Cloud.
+- **@sentry/node**: Application performance tracing and real-time error tracking.
 
-## Frontend Dependencies
+### Frontend Dependencies
 
 - **React 19**: Modern UI library with hooks.
-- **Zustand**: Lightweight and scalable state management.
-- **TanStack Query (v5)**: Efficient server-state management and caching.
-- **Tailwind CSS**: Utility-first styling with modern aesthetics.
-- **shadcn/ui**: High-quality, accessible UI components.
-- **sonner**: Beautiful and customizable toast notifications.
+- **Zustand**: Lightweight state management for active meeting rooms and audio/video controls.
+- **TanStack Query (v5)**: Server-state caching and asynchronous query management.
+- **Tailwind CSS**: Utility-first styling with modern dark glassmorphism design.
+- **shadcn/ui**: Accessible UI components.
+- **sonner**: Toast notification system.
+- **lucide-react**: Modern icon library.
+
+---
 
 ## Features
 
-- **Domain-Driven Feature-Sliced Architecture**: Codebase structured cleanly into domain directories (Auth, Kanban, Meeting, Dashboard, Profile) for production-grade maintainability.
-- **Stabilized Socket.IO Signaling**: Ghost-participant prevention through clean `leave-room` unmount flows and consolidated presence event states.
-- **Reliable In-Meeting Messaging**: Bidirectional chat with full history, typing indicator alerts, and reliable server database write acknowledgements.
-- **Participants Management**: Real-time participants list highlighting the room host and active speaker presence states.
-- **Collaborative Workspaces**: Kanban task board integration to track tasks and meeting action items interactively.
-- **Meeting History & Analytics**: Dashboard section displaying detailed metrics, summary outputs, and recording playback assets.
-- **Secure Authentication**: Cookie-supported JWT token refresh strategy combined with Passport Google OAuth2 integration.
-- **Responsive P2P Video Grid**: Custom adaptive WebRTC media grid adjusting cleanly to the active caller count.
+- **Domain-Driven Feature-Sliced Architecture**: Cleanly structured into domain modules (`auth`, `kanban`, `meeting`, `dashboard`, `profile`).
+- **WebRTC Peer-to-Peer Video Grid**: Custom adaptive grid automatically adjusting layout based on active participant count.
+- **Screen Sharing & Dynamic Track Swap**: Seamlessly toggle between WebCam and Screen Share without re-negotiation.
+- **Mobile-Responsive Controls**: Mobile-friendly control bar featuring device detection (`isDisplayMediaSupported()`) to prevent mobile capture crashes.
+- **Observability & Analytics**:
+  - **Grafana Cloud Integration**: Background push (`prometheus-remote-write`) streaming real-time HTTP latencies and active socket metrics.
+  - **Sentry Integration**: ESM preloaded error tracking (`--import`) with production performance sampling (`tracesSampleRate`).
+- **Reliable Meeting Chat & Presence**: Real-time room chat with typing indicators and participant status highlights.
+- **Collaborative Workspaces**: Integrated Kanban task board to manage meeting action items.
+- **Secure Dual-Token Auth**: HttpOnly refresh cookies paired with Google OAuth2 authentication.
+- **Production Docker Deployment**: Lightweight Docker image optimized for deployment platforms like Render.
+
+---
 
 ## Setup
 
-1. Clone the repository.
-2. Setup environment variables:
+1. **Clone the repository**:
+
+   ```bash
+   git clone https://github.com/RaishVakaliya/IntellMeet-G-11
+   cd intellmeet
+   ```
+
+2. **Configure Environment Variables**:
    - Create a `.env` file in the `backend/` folder.
-   - Refer to `backend/.env.example` for all required keys.
-3. Install dependencies:
-   - `cd backend && npm install`
-   - `cd ../frontend && npm install`
+   - Refer to `backend/.env.example` for all required environment keys.
+
+3. **Install Dependencies**:
+
+   ```bash
+   # Install backend dependencies
+   cd backend && npm install
+
+   # Install frontend dependencies
+   cd ../frontend && npm install
+   ```
+
+---
 
 ## Run Development Server
 
 ### Backend
 
-1. Go to the backend folder: `cd backend`
-2. Start the server: `npm run dev`
+```bash
+cd backend
+npm run dev
+```
 
 ### Frontend
 
-1. Go to the frontend folder: `cd frontend`
-2. Start the vite server: `npm run dev`
+```bash
+cd frontend
+npm run dev
+```
 
-## WebRTC Signaling
+---
 
-Signaling is the process where browsers exchange setup information through a server to establish a direct Peer-to-Peer (P2P) connection. This project uses Socket.io to relay these signals.
+## WebRTC Signaling Overview
 
-| Term              | Description                                                         |
-| ----------------- | ------------------------------------------------------------------- |
-| **Offer**         | User A proposes a session with their media capabilities.            |
-| **Answer**        | User B accepts and shares their media capabilities.                 |
-| **ICE Candidate** | A list of possible IP addresses/network paths to reach the browser. |
+Signaling is the process where browsers exchange connection metadata through Socket.IO to establish a direct Peer-to-Peer (P2P) media connection.
+
+| Term              | Description                                                            |
+| ----------------- | ---------------------------------------------------------------------- |
+| **Offer**         | Peer A proposes a session with its media SDP capabilities.             |
+| **Answer**        | Peer B accepts the offer and responds with its media SDP capabilities. |
+| **ICE Candidate** | Network path options (IP addresses, ports) discovered by browsers.     |

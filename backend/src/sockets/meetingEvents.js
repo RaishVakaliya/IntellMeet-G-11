@@ -1,3 +1,5 @@
+import { meetingRoomsActive } from "../monitoring/metrics.js";
+
 export const registerMeetingEvents = (io, socket, roomScreenSharer) => {
   socket.on(
     "join-room",
@@ -68,6 +70,11 @@ export const registerMeetingEvents = (io, socket, roomScreenSharer) => {
       socket.join(meetingCode);
       socket.data.currentRoom = meetingCode;
 
+      const roomSockets = await io.in(meetingCode).fetchSockets();
+      if (roomSockets.length === 1) {
+        meetingRoomsActive.inc();
+      }
+
       socket.emit("existing-users", existingUsers);
       console.log(
         `[Socket] Sent existing-users (${existingUsers.length}) to ${userName}`,
@@ -88,7 +95,7 @@ export const registerMeetingEvents = (io, socket, roomScreenSharer) => {
     },
   );
 
-  const handleLeave = (currentRoom, dbUserId, userName) => {
+  const handleLeave = async (currentRoom, dbUserId, userName) => {
     if (currentRoom && dbUserId) {
       socket.leave(currentRoom);
       socket.data.currentRoom = null;
@@ -106,6 +113,13 @@ export const registerMeetingEvents = (io, socket, roomScreenSharer) => {
         "notification",
         `${userName ?? "A user"} left the meeting`,
       );
+
+      try {
+        const remaining = await io.in(currentRoom).fetchSockets();
+        if (remaining.length === 0) {
+          meetingRoomsActive.dec();
+        }
+      } catch {}
     }
   };
 

@@ -4,6 +4,10 @@ import { redisClient } from "../config/redis.js";
 import { registerChatEvents } from "./chatEvents.js";
 import { registerMeetingEvents } from "./meetingEvents.js";
 import jwt from "jsonwebtoken";
+import {
+  socketioConnectionsActive,
+  socketioUsersConnected,
+} from "../monitoring/metrics.js";
 
 let io;
 
@@ -49,12 +53,15 @@ export const initializeSocket = async (httpServer) => {
   io.on("connection", (socket) => {
     console.log(`[Socket] User connected: ${socket.id}`);
 
+    socketioConnectionsActive.inc();
+
     const verifiedUserId = socket.data.verifiedUserId;
     if (verifiedUserId) {
       socket.join(`user:${verifiedUserId}`);
       console.log(
         `[Socket] User ${verifiedUserId} joined room user:${verifiedUserId}`,
       );
+      socketioUsersConnected.inc();
     }
 
     registerMeetingEvents(io, socket, roomScreenSharer);
@@ -64,6 +71,13 @@ export const initializeSocket = async (httpServer) => {
       if (!userId) return;
       console.log(`[Socket] User ${userId} joined their personal lobby room`);
       socket.join(`user:${userId}`);
+    });
+
+    socket.on("disconnect", () => {
+      socketioConnectionsActive.dec();
+      if (socket.data.verifiedUserId) {
+        socketioUsersConnected.dec();
+      }
     });
   });
 

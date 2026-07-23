@@ -1,5 +1,7 @@
 import "./src/config/sentry.js";
 import { Sentry } from "./src/config/sentry.js";
+import { register } from "./src/monitoring/metrics.js";
+import { httpMetricsMiddleware } from "./src/monitoring/httpMiddleware.js";
 
 import express from "express";
 import dotenv from "dotenv";
@@ -50,6 +52,8 @@ await initializeSocket(httpServer);
 
 app.use(helmet());
 app.use(globalLimiter);
+// Record HTTP request counts and latency for every route
+app.use(httpMetricsMiddleware);
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
@@ -91,6 +95,15 @@ app.get("/api/health", (req, res) => {
     message: "Your API is running",
     timestamp: new Date().toISOString(),
   });
+});
+
+app.get("/metrics", async (req, res) => {
+  try {
+    res.set("Content-Type", register.contentType);
+    res.end(await register.metrics());
+  } catch (err) {
+    res.status(500).end(err.message);
+  }
 });
 
 if (process.env.SENTRY_DSN) {

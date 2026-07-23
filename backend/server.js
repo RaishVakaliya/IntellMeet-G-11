@@ -2,6 +2,7 @@ import "./src/config/sentry.js";
 import { Sentry } from "./src/config/sentry.js";
 import { register } from "./src/monitoring/metrics.js";
 import { httpMetricsMiddleware } from "./src/monitoring/httpMiddleware.js";
+import { startGrafanaPusher } from "./src/monitoring/grafanaPusher.js";
 
 import express from "express";
 import dotenv from "dotenv";
@@ -113,4 +114,5 @@ if (process.env.SENTRY_DSN) {
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  startGrafanaPusher();
 });

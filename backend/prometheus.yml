@@ -10,3 +10,10 @@ scrape_configs:
     static_configs:
       - targets:
           - "intellmeet-backend-ovjm.onrender.com"
+
+# Optional: Add remote_write credentials via environment variables or secret manager
+# remote_write:
+#   - url: ${GRAFANA_CLOUD_URL}
+#     basic_auth:
+#       username: ${GRAFANA_CLOUD_USERNAME}
+#       password: ${GRAFANA_CLOUD_PASSWORD}

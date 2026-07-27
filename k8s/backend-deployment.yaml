@@ -26,27 +26,11 @@ spec:
           ports:
             - name: http
               containerPort: 5000
-          env:
-            - name: NODE_ENV
-              value: "development"
-            - name: PORT
-              value: "5000"
-            - name: MONGO_URI
-              value: "mongodb://localhost:27017/intellmeet"
-            - name: JWT_SECRET
-              value: "your_jwt_secret_here"
-            - name: JWT_REFRESH_SECRET
-              value: "your_jwt_refresh_secret_here"
-            - name: SESSION_SECRET
-              value: "your_session_secret_here"
-            - name: REDIS_URL
-              value: "redis://localhost:6379"
-            - name: GOOGLE_CLIENT_ID
-              value: "your_google_client_id_here"
-            - name: GOOGLE_CLIENT_SECRET
-              value: "your_google_client_secret_here"
-            - name: GOOGLE_CALLBACK_URL
-              value: "http://localhost:5000/api/auth/google/callback"
+          envFrom:
+            - configMapRef:
+                name: intellmeet-config
+            - secretRef:
+                name: intellmeet-secrets
           livenessProbe:
             httpGet:
               path: /api/health

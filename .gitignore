@@ -30,4 +30,7 @@ dist-ssr/
 .DS_Store
 Thumbs.db
 
+k8s/secret.yaml
+
+
 PROJECT_REVISION_GUIDE.md

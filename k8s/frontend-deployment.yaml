@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: intellmeet-frontend
+  labels:
+    app.kubernetes.io/name: intellmeet-frontend
+    app.kubernetes.io/part-of: intellmeet
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: intellmeet-frontend
+  template:
+    metadata:
+      labels:
+        app: intellmeet-frontend
+        app.kubernetes.io/name: intellmeet-frontend
+        app.kubernetes.io/part-of: intellmeet
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: intellmeet-frontend:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi

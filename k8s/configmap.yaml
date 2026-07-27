@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: intellmeet-config
+  labels:
+    app.kubernetes.io/name: intellmeet-config
+    app.kubernetes.io/part-of: intellmeet
+data:
+  NODE_ENV: "development"
+  PORT: "5000"
+  FRONTEND_URL: "http://localhost:30080"
+  GOOGLE_CALLBACK_URL: "http://localhost:30050/api/auth/google/callback"

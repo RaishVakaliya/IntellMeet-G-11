@@ -3,9 +3,10 @@ import { createClient } from "redis";
 const redisClient = createClient({
   url: process.env.REDIS_URL || "redis://localhost:6379",
   socket: {
+    connectTimeout: 2000,
     reconnectStrategy: (retries) => {
-      if (retries > 10) return new Error("Redis reconnection failed");
-      return Math.min(retries * 100, 3000);
+      if (retries > 2) return new Error("Redis reconnection failed");
+      return 500;
     },
     keepAlive: 5000,
   },

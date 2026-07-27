@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: intellmeet-backend
+  labels:
+    app.kubernetes.io/name: intellmeet-backend
+    app.kubernetes.io/part-of: intellmeet
+    app.kubernetes.io/component: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: intellmeet-backend
+  template:
+    metadata:
+      labels:
+        app: intellmeet-backend
+        app.kubernetes.io/name: intellmeet-backend
+        app.kubernetes.io/part-of: intellmeet
+        app.kubernetes.io/component: backend
+    spec:
+      containers:
+        - name: backend
+          image: intellmeet-backend:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 5000
+          env:
+            - name: NODE_ENV
+              value: "development"
+            - name: PORT
+              value: "5000"
+            - name: MONGO_URI
+              value: "mongodb://localhost:27017/intellmeet"
+            - name: JWT_SECRET
+              value: "your_jwt_secret_here"
+            - name: JWT_REFRESH_SECRET
+              value: "your_jwt_refresh_secret_here"
+            - name: SESSION_SECRET
+              value: "your_session_secret_here"
+            - name: REDIS_URL
+              value: "redis://localhost:6379"
+            - name: GOOGLE_CLIENT_ID
+              value: "your_google_client_id_here"
+            - name: GOOGLE_CLIENT_SECRET
+              value: "your_google_client_secret_here"
+            - name: GOOGLE_CALLBACK_URL
+              value: "http://localhost:5000/api/auth/google/callback"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

@@ -582,6 +582,6 @@
   },
   "timezone": "browser",
   "title": "IntellMeet Production Backend Monitoring",
-  "uid": "intellmeet-backend-prod",
+  "uid": "intellmeet-backend",
   "version": 1
 }

@@ -1,6 +1,5 @@
 import { useAuthStore } from "@/stores/authStore";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+import { API_BASE_URL } from "@/config/api";
 
 export async function apiFetch(
   path: string,
@@ -12,7 +11,7 @@ export async function apiFetch(
     typeof FormData !== "undefined" && options.body instanceof FormData;
 
   const makeRequest = (t: string | null) =>
-    fetch(`${API_BASE}${path}`, {
+    fetch(`${API_BASE_URL}${path}`, {
       ...options,
       credentials: "include",
       headers: {

@@ -1,7 +1,6 @@
 import { apiFetch, handleJsonResponse } from "@/lib/apiFetch";
 import { useAuthStore } from "@/stores/authStore";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+import { API_BASE_URL } from "@/config/api";
 
 export const updateUsername = async (username: string): Promise<void> => {
   const res = await apiFetch("/api/auth/profile", {
@@ -30,7 +29,7 @@ export const uploadAvatar = async (
   const xhrRequest = (t: string | null): Promise<{ avatar: string }> => {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open("POST", `${API_BASE}/api/auth/avatar-upload`);
+      xhr.open("POST", `${API_BASE_URL}/api/auth/avatar-upload`);
       xhr.withCredentials = true;
 
       if (t) xhr.setRequestHeader("Authorization", `Bearer ${t}`);

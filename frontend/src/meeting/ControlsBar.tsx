@@ -170,8 +170,6 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
           onCopyCode={onCopyCode}
         />
 
-        <div className="flex md:hidden flex-1" />
-
         <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-card/60 sm:bg-card/40 backdrop-blur-2xl border border-white/10 shadow-2xl shrink-0">
           <Tooltip>
             <TooltipTrigger asChild>

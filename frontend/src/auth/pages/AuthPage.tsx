@@ -12,11 +12,9 @@ import { toast } from "sonner";
 import { useAuthStore } from "../../stores/authStore";
 import AppLogoImg from "../../assets/AppLogo.png";
 import { useDocumentSEO } from "../../hooks/useDocumentSEO";
+import { API_BASE_URL } from "@/config/api";
 
 type AuthMode = "signin" | "signup";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 export const AuthPage = () => {
   const setAuth = useAuthStore((state) => state.setAuth);

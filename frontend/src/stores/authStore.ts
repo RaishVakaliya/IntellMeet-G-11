@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import type { AuthState } from "@/types/auth";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+import { API_BASE_URL } from "@/config/api";
 
 const getInitialAuth = () => {
   const token = localStorage.getItem("accessToken");
@@ -37,7 +36,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   refreshAccessToken: async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/auth/refresh-token`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/refresh-token`, {
         method: "POST",
         credentials: "include",
       });
@@ -64,7 +63,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   logout: async () => {
     try {
-      await fetch(`${API_BASE}/api/auth/logout`, {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });

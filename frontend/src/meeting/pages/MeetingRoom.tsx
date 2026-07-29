@@ -152,6 +152,9 @@ const MeetingRoom = () => {
         <MeetingHeader
           title={meetingDetails?.title}
           meetingCode={roomId ?? ""}
+          participantCount={participants.length + 1}
+          isCopied={copied}
+          onCopyCode={copyCode}
         />
 
         <div className="flex flex-1 overflow-hidden">

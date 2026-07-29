@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+  labels:
+    app.kubernetes.io/name: mongodb
+    app.kubernetes.io/part-of: intellmeet
+    app.kubernetes.io/component: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

@@ -2,14 +2,13 @@ import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuthStore } from "@/stores/authStore";
 import { useShallow } from "zustand/react/shallow";
-
-const SOCKET_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+import { API_BASE_URL } from "@/config/api";
 
 let socketInstance: Socket | null = null;
 
 export const getSocket = (): Socket => {
   if (!socketInstance) {
-    socketInstance = io(SOCKET_URL, {
+    socketInstance = io(API_BASE_URL, {
       autoConnect: false,
       withCredentials: true,
       reconnection: true,

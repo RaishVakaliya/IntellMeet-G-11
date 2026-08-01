@@ -9,6 +9,8 @@ import {
 import { Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
 
+import { OtpPage } from "./auth/pages/OtpPage";
+
 const Homepage = lazy(() => import("./dashboard/pages/Homepage"));
 const MeetingRoom = lazy(() => import("./meeting/pages/MeetingRoom"));
 const ProfilePage = lazy(() => import("./profile/pages/ProfilePage"));
@@ -38,6 +40,15 @@ function App() {
           <Route
             path="/auth"
             element={<Navigate to="/auth/signin" replace />}
+          />
+
+          <Route
+            path="/auth/verify-otp"
+            element={
+              <PublicOnlyRoute>
+                <OtpPage />
+              </PublicOnlyRoute>
+            }
           />
 
           <Route

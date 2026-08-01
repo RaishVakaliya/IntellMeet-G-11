@@ -1,10 +1,14 @@
 import User from "../models/userModel.js";
+import Otp from "../models/otpModel.js";
+import { sendOtpEmail } from "../services/emailService.js";
+import { generateNumericOtp } from "./otpController.js";
 import {
   generateAccessToken,
   generateRefreshToken,
   setRefreshTokenCookie,
 } from "../utils/generateToken.js";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 export const googleCallback = (req, res) => {
   const user = req.user;
@@ -19,7 +23,9 @@ export const googleCallback = (req, res) => {
 
 export const signup = async (req, res) => {
   const name = req.body.name ? String(req.body.name).trim() : "";
-  const email = req.body.email ? String(req.body.email).trim() : "";
+  const email = req.body.email
+    ? String(req.body.email).trim().toLowerCase()
+    : "";
   const password = req.body.password ? String(req.body.password) : "";
 
   if (!name || !email || !password) {
@@ -36,27 +42,46 @@ export const signup = async (req, res) => {
 
   try {
     const userExists = await User.findOne({ email });
-    if (userExists)
-      return res.status(400).json({ message: "User already exists" });
+    let user;
+    if (userExists) {
+      if (userExists.isVerified) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+      userExists.name = name;
+      userExists.password = password;
+      user = await userExists.save();
+    } else {
+      user = await User.create({ name, email, password, isVerified: false });
+    }
 
-    const user = await User.create({ name, email, password });
-    const accessToken = generateAccessToken(user._id);
-    const refreshToken = generateRefreshToken(user._id);
-    setRefreshTokenCookie(res, refreshToken);
+    await Otp.deleteMany({ email });
+    const rawOtp = generateNumericOtp();
+    const otpHash = await bcrypt.hash(rawOtp, 10);
+    await Otp.create({ email, otpHash, attempts: 0 });
+
+    await sendOtpEmail({
+      toEmail: user.email,
+      toName: user.name,
+      otp: rawOtp,
+    });
 
     res.status(201).json({
-      _id: user._id,
-      name: user.name,
+      message: "Verification code sent to your email.",
       email: user.email,
-      accessToken,
+      requiresVerification: true,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("[UserController] Signup error:", error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to create account" });
   }
 };
 
 export const login = async (req, res) => {
-  const email = req.body.email ? String(req.body.email).trim() : "";
+  const email = req.body.email
+    ? String(req.body.email).trim().toLowerCase()
+    : "";
   const password = req.body.password ? String(req.body.password) : "";
 
   if (!email || !password) {
@@ -66,6 +91,25 @@ export const login = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (user && (await user.matchPassword(password))) {
+      if (!user.isVerified) {
+        await Otp.deleteMany({ email });
+        const rawOtp = generateNumericOtp();
+        const otpHash = await bcrypt.hash(rawOtp, 10);
+        await Otp.create({ email, otpHash, attempts: 0 });
+        await sendOtpEmail({
+          toEmail: user.email,
+          toName: user.name,
+          otp: rawOtp,
+        });
+
+        return res.status(403).json({
+          message:
+            "Account not verified. A new verification code has been sent to your email.",
+          requiresVerification: true,
+          email: user.email,
+        });
+      }
+
       const accessToken = generateAccessToken(user._id);
       const refreshToken = generateRefreshToken(user._id);
       setRefreshTokenCookie(res, refreshToken);
@@ -74,12 +118,14 @@ export const login = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        isVerified: user.isVerified,
         accessToken,
       });
     } else {
       res.status(401).json({ message: "Invalid email or password" });
     }
   } catch (error) {
+    console.error("[UserController] Login error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -120,6 +166,7 @@ export const updateUserProfile = async (req, res) => {
         username: updatedUser.name,
         email: updatedUser.email,
         avatar: updatedUser.avatar,
+        isVerified: updatedUser.isVerified,
       });
     } else {
       res.status(404).json({ message: "User not found" });

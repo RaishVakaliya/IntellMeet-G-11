@@ -268,7 +268,7 @@ export const LandingPage = () => {
       <Features />
       <footer className="py-8 bg-gray-50 text-center border-t border-gray-200">
         <p className="text-xs text-gray-500 font-medium tracking-wide">
-          © 2026 IntellMeet. All rights reserved.
+          © {new Date().getFullYear()} IntellMeet. All rights reserved.
         </p>
       </footer>
     </main>

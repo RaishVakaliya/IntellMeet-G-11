@@ -62,7 +62,6 @@ const Homepage = () => {
     staleTime: 60_000,
   });
 
-  // Real-time synchronization
   const socket = useSocket();
   useEffect(() => {
     if (!socket) return;

@@ -3,6 +3,7 @@ export interface User {
   username: string;
   email: string;
   avatar?: string;
+  isVerified?: boolean;
 }
 
 export interface AuthState {

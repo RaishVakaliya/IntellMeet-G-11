@@ -2,6 +2,30 @@ import { apiFetch, handleJsonResponse } from "@/lib/apiFetch";
 import { useAuthStore } from "@/stores/authStore";
 import { API_BASE_URL } from "@/config/api";
 
+export const getUserProfile = async () => {
+  const res = await apiFetch("/api/auth/profile");
+  const data = await handleJsonResponse<{
+    _id: string;
+    username?: string;
+    name?: string;
+    email: string;
+    avatar?: string;
+    isVerified?: boolean;
+  }>(res);
+
+  const username = data.username || data.name || "";
+  const isVerified = !!data.isVerified;
+
+  useAuthStore.getState().updateUser({
+    username,
+    email: data.email,
+    avatar: data.avatar,
+    isVerified,
+  });
+
+  return { ...data, username, isVerified };
+};
+
 export const updateUsername = async (username: string): Promise<void> => {
   const res = await apiFetch("/api/auth/profile", {
     method: "PATCH",

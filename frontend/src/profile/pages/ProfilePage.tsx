@@ -4,7 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useShallow } from "zustand/react/shallow";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
-import { uploadAvatar, updateUsername } from "@/services/profileService";
+import {
+  uploadAvatar,
+  updateUsername,
+  getUserProfile,
+} from "@/services/profileService";
 import { getMyMeetings } from "@/services/meetingService";
 import { AppNavbar } from "@/layouts/AppNavbar";
 import { ProfilePageSkeleton } from "@/components/skeleton/ProfilePageSkeleton";
@@ -21,6 +25,7 @@ import {
   ArrowLeft,
   Mail,
   ShieldCheck,
+  ShieldAlert,
   Pencil,
   LogOut,
 } from "lucide-react";
@@ -64,6 +69,15 @@ const ProfilePage = () => {
     enabled: !!user,
     staleTime: 60_000,
   });
+
+  const { data: profile } = useQuery({
+    queryKey: ["user-profile"],
+    queryFn: getUserProfile,
+    enabled: !!user,
+    staleTime: 30_000,
+  });
+
+  const isVerified = profile?.isVerified ?? user?.isVerified ?? false;
 
   const handleLogout = async () => {
     if (!user || isLoggingOut) return;
@@ -240,10 +254,17 @@ const ProfilePage = () => {
                   <Mail className="w-3 h-3 shrink-0" />
                   <span className="truncate">{user.email}</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-primary mt-1">
-                  <ShieldCheck className="w-3 h-3 shrink-0" />
-                  <span className="font-medium">Account verified</span>
-                </div>
+                {isVerified ? (
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-500 mt-1">
+                    <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                    <span className="font-medium">Account verified</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 text-xs text-amber-500 mt-1">
+                    <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+                    <span className="font-medium">Not verified</span>
+                  </div>
+                )}
               </div>
 
               <Button
@@ -318,9 +339,15 @@ const ProfilePage = () => {
             <div className="h-11 flex items-center px-3 rounded-xl bg-muted/50 border border-border text-sm text-muted-foreground gap-2">
               <Mail className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate">{user.email}</span>
-              <span className="ml-auto text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
-                Verified
-              </span>
+              {isVerified ? (
+                <span className="ml-auto text-[10px] font-semibold text-amber-200 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                  Verified
+                </span>
+              ) : (
+                <span className="ml-auto text-[10px] font-semibold text-red-500 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                  Not Verified
+                </span>
+              )}
             </div>
             <p className="text-[11px] text-muted-foreground ml-0.5">
               Email cannot be changed

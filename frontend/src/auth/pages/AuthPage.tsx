@@ -10,6 +10,7 @@ import { ArrowRight, Mail } from "lucide-react";
 import "./AuthPage.css";
 import { toast } from "sonner";
 import { useAuthStore } from "../../stores/authStore";
+import { useOtpStore } from "@/stores/otpStore";
 import AppLogoImg from "../../assets/AppLogo.png";
 import { useDocumentSEO } from "../../hooks/useDocumentSEO";
 import { API_BASE_URL } from "@/config/api";
@@ -116,7 +117,7 @@ export const AuthPage = () => {
       }
     }
     if (!email.trim() || !password.trim()) {
-      toast.error("Email and password are required");
+      toast.error("Please fill in all fields");
       return;
     }
 
@@ -147,9 +148,25 @@ export const AuthPage = () => {
       }
 
       if (!response.ok) {
+        // Handle unverified user account login attempt
+        if (data.requiresVerification && data.email) {
+          useOtpStore.getState().setPendingEmail(data.email);
+          useOtpStore.getState().startCooldown(60);
+          toast.info(data.message || "Please verify your email code.");
+          navigate(`/auth/verify-otp?email=${encodeURIComponent(data.email)}`);
+          return;
+        }
         throw new Error(
           data.message || `Authentication failed (${response.status})`,
         );
+      }
+
+      if (data.requiresVerification && data.email) {
+        useOtpStore.getState().setPendingEmail(data.email);
+        useOtpStore.getState().startCooldown(60);
+        toast.success(data.message || "Verification code sent to your email.");
+        navigate(`/auth/verify-otp?email=${encodeURIComponent(data.email)}`);
+        return;
       }
 
       setAuth(

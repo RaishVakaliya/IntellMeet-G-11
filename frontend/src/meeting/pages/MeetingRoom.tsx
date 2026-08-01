@@ -65,7 +65,6 @@ const MeetingRoom = () => {
     },
   });
 
-  // Fetch Meeting Details
   const { data: meetingDetails, isLoading: meetingLoading } =
     useQuery<MeetingDetails>({
       queryKey: ["meeting-details", roomId],
@@ -83,7 +82,6 @@ const MeetingRoom = () => {
       return participantUserId === user?._id;
     });
 
-  // Initialize lifecycle and socket listeners hooks
   const { hasHandledMeetingEnd, handleLeave } = useMeetingLifecycle(
     roomId,
     socket,
@@ -118,7 +116,6 @@ const MeetingRoom = () => {
       "Active IntellMeet video meeting with real-time chat and participant controls.",
   });
 
-  // Redirect if ended
   useEffect(() => {
     if (!meetingDetails) return;
     if (meetingDetails.status === "ended" && !hasHandledMeetingEnd.current) {

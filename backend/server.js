@@ -15,6 +15,7 @@ import connectDB from "./src/config/db.js";
 import { connectRedis } from "./src/config/redis.js";
 import { initializeSocket } from "./src/sockets/socket.js";
 import userRoutes from "./src/routes/userRoutes.js";
+import otpRoutes from "./src/routes/otpRoutes.js";
 import meetingRoutes from "./src/routes/meetingRoutes.js";
 import chatRoutes from "./src/routes/chatRoutes.js";
 import boardRoutes from "./src/routes/boardRoutes.js";
@@ -24,7 +25,6 @@ import session from "express-session";
 import "./src/config/passport.js";
 import { globalLimiter } from "./src/middleware/rateLimitMiddleware.js";
 
-// Assert presence of crucial environment variables
 const REQUIRED_ENV_VARS = [
   "MONGO_URI",
   "JWT_SECRET",
@@ -52,7 +52,6 @@ await initializeSocket(httpServer);
 
 app.use(helmet());
 app.use(globalLimiter);
-// Record HTTP request counts and latency for every route
 app.use(httpMetricsMiddleware);
 app.use(
   cors({
@@ -78,6 +77,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/auth", userRoutes);
+app.use("/api/auth", otpRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/meetings", meetingRoutes);
 app.use("/api/chats", chatRoutes);

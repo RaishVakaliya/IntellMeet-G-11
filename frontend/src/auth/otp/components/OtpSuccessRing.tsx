@@ -36,7 +36,7 @@ export function OtpSuccessRing({ active }: SuccessRingProps) {
               cy={RING_SVG / 2}
               r={RING_R}
               fill="none"
-              stroke="rgba(34,197,94,0.55)"
+              stroke="rgba(34,197,94,0.45)"
               strokeWidth="1.5"
               strokeDasharray="5 9"
               strokeLinecap="round"
@@ -57,7 +57,7 @@ export function OtpSuccessRing({ active }: SuccessRingProps) {
                   left: cx - 2.5,
                   top: cy - 2.5,
                   background: C.success,
-                  boxShadow: `0 0 7px ${C.success}`,
+                  boxShadow: "none",
                 }}
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: [0.6, 1, 0.6], scale: [0.8, 1.2, 0.8] }}

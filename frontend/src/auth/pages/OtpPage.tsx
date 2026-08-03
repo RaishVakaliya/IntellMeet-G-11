@@ -69,31 +69,28 @@ export const OtpPage: React.FC = () => {
     resendMutation.mutate({ email: activeEmail });
   };
 
-  const cardShadow = flow.isSuccess
-    ? "0 0 0 1px rgba(34,197,94,0.15), 0 24px 60px rgba(0,0,0,0.7), 0 0 48px rgba(34,197,94,0.06)"
-    : flow.isError
-      ? "0 0 0 1px rgba(239,68,68,0.12), 0 24px 60px rgba(0,0,0,0.7)"
-      : "0 0 0 1px rgba(59,130,246,0.08), 0 24px 60px rgba(0,0,0,0.7)";
+  const cardShadow = flow.isError
+    ? "0 0 0 1px rgba(239,68,68,0.12), 0 24px 60px rgba(0,0,0,0.7)"
+    : "0 0 0 1px rgba(255,255,255,0.08), 0 24px 60px rgba(0,0,0,0.7)";
 
   return (
     <div
       className="flex min-h-dvh items-center justify-center px-4 py-8"
       style={{ background: C.bg }}
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 overflow-hidden"
-      >
+      {!flow.isSuccess && (
         <div
-          className="absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full opacity-15 blur-3xl"
-          style={{
-            background: flow.isSuccess
-              ? `radial-gradient(circle, ${C.success} 0%, transparent 70%)`
-              : `radial-gradient(circle, ${C.primary} 0%, transparent 70%)`,
-            transition: "background 1.2s ease",
-          }}
-        />
-      </div>
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 overflow-hidden"
+        >
+          <div
+            className="absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full opacity-15 blur-3xl"
+            style={{
+              background: `radial-gradient(circle, ${C.primary} 0%, transparent 70%)`,
+            }}
+          />
+        </div>
+      )}
 
       <motion.div
         layout

@@ -14,9 +14,31 @@ import {
 } from "../constants";
 import { boxTarget } from "../animationUtils";
 import { OtpDigitBox } from "./OtpDigitBox";
-import { OtpBrackets } from "./OtpBrackets";
 import { OtpSuccessRing } from "./OtpSuccessRing";
 import type { StageProps } from "../types";
+
+const ROTATE_COLORS = [
+  {
+    border: "2px solid #06b6d4",
+    color: "#38bdf8",
+    bg: "rgba(6, 182, 212, 0.08)",
+  },
+  {
+    border: "2px solid #3b82f6",
+    color: "#60a5fa",
+    bg: "rgba(59, 130, 246, 0.08)",
+  },
+  {
+    border: "2px solid #8b5cf6",
+    color: "#a78bfa",
+    bg: "rgba(139, 92, 246, 0.08)",
+  },
+  {
+    border: "2px solid #22c55e",
+    color: "#4ade80",
+    bg: "rgba(34, 197, 94, 0.08)",
+  },
+];
 
 export function OtpAnimatedStage({
   digits,
@@ -64,6 +86,8 @@ export function OtpAnimatedStage({
         <motion.div className="absolute left-1/2 top-1/2" animate={orbitCtrl}>
           {digits.map((digit, i) => {
             const pos = boxTarget(status, i);
+            const rotateTheme = ROTATE_COLORS[i % ROTATE_COLORS.length];
+
             return (
               <motion.div
                 key={i}
@@ -110,27 +134,26 @@ export function OtpAnimatedStage({
                     />
                   ) : (
                     <motion.div
-                      className="relative flex items-center justify-center rounded-xl"
+                      className="relative flex items-center justify-center rounded-2xl"
                       style={{
                         width: BOX,
                         height: BOX,
                         background:
                           isSuccess && i === 0
-                            ? "rgba(34,197,94,0.10)"
-                            : "rgba(59,130,246,0.07)",
-                        boxShadow:
+                            ? "rgba(34, 197, 94, 0.08)"
+                            : isVerifying
+                              ? rotateTheme.bg
+                              : "rgba(59, 130, 246, 0.06)",
+                        border:
                           isSuccess && i === 0
-                            ? "0 0 22px rgba(34,197,94,0.25)"
-                            : "0 0 14px rgba(59,130,246,0.15)",
+                            ? "2px solid #22c55e"
+                            : isVerifying
+                              ? rotateTheme.border
+                              : "1.5px solid rgba(59, 130, 246, 0.4)",
+                        boxShadow: "none",
+                        transition: "border-color 0.3s, background-color 0.3s",
                       }}
                     >
-                      <OtpBrackets
-                        color={
-                          isSuccess && i === 0
-                            ? "rgba(34,197,94,0.7)"
-                            : "rgba(59,130,246,0.4)"
-                        }
-                      />
                       <AnimatePresence mode="wait">
                         {isSuccess && i === 0 ? (
                           <motion.div
@@ -150,7 +173,11 @@ export function OtpAnimatedStage({
                       {(!isSuccess || i !== 0) && (
                         <motion.span
                           className="text-xl font-bold"
-                          style={{ color: "rgba(96,165,250,0.7)" }}
+                          style={{
+                            color: isVerifying
+                              ? rotateTheme.color
+                              : "rgba(96,165,250,0.8)",
+                          }}
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
@@ -175,7 +202,7 @@ export function OtpAnimatedStage({
             style={{
               width: ORBIT_R * 1 + BOX + 10,
               height: ORBIT_R * 1 + BOX + 10,
-              border: "1.5px dashed rgba(59,130,246,0.35)",
+              border: "1.5px dashed rgba(59,130,246,0.45)",
             }}
             initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}

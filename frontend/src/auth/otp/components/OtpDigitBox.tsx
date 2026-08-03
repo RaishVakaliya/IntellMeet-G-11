@@ -1,6 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { BOX, SNAPPY } from "../constants";
-import { OtpBrackets } from "./OtpBrackets";
 import type { OtpDigitBoxProps } from "../types";
 
 export function OtpDigitBox({
@@ -16,50 +15,41 @@ export function OtpDigitBox({
   onFocus,
   onBlur,
 }: OtpDigitBoxProps) {
-  const bracketColor = isError
-    ? "rgba(239,68,68,0.75)"
+  const border = isError
+    ? "2px solid #ef4444"
     : isFocused
-      ? "rgba(59,130,246,0.85)"
+      ? "2px solid #22c55e"
       : value
-        ? "rgba(59,130,246,0.4)"
-        : "rgba(255,255,255,0.07)";
+        ? "1.5px solid rgba(255, 255, 255, 0.25)"
+        : "1.5px solid rgba(255, 255, 255, 0.12)";
 
   const bg = isError
-    ? "rgba(239,68,68,0.07)"
+    ? "rgba(239, 68, 68, 0.05)"
     : isFocused
-      ? "rgba(59,130,246,0.07)"
-      : value
-        ? "rgba(59,130,246,0.04)"
-        : "rgba(255,255,255,0.03)";
-
-  const glow = isFocused
-    ? "0 0 18px rgba(59,130,246,0.2)"
-    : isError
-      ? "0 0 14px rgba(239,68,68,0.14)"
-      : "none";
+      ? "rgba(34, 197, 94, 0.04)"
+      : "rgba(255, 255, 255, 0.03)";
 
   return (
     <motion.div
       layout
       className="relative"
       animate={{
-        scale: isFocused && !disabled ? 1.06 : 1,
+        scale: isFocused && !disabled ? 1.05 : 1,
         y: isFocused && !disabled ? -2 : 0,
       }}
       transition={SNAPPY}
     >
       <div
-        className="relative flex items-center justify-center rounded-xl"
+        className="relative flex items-center justify-center rounded-2xl"
         style={{
           width: BOX,
           height: BOX,
           background: bg,
-          boxShadow: glow,
-          transition: "background 0.2s, box-shadow 0.25s",
+          border: border,
+          boxShadow: "none",
+          transition: "border-color 0.2s, background-color 0.2s",
         }}
       >
-        <OtpBrackets color={bracketColor} />
-
         <AnimatePresence mode="popLayout">
           {value ? (
             <motion.span
@@ -87,7 +77,7 @@ export function OtpDigitBox({
             >
               <span
                 className="h-5 w-[2px] rounded-full"
-                style={{ background: "rgba(59,130,246,0.9)" }}
+                style={{ background: "#ffffff" }}
               />
             </motion.span>
           ) : null}
@@ -108,7 +98,7 @@ export function OtpDigitBox({
           onPaste={onPaste}
           onFocus={() => onFocus(index)}
           onBlur={onBlur}
-          className="absolute inset-0 h-full w-full cursor-pointer rounded-xl border-0 bg-transparent text-center text-2xl font-bold text-transparent outline-none"
+          className="absolute inset-0 h-full w-full cursor-pointer rounded-2xl border-0 bg-transparent text-center text-2xl font-bold text-transparent outline-none"
           style={{ caretColor: "transparent" }}
         />
       </div>
